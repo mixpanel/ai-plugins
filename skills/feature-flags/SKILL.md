@@ -79,7 +79,7 @@ Only use `Create-Feature-Flag` directly when:
 **Targeting Methods:**
 
 - **Rollout percentage**: Control what % of users see the feature (1%, 10%, 50%, 100%)
-- **Cohort targeting**: Target users in specific Mixpanel cohorts (refreshes every ~2 hours)
+- **Cohort targeting**: Target users in specific Mixpanel cohorts (refreshes every ~2 hours). **Note:** There is no MCP tool to list or search cohorts — you'll need to look up cohort IDs manually in the Mixpanel UI (Users → Cohorts) and pass the cohort definition or ID directly.
 - **Runtime properties**: Target by platform, URL path, country, custom properties
 - **Runtime events**: Target immediately upon specific user actions
 
@@ -97,50 +97,13 @@ Only use `Create-Feature-Flag` directly when:
 
 ### Sticky Variants
 
-**Sticky assignment** ensures users see the same variant even if rollout rules change later.
+**Sticky assignment** ensures that once a user is exposed to a variant, they remain in that variant even if rollout percentages or variant distributions change later.
 
-**How it works:**
+**Important tradeoff for rollouts:** Because sticky variants lock users into their assigned variant, increasing the rollout percentage will only expose *new* users to the flag — users already assigned to a variant won't be re-evaluated. This means sticky bucketing is generally not a good fit for gradual percentage rollouts, where you want the rollout percentage to reflect the true proportion of users seeing the feature.
 
-- ✅ User sees variant A at 10% rollout → still sees variant A at 50% rollout
-- ⚠️ Control variant is NOT sticky — users can move from control to treatment as rollout increases
-- 🎯 Variant assignment key determines randomization unit (user_id, device_id, etc.)
-- 📌 Once assigned to a treatment variant, user stays in that variant forever (unless you reset the flag)
+**When sticky makes sense:** A/B tests and experiments where consistent variant assignment is required for statistical validity, or user-facing features where switching a user between variants mid-session would create a jarring experience.
 
-**When to use sticky variants:**
-
-Use sticky variants (DEFAULT - recommended for most cases):
-
-- ✅ **User-facing features** — UI changes, new workflows, visual redesigns
-- ✅ **Gradual rollouts** — features being rolled out incrementally over time
-- ✅ **Consistent experience required** — e.g., onboarding flow, pricing display
-- ✅ **Long-running flags** — features staying under flag for weeks/months
-- ✅ **A/B tests** — users must stay in their assigned variant for valid results
-
-**Why:** Prevents jarring UX when a user's experience suddenly changes between sessions. Users get consistent behavior.
-
-**Example:** New checkout flow - if a user completes checkout with variant A, they should always see variant A, not randomly switch to variant B next time.
-
-**When NOT to use sticky variants (advanced):**
-
-Use non-sticky variants (requires explicit configuration):
-
-- ✅ **Backend optimizations** — algorithm changes, caching strategies (user doesn't notice)
-- ✅ **Temporary flags** — short-lived experiments or testing (< 1 week)
-- ✅ **Infrastructure changes** — database queries, API endpoints (invisible to users)
-- ✅ **Want variant re-randomization** — intentionally want users to move between variants
-
-**Why:** Allows for true random sampling on each request, useful for load testing or when variant assignment doesn't impact user experience.
-
-**Example:** Testing two different database query optimizations - users don't see any difference, and you want even distribution of load.
-
-**Important caveats:**
-
-- 🚨 **Most flags should use sticky variants** — non-sticky is an advanced use case
-- ⚠️ **Control is never sticky** — users assigned to control can move to treatment as you increase rollout
-- 🔄 **Resetting variants** — only way to unstick users is to create a new flag or reset the assignment key
-- 🧪 **A/B tests require sticky** — statistical validity depends on users staying in their variant
-
-**Default behavior:** Mixpanel feature flags use sticky variants by default. You typically don't need to configure anything special - sticky behavior is built in.
+**Default behavior:** Mixpanel feature flags use non-sticky variants by default (`is_sticky: false`). Set `is_sticky: true` on individual variants to enable sticky assignment.
 
 ### Rollout Groups
 
