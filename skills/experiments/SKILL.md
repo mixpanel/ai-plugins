@@ -28,7 +28,6 @@ Run experiments (A/B, A/A, multivariate tests) to measure the impact of product 
 | Browse existing experiments         | `Get-Experiments` (use filters for status, tags) |
 | View experiment details and results | `Get-Experiment-Details`                         |
 | Create new experiment               | `Create-Experiment`                              |
-| Update experiment settings          | `Update-Experiment`                              |
 | Launch, pause, or stop experiment   | `Manage-Experiment-State`                        |
 | List available metrics              | `Get-Metrics`                                    |
 | View metric definition              | `Get-Metric-Details`                             |
@@ -36,6 +35,36 @@ Run experiments (A/B, A/A, multivariate tests) to measure the impact of product 
 | Update existing metric              | `Update-Metric`                                  |
 
 For building metric queries, see the `metrics` skill.
+
+## Upfront Configuration Checklist
+
+**Before creating any experiment, always ask or confirm the following with the user:**
+
+| Setting | Options | Default | Guidance |
+| --- | --- | --- | --- |
+| **Statistical model** | `sequential` (recommended) or `frequentist` | sequential | Always surface this choice |
+| **Confidence level** | `0.90`, `0.95`, `0.99` | 0.95 | Always confirm explicitly |
+| **Traffic split** | e.g. 50/50, 33/33/33 | 50/50 | Confirm if not obvious |
+| **SRM detection** | enabled / disabled | enabled | Recommend enabled |
+| **Bonferroni correction** | enabled / disabled | disabled | Ask if >1 primary metric |
+| **End condition** | `days` (frequentist only) or significance | — | Ask if frequentist |
+| **Workspace** | Which workspace to use | project default | Ask if project has multiple |
+| **Tags** | For organization | none | Suggest based on feature area / quarter |
+
+Do not silently assume defaults — surface these decisions so the user can make informed choices before creation.
+
+## Prior Experiment Check
+
+**Always search for prior experiments on the same feature before creating a new one.** Use `Get-Experiments` with a keyword search. If found:
+
+- Pull details with `Get-Experiment-Details` — prior experiments often contain relevant event names, metric definitions, hypothesis patterns, and variant structures you can reuse
+- Note which metrics were used, what the results were, and what variants were tested
+- Surface this context to the user before proposing a new design
+
+```
+Get-Experiments project_id=<id> name="datepicker"
+→ Found prior experiment → Get-Experiment-Details → reuse metric definitions
+```
 
 ## Core Concepts
 
@@ -50,6 +79,23 @@ For building metric queries, see the `metrics` skill.
 | **Metrics**     | Required (primary + guardrails)   | Optional                   |
 
 **You can use both together:** Feature flag controls who sees variants, experiment measures the impact.
+
+### Feature Flag Auto-Creation
+
+When `collectionMethod: "feature_flag"` is used with `featureFlagKey` in `Create-Experiment`, **the experiment automatically creates and links a feature flag**. You do NOT need to call `Create-Feature-Flag` separately first.
+
+```
+Create-Experiment
+  settings:
+    collectionMethod: "feature_flag"
+    featureFlagSettings:
+      featureFlagKey: "my_new_flag"   ← auto-creates flag
+
+→ Returns featureFlagId in settings — flag created and linked
+→ Launching the experiment also enables the flag automatically
+```
+
+Only use `Create-Feature-Flag` separately for standalone flags (no experiment), or when you need to pre-configure complex rollout rules before linking.
 
 ### Hypothesis-Driven Testing
 
@@ -124,7 +170,7 @@ See [Mixpanel's statistical models documentation](https://docs.mixpanel.com/docs
 | **feature_flag**    | Users assigned to variants via Mixpanel feature flag   | Most experiments (recommended)                     |
 | **exposure_events** | Users assigned to variants by tracking exposure events | Custom variant assignment in your application code |
 
-**Recommendation:** Use `feature_flag` method for most experiments. Create the feature flag using the `feature-flags` skill or `Create-Feature-Flag` tool.
+**Recommendation:** Use `feature_flag` method for most experiments. Pass `featureFlagKey` in settings to auto-create the flag — no separate `Create-Feature-Flag` call needed.
 
 **Exposure events setup:** If you're manually assigning variants in your application code, use `exposure_events` collection method. Track an event with the variant information when a user is exposed to the experiment. Mixpanel will use these events to segment users and measure metrics.
 
@@ -136,22 +182,42 @@ SRM detects when variant assignment is imbalanced (e.g., 52% control vs 48% trea
 
 ## Workflow: Create and Run an Experiment
 
-### Phase 1: Define Hypothesis & Metrics
+### Phase 0: Gather Configuration Upfront
 
-**1. Write a clear hypothesis**
+**Before doing anything else, confirm the following with the user** (or make explicit decisions and state them clearly):
+
+1. **Statistical model:** Sequential (recommended) or frequentist?
+2. **Confidence level:** 90%, 95%, or 99%?
+3. **Traffic split:** 50/50? Unequal?
+4. **Workspace:** Which workspace if the project has multiple?
+5. **Tags:** What tags should organize this experiment?
+6. **Minimum run time:** At least 2 weeks recommended to avoid novelty effects
+
+Surface these as questions if not provided. Do not silently pick defaults.
+
+### Phase 1: Research & Design
+
+**1. Check for prior experiments on the same feature**
+
+```
+Get-Experiments project_id=<id> name="<feature keyword>"
+→ If found: Get-Experiment-Details to pull metric definitions and prior results
+→ Reuse event names and metric patterns where applicable
+```
+
+**2. Write a clear hypothesis**
 
 Start with: "Changing [X] will increase [Y] because [Z]"
 
-**2. Check for existing metrics**
+**3. Check for existing metrics**
 
 ```
 Get-Metrics project_id=<id>
-Get-Metrics project_id=<id> query="conversion"  # filter by keyword
 ```
 
 Review the list to find metrics you can reuse.
 
-**3. Create or validate metrics**
+**4. Create or validate metrics**
 
 If no suitable metric exists, create one:
 
@@ -159,12 +225,12 @@ If no suitable metric exists, create one:
 # See full metric definition
 Get-Metric-Details project_id=<id> metric_id=<id>
 
-# Create new metric (see 'metrics' skill for details)
+# Create new metric
 Create-Metric
   project_id: <id>
   name: "Purchase Conversion Rate"
   description: "% of users who complete purchase"
-  params: { ... }  # Insights bookmark params
+  definition: { ... }
 ```
 
 **Why use saved metrics?**
@@ -173,290 +239,119 @@ Create-Metric
 - ✅ Consistent definitions (no drift)
 - ✅ Simpler experiment creation (just reference by ID)
 
-**4. Identify metric roles**
+**5. Identify metric roles**
 
-- **Primary:** 1-3 metrics that determine success/failure (keep as few as possible to avoid false positives)
+- **Primary:** 1-3 metrics that determine success/failure
 - **Guardrails:** 2-5 metrics that must not regress (errors, performance, core flows)
-- **Secondary:** Up to 30 exploratory metrics (interesting but not decision criteria)
+- **Secondary:** Up to 30 exploratory metrics
 
 ### Phase 2: Create the Experiment
 
-**1. Gather experiment details**
-
-- **Name:** Clear and descriptive
-- **Hypothesis:** What you're testing and why
-- **Description:** Implementation details, target audience
-- **Tags:** For organization (team, feature area, quarter)
-
-**2. Choose collection method**
-
-- **feature_flag** (recommended): Variants controlled by Mixpanel feature flag
-- **exposure_events**: Variants assigned by tracking exposure events in your code
-
-**3. Configure statistical settings**
-
-**For sequential testing (recommended):**
-
-```
-settings:
-  collectionMethod: "feature_flag"
-  confidenceLevel: 0.95        # 95% confidence (standard)
-  testingModel: "sequential"   # Adaptive sample size
-  srm:
-    enabled: true              # ALWAYS enable SRM detection
-  bonferroni:
-    enabled: false             # Enable if using multiple primary metrics
-```
-
-**For frequentist testing:**
-
-```
-settings:
-  collectionMethod: "feature_flag"
-  confidenceLevel: 0.95        # 95% confidence
-  sampleSize: 10000            # Calculate using sample size calculator
-  testingModel: "frequentist"  # Fixed sample size
-  srm:
-    enabled: true              # ALWAYS enable SRM detection
-  bonferroni:
-    enabled: false             # Enable if using multiple primary metrics
-```
-
-**4. Create experiment with saved metrics (RECOMMENDED)**
+**Create experiment — this also auto-creates the linked feature flag:**
 
 ```
 Create-Experiment
   project_id: <id>
-  name: "Simplified Checkout Flow"
-  hypothesis: "Reducing checkout steps increases conversion"
-  description: "Testing 3-step vs 5-step checkout flow"
-  primary_metric_ids: [123]          # Main success metric
-  guardrail_metric_ids: [456, 789]   # Don't harm these metrics
-  secondary_metric_ids: [101, 102]   # Additional insights
-  settings: { ... }
-  tags: ["checkout", "q1-2026", "growth-team"]
+  workspace_id: <id>
+  name: "Experiment Name"
+  hypothesis: "Changing X will increase Y because Z"
+  description: "Implementation details, target audience"
+  primary_metric_ids: [<id>]
+  guardrail_metric_ids: [<id>, <id>]
+  settings:
+    collectionMethod: "feature_flag"
+    featureFlagSettings:
+      featureFlagKey: "my_flag_key"    ← auto-creates flag, no separate Create-Feature-Flag needed
+    confidenceLevel: 0.95             ← confirm with user
+    testingModel: "sequential"        ← confirm with user
+    srm: { enabled: true }
+    bonferroni: { enabled: false }    ← enable if >1 primary metric
+  tags: ["feature-area", "q1-2026"]
+
+→ Returns: { id: "exp-abc123", featureFlagId: "flag-xyz", status: "draft" }
 ```
 
-**Metric assignment by type:**
+### Phase 3: Implement & Launch
 
-- `primary_metric_ids`: 1-3 metrics that determine success/failure
-- `guardrail_metric_ids`: 2-5 metrics that must not regress
-- `secondary_metric_ids`: Up to 30 exploratory metrics
-
-**Alternative: Inline metric definitions**
-
-```
-Create-Experiment
-  project_id: <id>
-  name: "..."
-  metrics:
-    - metric_type: "primary"
-      event_name: "Purchase Completed"
-      aggregation: "unique"
-    - metric_type: "guardrail"
-      event_name: "Page Error"
-      aggregation: "total"
-```
-
-⚠️ **Inline metrics cannot be reused** — use metric ID parameters instead for consistency.
-
-**5. Review experiment configuration**
-
-```
-Get-Experiment-Details
-  project_id: <id>
-  experiment_id: "<returned_id>"
-```
-
-Verify:
-
-- [ ] Metrics are correctly attached (1-3 primary, 2-5 guardrails, up to 30 secondary)
-- [ ] Collection method matches your setup (feature_flag or exposure_events)
-- [ ] Testing model is appropriate (sequential recommended, or frequentist with calculated sample size)
-- [ ] SRM detection is enabled
-- [ ] Bonferroni correction is enabled if using multiple primary metrics
-
-### Phase 3: Set Up Variant Infrastructure
-
-**If using collectionMethod: "feature_flag"**
-
-See the `feature-flags` skill for detailed guidance. Quick version:
-
-```
-# 1. Create feature flag for experiment
-Create-Feature-Flag
-  project_id: <id>
-  name: "simplified_checkout_experiment"
-  description: "Controls checkout flow experiment variants"
-  state: "disabled"
-
-# 2. Implement variant logic in code
-if (featureFlag.get('simplified_checkout_experiment') === 'variant_a') {
-  // 3-step flow
-} else {
-  // 5-step flow (control)
-}
-
-# 3. Deploy code with flag disabled
-# 4. Enable flag and link to experiment
-```
-
-**If using collectionMethod: "exposure_events"**
-
-Track an exposure event when users are assigned to a variant:
+**1. Implement the flag in code (JS SDK example)**
 
 ```javascript
-// Assign user to variant in your code
-const variant = assignUserToVariant(userId); // Your assignment logic
+// Exposure tracked automatically when getFeatureFlag is called
+const variant = mixpanel.getFeatureFlag('my_flag_key');
 
-// Track exposure event with variant information
-mixpanel.track("Experiment Viewed", {
-  "Experiment name": "Simplified Checkout",
-  "Variant name": variant,
-});
-
-// Show appropriate experience
-if (variant === "variant_a") {
-  render3StepCheckout();
-} else {
-  render5StepCheckout();
+if (variant === 'treatment') {
+  return <NewComponent />;
 }
+// 'control' or null (flag disabled / user not bucketed) — always have fallback
+return <CurrentComponent />;
 ```
 
-Configure the experiment with the exposure event name and variant property names.
+**Key implementation notes:**
+- Call `mixpanel.identify(userId)` before `getFeatureFlag` — flag uses `distinct_id` context by default
+- Call `getFeatureFlag` at the exact render point of the feature — exposure timing must match actual user experience
+- `null` return means flag is disabled or user not bucketed — always have a safe fallback
 
-### Phase 4: Launch the Experiment
+**2. Test both variants manually before launch**
 
-**1. Pre-launch checklist**
-
-- [ ] Metrics are validated and attached (1-3 primary, 2-5 guardrails, up to 30 secondary)
-- [ ] Variant infrastructure is deployed and tested
-- [ ] Testing model configured (sequential recommended, or frequentist with calculated sample size)
-- [ ] Bonferroni correction enabled if using multiple primary metrics
-- [ ] Team knows experiment is launching
-- [ ] Hypothesis and success criteria are documented
-
-**2. Launch**
+**3. Launch**
 
 ```
 Manage-Experiment-State
   project_id: <id>
   experiment_id: "<id>"
   action: "launch"
+
+→ Experiment goes ACTIVE, feature flag enabled automatically
 ```
 
-**3. Monitor early results**
+### Phase 4: Monitor and Conclude
 
-- Check for SRM violations (imbalanced assignment)
-- Verify events are flowing to both variants
-- Look for unexpected metric movements
-
-⚠️ **Don't make decisions based on early data** — wait for statistical significance.
-
-### Phase 5: Monitor & Conclude
-
-**1. Check experiment progress**
+**Check results:**
 
 ```
 Get-Experiment-Details
   project_id: <id>
   experiment_id: "<id>"
+  compute_metrics: true    ← live results with statistical analysis
+  compute_exposures: true  ← live exposure counts
 ```
 
-Review:
-
-- Sample size collected vs target
-- Primary metric trend
-- Guardrail metric stability
-- Statistical significance
-
-**2. When to stop**
-
-**Stop when:**
-
-- ✅ Reached statistical significance on primary metric
-- ✅ Guardrails are stable (no regressions)
-- ✅ Results are consistent for several days
-
-**Keep running when:**
-
-- ⏱ Not yet reached significance
-- ⏱ Results are noisy or inconsistent
-- ⏱ Guardrails show concerning trends (investigate first)
-
-**3. Make decision**
+**Conclude:**
 
 ```
+Manage-Experiment-State action="conclude"   ← ends experiment
+
 Manage-Experiment-State
-  project_id: <id>
-  experiment_id: "<id>"
-  action: "stop"
-```
-
-Based on results:
-
-- **Ship winning variant** (update feature flag to 100%)
-- **Iterate** (new experiment with learnings)
-- **Abandon** (no impact or negative impact)
-
-## Recommended Workflow
-
-```
-Phase 1: Define
-1. Get-Metrics - Check for existing saved metrics
-   → Reuse metrics for consistency across experiments
-
-2. Create-Metric - If needed, create new saved metrics
-   → Validate metric definitions first (see 'metrics' skill)
-
-Phase 2: Create
-3. Create-Experiment with:
-   → primary_metric_ids=[123]
-   → guardrail_metric_ids=[456, 789]
-   → secondary_metric_ids=[101, 102]
-   → Assign metrics by type using saved metric IDs (RECOMMENDED)
-
-Phase 3: Setup
-4. Set up variant infrastructure
-   → If using feature_flag method, see 'feature-flags' skill
-   → Deploy and test before launching experiment
-
-Phase 4: Launch
-5. Manage-Experiment-State action="launch"
-   → Start collecting data
-   → Monitor for SRM violations
-
-Phase 5: Conclude
-6. Manage-Experiment-State action="stop"
-   → Stop when statistically significant
-   → Make decision: ship, iterate, or abandon
+  action: "decide"
+  success: true
+  variant: "treatment"    ← if shipping winner
 ```
 
 ## Common Pitfalls
 
-### 1. Starting experiment before metrics are validated
+### 1. Not checking for prior experiments
 
-❌ Create experiment → realize metric is broken → restart
-✅ Validate metric with Run-Report-Query → create experiment
+❌ Design from scratch without checking history
+✅ Always run `Get-Experiments` with a keyword search first
 
-### 2. Peeking at results and stopping early
+### 2. Silently assuming statistical defaults
 
-❌ "It's trending positive after 1 day, let's ship!"
-✅ Wait for statistical significance, ignore early trends
+❌ Create experiment with 0.95 / sequential without asking
+✅ Surface confidence level, testing model, and traffic split decisions explicitly before creating
 
-### 3. Not setting guardrail metrics
+### 3. Creating the feature flag separately
 
-❌ Primary metric improves but page errors spike
-✅ Include error rate, page load, and core flow metrics as guardrails
+❌ `Create-Feature-Flag` → `Create-Experiment` → link manually
+✅ `Create-Experiment` with `featureFlagKey` → flag auto-created and linked
 
-### 4. Using inline metrics instead of saved metrics
+### 4. Not using saved metrics
 
 ❌ Define metrics inline → can't reuse in future experiments
-✅ Use primary_metric_ids, guardrail_metric_ids, secondary_metric_ids to reference saved metrics
+✅ Use `primary_metric_ids`, `guardrail_metric_ids`, `secondary_metric_ids`
 
 ### 5. SRM violations
 
-❌ Ignore imbalanced assignment (52% vs 48%)
+❌ Ignore imbalanced assignment
 ✅ Always enable SRM detection, investigate violations immediately
 
 ### 6. Insufficient sample size
@@ -466,28 +361,30 @@ Phase 5: Conclude
 
 ### 7. Multiple testing problem
 
-❌ Run 20 experiments simultaneously, some will show "significance" by chance
-✅ Limit concurrent experiments, adjust confidence levels if needed
+❌ Run 20 experiments simultaneously
+✅ Limit concurrent experiments, enable Bonferroni if multiple primary metrics
 
 ### 8. Moving goalposts
 
-❌ Primary metric shows no effect, so focus on secondary metric instead
+❌ Primary shows no effect, pivot to secondary metric
 ✅ Decide success criteria before launching
 
 ### 9. Novelty effects
 
-❌ New design shows lift in week 1, regresses in week 2
-✅ Run experiments for at least 2 weeks to catch novelty effects
+❌ Ship after 1 week of positive results
+✅ Run at least 2 weeks to let novelty effects stabilize
 
-### 10. Not linking feature flag to experiment
+### 10. Calling getFeatureFlag too early
 
-❌ Manually assign variants in code, no connection to experiment
-✅ Use collection_method: "feature_flag" for tight integration
+❌ Check flag on app init before user sees the feature
+✅ Call at the exact render point — exposure timing must match the actual user experience
 
 ## Best Practices
 
 ### Before Launch
 
+- ✅ **Confirm statistical settings explicitly** — confidence level, model, split before creating
+- ✅ **Check prior experiments** — search for existing experiments on the same feature
 - ✅ **Write hypothesis first** — be explicit about expected outcome and mechanism
 - ✅ **Use saved metrics** — reference by ID for consistency and reusability
 - ✅ **Set both primary and guardrails** — know what success looks like and what can't break
@@ -510,125 +407,10 @@ Phase 5: Conclude
 - ✅ **Share learnings** — document what you learned, not just the result
 - ✅ **Clean up** — update feature flag to 100% or remove, archive experiment
 
-### Metric Selection
-
-- ✅ **Keep primary metrics to 1-3** — each additional primary metric increases false positive risk
-- ✅ **Enable Bonferroni correction if multiple primary** — compensates for multiple testing (reduces power)
-- ✅ **Guardrails prevent regressions** — 2-5 metrics for errors, performance, core flows
-- ✅ **Secondary metrics are exploratory** — up to 30 for interesting insights, not decision criteria
-- ✅ **Use the same metrics across experiments** — enables comparison and learning
-
-### Statistical Rigor
-
-- ✅ **Choose confidence level upfront** — typically 95%
-- ✅ **Use sequential testing** — allows peeking anytime, adaptive sample size
-- ✅ **For frequentist: pre-commit to sample size** — calculate using sample size calculator and stick to it
-- ✅ **Run until significance** — sequential stops automatically, frequentist waits for target sample
-- ✅ **Enable Bonferroni correction if multiple primary metrics** — prevents false positives from multiple testing
-
-## Example: Complete Experiment Workflow
-
-**Goal:** Test if simplified onboarding increases activation rate
-
-### Step 1: Check existing metrics
-
-```
-Get-Metrics project_id=3 query="activation"
-→ Found: "7-Day Activation Rate" (metric_id: 456)
-→ Found: "Error Rate" (metric_id: 789)
-```
-
-### Step 2: Create missing metric
-
-```
-Create-Metric
-  project_id: 3
-  name: "Onboarding Completion Rate"
-  description: "% of users who complete all onboarding steps"
-  params:
-    displayOptions: { chartType: "line" }
-    sections:
-      events:
-        - event: "Onboarding Completed"
-          math: "unique"
-
-→ Returns: { id: 999, name: "Onboarding Completion Rate", ... }
-```
-
-### Step 3: Create experiment
-
-```
-Create-Experiment
-  project_id: 3
-  name: "Simplified Onboarding Test"
-  hypothesis: "Reducing onboarding from 5 steps to 3 increases activation"
-  description: "Testing streamlined onboarding with AI suggestions"
-  metric_ids: [999, 456, 789]  # Primary, secondary, guardrail
-  settings:
-    collectionMethod: "feature_flag"
-    confidenceLevel: 0.95
-    testingModel: "sequential"  # Recommended - adaptive sample size
-    srm: { enabled: true }
-    bonferroni: { enabled: false }  # Only 1 primary metric
-  tags: ["onboarding", "activation", "q1-2026"]
-
-→ Returns: { id: "exp-abc123", status: "draft", ... }
-```
-
-### Step 4: Set up feature flag (see feature-flags skill)
-
-```
-Create-Feature-Flag
-  project_id: 3
-  name: "simplified_onboarding_experiment"
-  description: "Controls 3-step vs 5-step onboarding experiment"
-  state: "disabled"
-
-→ Deploy code, test variants, enable flag
-```
-
-### Step 5: Launch
-
-```
-Manage-Experiment-State
-  project_id: 3
-  experiment_id: "exp-abc123"
-  action: "launch"
-
-→ Experiment is now live, collecting data
-```
-
-### Step 6: Monitor and conclude
-
-After 2 weeks, check results:
-
-```
-Get-Experiment-Details
-  project_id: 3
-  experiment_id: "exp-abc123"
-
-→ Primary metric: +8% lift, p < 0.01 (significant)
-→ Guardrails stable
-→ Sample size reached
-```
-
-Decision: Ship the simplified onboarding!
-
-```
-Manage-Experiment-State
-  project_id: 3
-  experiment_id: "exp-abc123"
-  action: "stop"
-
-→ Update feature flag to 100% variant_a
-→ Document learnings
-→ Plan next iteration
-```
-
 ## Related Skills
 
 - **metrics** — Create and validate saved metrics for experiments
-- **feature-flags** — Set up feature flags for variant assignment
+- **feature-flags** — Set up standalone feature flags (not needed for experiment-linked flags)
 - **analysis** — Build complex metric queries with breakdowns and filters
 - **data-governance** — Document experiment learnings in Lexicon
 
