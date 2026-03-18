@@ -49,6 +49,15 @@ For creating experiments that use flags, see the `experiments` skill.
 
 **Use both together:** Flag controls who sees variants (control vs treatment), experiment measures the statistical impact.
 
+### Flag Auto-Creation via Experiments
+
+When creating an experiment with `collectionMethod: "feature_flag"` and a `featureFlagKey`, **the experiment auto-creates and links the flag**. You do not need to call `Create-Feature-Flag` first.
+
+Only use `Create-Feature-Flag` directly when:
+- Creating a **standalone flag** (no experiment measurement needed)
+- Pre-configuring complex rollout rules before linking to an experiment
+- The flag already exists and you're linking an experiment to it via `featureFlagId`
+
 ### Flag Types
 
 | Type               | Purpose                                           | Example                                     |
