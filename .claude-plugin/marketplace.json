@@ -1,0 +1,6 @@
+{
+  "owner": "Mixpanel",
+  "name": "mixpanel",
+  "pluginPath": "./",
+  "description": "Skills for the Mixpanel analytics platform"
+}

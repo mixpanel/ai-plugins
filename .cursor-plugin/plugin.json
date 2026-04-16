@@ -1,0 +1,21 @@
+{
+  "name": "mixpanel",
+  "version": "1.0.0",
+  "author": "Mixpanel",
+  "description": "Skills for the Mixpanel analytics platform: event tracking, tracking plans, Lexicon data governance, and product analytics.",
+  "keywords": [
+    "mixpanel",
+    "analytics",
+    "tracking",
+    "events",
+    "funnels",
+    "retention",
+    "tracking-plan",
+    "data-governance",
+    "data-quality",
+    "lexicon",
+    "product-analytics"
+  ],
+  "homepage": "https://mixpanel.com/home",
+  "logo": "logo.svg"
+}
