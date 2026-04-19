@@ -1,19 +1,17 @@
 ---
 name: mxp-governor-tool
 description: >
-  Mixpanel Lexicon governance plugin with five commands: score-lexicon, enrich-lexicon, tag-events, review-issues, manage-tags.
-  ALWAYS use this skill when a user asks to: audit Lexicon health, score Lexicon coverage, enrich or auto-fill
-  event/property metadata (descriptions, display names), auto-tag events, categorize events by name patterns,
-  review or triage data quality issues, check for type drift or null property values, rename or delete Lexicon tags,
-  clean up tags, manage tags, or says anything like
-  "score my Lexicon", "enrich this project's schema", "auto-tag events", "tag my events", "review issues",
-  "data quality check", "Lexicon audit", "governor", "governance tool", "enrich lexicon", "score lexicon",
-  "what issues does this project have", "categorize my events", "run the governor", "data governor",
-  "rename tags", "delete tags", "manage tags", "clean up tags".
-  Requires Mixpanel MCP (mcp.mixpanel.com or mcp-in.mixpanel.com).
-compatibility:
-  tools:
-    - Mixpanel MCP
+  Governance workflow for a Mixpanel project's Lexicon — the registry of tracked events
+  and properties. Use whenever the user wants to audit, score, bulk-enrich, bulk-tag,
+  reset, or clean up event/property metadata (descriptions, display names, tags) in
+  Mixpanel, or triage Lexicon data quality issues like type drift and null values. Also
+  use when the user describes the problem without naming the tool — "event names are a
+  mess", "half my events have no descriptions", "tracking plan audit", "clean up the
+  schema", "score our instrumentation" — as long as Mixpanel is the context. Trigger
+  phrases: "score lexicon", "enrich lexicon", "bulk enrich", "auto-tag events", "reset
+  lexicon", "wipe tags", "review data quality issues", "rename/delete Lexicon tags",
+  "run the governor". Do NOT use for: deleting event data or user profiles; dashboard
+  cleanup; cohort tagging; customer health scoring. Requires Mixpanel MCP.
 ---
 
 # Mixpanel Governor Tool
@@ -61,9 +59,9 @@ Show only when no direct command was inferred:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Governor Tool — [Project Name] ([project_id])
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  1. Score Lexicon    — Health score (0–100)
-  2. Enrich Lexicon   — Auto-fill display names & descriptions
-  3. Tag Events       — Auto-categorize into tags
+  1. Score Lexicon    — Health score (0–100), auto-offer bulk enrich
+  2. Enrich & Tag     — Fill empty display names, descriptions & tags
+  3. Reset Lexicon    — Clear descriptions / display names / tags
   4. Review Issues    — Triage data quality issues
   5. Manage Tags      — Rename or delete existing tags
   6. Exit
@@ -73,8 +71,8 @@ Show only when no direct command was inferred:
 | Choice | Action |
 |--------|--------|
 | **1** | Read `commands/score-lexicon.md`, execute |
-| **2** | Read `commands/enrich-lexicon.md`, execute |
-| **3** | Read `commands/tag-events.md`, execute |
+| **2** | Read `commands/enrich-and-tag.md`, execute |
+| **3** | Read `commands/reset-lexicon.md`, execute |
 | **4** | Read `commands/review-issues.md`, execute |
 | **5** | Read `commands/manage-tags.md`, execute |
 | **6** | Exit |
@@ -111,7 +109,14 @@ Persist across commands. **Cross-command reuse is mandatory** — never re-fetch
 3. **Surface MCP failures explicitly.** Never silently skip.
 4. **Query fallback.** `Run-Query` fails → `Get-Query-Schema` → retry once.
 5. **Preview before writes.** Before/after + explicit confirmation before any Lexicon mutation.
-6. **Batch writes: groups of 10.** Show progress per batch.
-7. **'exit' always valid.** Stop, discard uncommitted, return to menu.
-8. **No per-command "what next" menus.** Commands return control here. The router shows the menu. Commands must NOT display their own next-action options.
-   - *Exception:* `review-issues` Phase 4 (triage actions) may present an action prompt because issue triage is inherently interactive. All other commands return control to the router immediately.
+6. **Fill-only-empty for enrich-and-tag.** Never overwrite existing descriptions, display names, or tags. If the user wants to regenerate, they run `reset-lexicon` first.
+7. **Destructive writes require literal CONFIRM.** `reset-lexicon` requires the user to type the string `CONFIRM` (case-sensitive) — no soft confirmations.
+8. **Batch sizes.**
+   - `Bulk-Edit-Events` / `Bulk-Edit-Properties` → chunks of up to **50** per call.
+   - Per-call writes (`Edit-Event`, `Edit-Property`, `Create-Tag`, `Delete-Tag`, `Rename-Tag`) → batches of **10**, show progress per batch.
+   - `Bulk-Edit-Properties` does NOT support `description` or `display_name` — property metadata writes fall back to per-call `Edit-Property`.
+9. **'exit' always valid.** Stop, discard uncommitted, return to menu.
+10. **No per-command "what next" menus.** Commands return control here. The router shows the menu. Commands must NOT display their own next-action options.
+    - *Exceptions:*
+      - `review-issues` Phase 4 (triage actions) may present an action prompt — issue triage is inherently interactive.
+      - `score-lexicon` Phase 6 may present a bulk-enrich handoff prompt when gaps exist.

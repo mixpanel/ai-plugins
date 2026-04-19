@@ -1,41 +1,26 @@
 # mxp-governor-tool
 
-Lexicon governance for Mixpanel projects. Scores metadata health, auto-fills missing descriptions and display names, categorizes events into tags, triages data quality issues, and manages tag lifecycle.
+Lexicon governance for Mixpanel projects. Audit metadata health, auto-enrich events and properties, categorize with tags, triage data quality issues, reset metadata, and manage existing tags — all through a menu-driven workflow that validates before writing.
 
 ## Commands
 
 | Command | What it does |
 |---|---|
-| **Score Lexicon** | Audits metadata coverage across events and properties, computes a weighted health score (0–100), and surfaces the biggest gaps |
-| **Enrich Lexicon** | Auto-generates display names and descriptions for events/properties missing them, writes to Lexicon after preview and confirmation |
-| **Tag Events** | Analyzes event names to propose functional tags (Commerce, Authentication, Navigation, etc.), creates tags and assigns them |
-| **Review Issues** | Fetches open data quality issues, triages by severity (type drift, null values, volume anomalies), supports deep-dive queries and bulk dismiss |
-| **Manage Tags** | Rename or delete existing Lexicon tags across all associated events |
-
-## Requirements
-
-- **Mixpanel MCP** connected in Claude.ai (mcp.mixpanel.com or mcp-in.mixpanel.com)
-- Project-level access to the Mixpanel project you want to govern
+| **Score Lexicon** | Compute a weighted health score (0–100) across description coverage, display names, verification status, tagging, property metadata, hygiene, and open issues. Auto-offers bulk enrich when gaps exist. |
+| **Enrich & Tag** | Auto-generate display names, descriptions, and tags for events/properties missing them. Fill-only-empty — never overwrites existing metadata. |
+| **Reset Lexicon** | Clear descriptions, display names, or tags from events/properties. Destructive — requires literal `CONFIRM` to proceed. |
+| **Review Issues** | Fetch open data quality issues, triage by severity (type drift, null properties, volume anomalies), with deep-dive and dismiss options |
+| **Manage Tags** | Rename or delete existing Lexicon tags across all affected events |
 
 ## Example Prompts
 
-- "Score the Lexicon for project 12345"
-- "Enrich my Mixpanel project's metadata"
-- "Auto-tag events in my project"
-- "What data quality issues does project 67890 have?"
-- "Clean up tags in my Lexicon"
+- "Score my Lexicon for project 12345"
+- "Enrich lexicon"
+- "Auto-tag events"
+- "Review data quality issues"
+- "Reset all tags in my project"
+- "Rename tags in my project"
 
-## File Structure
+## Requirements
 
-```
-mxp-governor-tool/
-├── SKILL.md                    # Router — project validation, command menu, session state
-├── commands/
-│   ├── score-lexicon.md        # Health scoring pipeline
-│   ├── enrich-lexicon.md       # Auto-fill display names & descriptions
-│   ├── tag-events.md           # Pattern-based event categorization
-│   ├── review-issues.md        # Data quality issue triage
-│   └── manage-tags.md          # Rename / delete tags
-└── shared/
-    └── schema-reader.md        # Reusable schema fetching logic
-```
+- Mixpanel MCP connected in Claude.ai

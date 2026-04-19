@@ -93,7 +93,7 @@ Weighted average of sub-scores (each 0–100):
 
 ## Phase 5 — Output
 
-Render the score report directly. This is the only user-visible output for the entire command:
+Render the score report directly:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -122,4 +122,27 @@ ZERO-METADATA EVENTS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Return control to SKILL.md router.
+---
+
+## Phase 6 — Auto-Offer Bulk Enrichment
+
+After rendering the score report, check if any of these gap conditions are true:
+- Event description coverage < 100%
+- Event display name coverage < 100%
+- Event tag coverage < 100%
+- Property description coverage < 100%
+- Property display name coverage < 100%
+
+**If yes →** append this prompt immediately after the score block:
+
+```
+[N] total metadata/tag gaps detected.
+
+(a) Run bulk enrichment on gaps  (b) Return to menu
+```
+
+Selection handling:
+- **(a)** → Read `commands/enrich-and-tag.md` and execute. Session cache (event/property details, volume rank) is already populated by the score fetch — `enrich-and-tag` will reuse it with no re-fetching.
+- **(b)** → Return control to router.
+
+**If no gaps →** no handoff prompt. Return control to router.
