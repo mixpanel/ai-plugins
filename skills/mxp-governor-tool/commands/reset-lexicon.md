@@ -115,9 +115,25 @@ Bulk-Edit-Events(
 
 Chunks of 50 events per call. Progress: `✅ Event tags cleared: 50/112...`
 
-### Step 4c — Properties: descriptions and display names (per-call)
+### Step 4c — Properties: descriptions and display names (bulk)
 
-`Bulk-Edit-Properties` does NOT support description/display_name, so fall back to `Edit-Property` per property. Pass empty string for each field in scope. Batches of 10 with progress: `✅ Properties cleared: 10/27...`
+`Bulk-Edit-Properties` supports per-entry `description` and `display_name`. Split targets by `resource_type` (`Event` vs `User`) — each bulk call is single-resource-type — and pass empty strings for each field in scope:
+
+```
+Bulk-Edit-Properties(
+  project_id,
+  resource_type: "Event",
+  properties: [
+    { name: "platform", description: "", display_name: "" },  // both in scope
+    { name: "source", description: "" },                      // only description in scope
+    ...
+  ]
+)
+```
+
+Chunks of up to **50 properties** per call. Progress: `✅ Properties cleared: 50/120...`
+
+If a bulk call fails, fall back to per-property `Edit-Property` for that chunk only; log and continue.
 
 ---
 

@@ -3,7 +3,7 @@
 > **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
 > **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`
 
-Single-pass enrichment: auto-generate display names, descriptions, and tags for events and properties in one combined preview. Writes happen sequentially after a single confirm: events (bulk) → tags (bulk) → properties (per-call). Execute silently.
+Single-pass enrichment: auto-generate display names, descriptions, and tags for events and properties in one combined preview. Writes happen sequentially after a single confirm: events (bulk) → tags (bulk) → properties (bulk). Execute silently.
 
 **Fill-only-empty guarantee:** Every field write checks that the target field is currently null/empty before including it in the write payload. Existing metadata is never overwritten. This is a hard rule — no config flag bypasses it (use `reset-lexicon` first if the user wants to regenerate existing metadata).
 
@@ -149,15 +149,26 @@ Use `operation: "add"` — never `"set"` — so we don't clobber any tags added 
 
 Progress: `✅ Tags: group 2/5 applied (Commerce → 18 events)...`
 
-### Step 4d — Properties: metadata (per-call)
+### Step 4d — Properties: metadata (bulk)
 
-`Bulk-Edit-Properties` does NOT support `description` or `display_name`. Fall back to per-property calls:
+`Bulk-Edit-Properties` supports per-entry `description` and `display_name` on individual entries in the `properties` list. Split gaps by `resource_type` (`Event` vs `User`) — each bulk call is single-resource-type — and build each list including **only the fields that were empty**:
 
 ```
-Edit-Property(project_id, property_name, resource_type, display_name, description)
+# one call per resource_type, chunked
+Bulk-Edit-Properties(
+  project_id,
+  resource_type: "Event",
+  properties: [
+    { name: "platform", display_name: "Platform", description: "..." },
+    { name: "source", description: "..." },  // display_name already existed, omit
+    ...
+  ]
+)
 ```
 
-For each property gap, include **only the fields that were empty**. Sequential calls, batches of 10 with progress: `✅ Properties: 10/27 updated...`
+Chunks of up to **50 properties** per call. Progress per chunk: `✅ Properties: 50/120 metadata updated...`
+
+If a bulk call fails, fall back to per-property `Edit-Property` for that chunk only; log and continue.
 
 ---
 

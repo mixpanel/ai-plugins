@@ -24,3 +24,17 @@ Lexicon governance for Mixpanel projects. Audit metadata health, auto-enrich eve
 ## Requirements
 
 - Mixpanel MCP connected in Claude.ai
+
+## Changelog
+
+### Apr 2026 — Bulk property writes
+
+Property metadata writes (`description`, `display_name`) now go through `Bulk-Edit-Properties` in chunks of 50 instead of per-call `Edit-Property` in batches of 10. Mixpanel's bulk property tool now exposes per-entry `description` and `display_name`, so the previous fallback is no longer needed.
+
+Affected paths:
+- **Enrich & Tag** — Step 4d (property metadata) is now bulk. ~5× faster on property-heavy projects.
+- **Reset Lexicon** — Step 4c (clearing property descriptions/display names) is now bulk.
+
+Bulk calls split by `resource_type` (`Event` vs `User`) since each call is single-type. If a bulk chunk fails, the flow falls back to per-property `Edit-Property` for that chunk only and continues.
+
+No breaking changes. Command menu, prompts, previews, confirmations, and output formats are identical.

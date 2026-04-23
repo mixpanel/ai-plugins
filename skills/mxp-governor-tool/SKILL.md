@@ -112,9 +112,8 @@ Persist across commands. **Cross-command reuse is mandatory** — never re-fetch
 6. **Fill-only-empty for enrich-and-tag.** Never overwrite existing descriptions, display names, or tags. If the user wants to regenerate, they run `reset-lexicon` first.
 7. **Destructive writes require literal CONFIRM.** `reset-lexicon` requires the user to type the string `CONFIRM` (case-sensitive) — no soft confirmations.
 8. **Batch sizes.**
-   - `Bulk-Edit-Events` / `Bulk-Edit-Properties` → chunks of up to **50** per call.
-   - Per-call writes (`Edit-Event`, `Edit-Property`, `Create-Tag`, `Delete-Tag`, `Rename-Tag`) → batches of **10**, show progress per batch.
-   - `Bulk-Edit-Properties` does NOT support `description` or `display_name` — property metadata writes fall back to per-call `Edit-Property`.
+   - `Bulk-Edit-Events` / `Bulk-Edit-Properties` → chunks of up to **50** per call. Both support per-entry `description` and `display_name` as well as uniform fields like `tags`.
+   - Per-call writes (`Create-Tag`, `Delete-Tag`, `Rename-Tag`, and any `Edit-Event` / `Edit-Property` fallback) → batches of **10**, show progress per batch.
 9. **'exit' always valid.** Stop, discard uncommitted, return to menu.
 10. **No per-command "what next" menus.** Commands return control here. The router shows the menu. Commands must NOT display their own next-action options.
     - *Exceptions:*
