@@ -1,7 +1,9 @@
 {
   "name": "mixpanel",
-  "owner": "mixpanel",
+  "owner": {
+    "name": "Mixpanel"
+  },
   "plugins": [
-    { "name": "mixpanel-mcp", "source": "." }
+    { "name": "mixpanel-mcp", "source": "./" }
   ]
 }
