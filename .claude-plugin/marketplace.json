@@ -1,0 +1,7 @@
+{
+  "name": "mixpanel-skills",
+  "owner": "mixpanel",
+  "plugins": [
+    { "name": "mixpanel-skills", "source": "." }
+  ]
+}
