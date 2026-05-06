@@ -8,25 +8,30 @@ Structured guidance for helping Mixpanel customers implement analytics correctly
 
 ## Architecture
 
-The skill is split across two files intentionally:
+The skill follows the [Agent Skills specification](https://agentskills.io/specification) and uses progressive disclosure across multiple files:
 
 | File | Role | When the agent reads it |
 |---|---|---|
-| `SKILL.md` | Mode selection, Quick Start flow, full phase flow (0--7), decision rules, guardrails, and Context Block schemas | Always, at the start of every session |
-| `reference.md` | Quick Start SDK snippets, deep playbooks, all SDK code, vertical-specific examples, QA checklists | On demand, when a mode or phase requires it |
+| `SKILL.md` | Mode selection, decision rules, guardrails, critical rules, phase exit checklists | Always, at the start of every session |
+| `references/quick-start.md` | Complete Quick Start flow (7 steps), context block, handoff spec generation | When Quick Start mode is selected |
+| `references/full-implementation.md` | Full Implementation phases (0--7), context block, handoff spec generation, governance | When Full Implementation mode is selected |
+| `references/reference.md` | SDK snippets, deep playbooks, all SDK code, vertical-specific examples, QA checklists | On demand, when a mode or phase requires it |
+| `assets/agents.md.template` | Template for customer codebase `AGENTS.md` | During wrap-up |
 
-This split keeps `SKILL.md` fast to load and easy to reason over. Pushing all SDK snippets and vertical-specific content into `reference.md` means the agent isn't carrying 1,800+ lines of code examples into every conversation -- it fetches what it needs, when it needs it.
+`SKILL.md` stays under 500 lines so it loads quickly and is easy to reason over. Mode-specific flows and SDK code live in `references/` and load on demand.
 
-**Consequence for maintenance:** When something changes in Mixpanel behavior or SDK APIs, update `reference.md` first. Only touch `SKILL.md` if the mode structure, phase flow, decision logic, guardrails, or Context Block schemas change.
+**Consequence for maintenance:** SDK or API changes -> update `references/reference.md`. Mode flow or phase structure changes -> update the relevant file in `references/`. Only touch `SKILL.md` if mode selection, guardrails, critical rules, or phase exit checklists change.
 
 ---
 
 ## File Map
 
-- `SKILL.md` -- Mode selection (4 modes), Quick Start flow (7 steps), Full Implementation phases (0--7), Add Tracking mode, Audit mode, compliance guardrails, Pre-Flight codebase scan, Context Block schemas (minimal + full), phase exit checklists, communication habits, critical rules, and Codebase Access Check logic with Developer Handoff Spec generation paths
-- `reference.md` -- Quick Start Reference (minimal SDK snippets per platform), full RAE Framework, all SDK code (JS, Python, Node.js, React Native, iOS Swift, Android Kotlin, Flutter, HTTP API), vertical event examples, tracking plan templates, CDP/warehouse integration notes, identity flow walkthroughs, governance pitfalls, ID Management QA checklist, and Developer Handoff Specification Template (for no-codebase-access scenarios)
-- `AGENTS.md.template` -- Template for the `AGENTS.md` file that gets created in the customer's codebase during wrap-up. Ensures future AI agents know Mixpanel is the analytics tool, how it's configured, and how to add tracking correctly. The agent fills in actual values (platform, SDK, events, file paths) from the session.
-- `README.md` -- This file; for maintainers only
+- `SKILL.md` -- Mode selection (4 modes), compliance guardrails, Pre-Flight codebase scan, Add Tracking mode, Audit mode, phase exit checklists, communication habits, critical rules, and stubs pointing to detailed reference files
+- `references/quick-start.md` -- Quick Start flow (7 steps): mandatory questions, context gathering, mini tracking plan, project setup, implementation + identity, Live View verification, wrap-up, Developer Handoff Spec generation, Context Block schema
+- `references/full-implementation.md` -- Full Implementation phases (0--7): Discovery, Analytics Strategy, Project Setup, Data Model, Tracking Plan, Implementation, Identity Management, Data Governance, Developer Handoff Spec generation, Context Block schema
+- `references/reference.md` -- Quick Start Reference (minimal SDK snippets per platform), full RAE Framework, all SDK code (JS, Python, Node.js, React Native, iOS Swift, Android Kotlin, Flutter, HTTP API), vertical event examples, tracking plan templates, CDP/warehouse integration notes, identity flow walkthroughs, governance pitfalls, ID Management QA checklist, and Developer Handoff Specification Template
+- `assets/agents.md.template` -- Template for the `AGENTS.md` file that gets created in the customer's codebase during wrap-up. The agent fills in actual values (platform, SDK, events, file paths) from the session.
+- `readme.md` -- This file; for maintainers only
 
 ---
 
