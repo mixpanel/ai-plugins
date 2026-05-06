@@ -8,6 +8,12 @@ license: Apache-2.0
 
 This skill is a structured investigation, not a one-shot answer.
 
+## Requirements
+
+- Mixpanel MCP server connected and authenticated.
+
+If missing, stop and tell the user what's needed before continuing.
+
 ---
 
 ## When to use this skill
