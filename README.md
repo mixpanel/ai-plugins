@@ -14,10 +14,15 @@ These skills follow the [Agent Skills open standard](https://agentskills.io/spec
 
 ## Contributing
 
+We welcome new skills. To propose one, open a pull request — we prefer **one skill per PR** so reviews stay focused, and we'll merge them as they're ready rather than batching.
+
+Before opening the PR:
+
 1. Each skill lives in its own directory under `skills/` and must contain a `SKILL.md` file with valid frontmatter (`name` and `description` are required).
 2. Follow the [Agent Skills specification](https://agentskills.io/specification) and [best practices](https://agentskills.io/skill-creation/best-practices).
 3. Keep `SKILL.md` under 500 lines — move detailed reference material to `references/`.
-4. Include a `readme.md` (for human maintainers) documenting architecture decisions and known limitations.
+4. **Test the skill end-to-end** before submission — confirm it triggers on the phrasings in your `description` and produces the output you expect.
+5. **Include examples in the PR description** showing prompts the skill should handle and what it returns. Real examples make the skill much easier to review and to maintain later.
 
 ## License
 
