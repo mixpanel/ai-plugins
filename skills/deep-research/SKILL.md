@@ -93,7 +93,5 @@ Continue until you can answer the original question with evidence, or you can cl
 When the investigation concludes, present:
 
 1. The **answer** to the original question, in one or two sentences.
-2. The **evidence** — the queries and results that support it.
-  - Include links to Mixpanel reports.
-  - If there are many reports, consider creating a Mixpanel dashboard.
+2. The **evidence** — create a dashboard using the `create-dashboard` skill to back your findings with live data.
 3. **Caveats** — anything the data doesn't tell you, alternative explanations you can't rule out, and follow-up queries the user might want to run.

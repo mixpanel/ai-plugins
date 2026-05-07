@@ -7,6 +7,7 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 | Skill | Description |
 |---|---|
 | [`tracking-implementation`](skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
+| [`create-dashboard`](skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
 | [`deep-research`](skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks *why* a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
 
 ## Getting Started
