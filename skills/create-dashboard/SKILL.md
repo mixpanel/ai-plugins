@@ -37,9 +37,10 @@ This is the most important phase. Empty or failing reports are the #1 complaint.
 
 Before building, decide:
 
+- **Be space-efficient.** Fewer rows with more reports each makes the dashboard faster to scan. Don't spread metrics across many rows when they fit naturally together.
 - **Row hierarchy.** Headline metrics on top, supporting breakdowns below. The dashboard reads top-to-bottom like a narrative.
 - **Row count.** Aim for **4-8 rows**. Don't add every available breakdown, be smart.
-- **Items per row.** Prefer **1–3 reports per row** for important metrics. **4 cards per row** (text + reports combined) is the practical maximum.
+- **Items per row.** Use **2–4 reports per row**. A single report alone in a row wastes space — pair it with related metrics or a text card. **4 cards per row** (text + reports combined) is the practical maximum.
 - **One conceptual focus per row.** Group related reports together; never mix unrelated metrics in the same row just to fill space.
 - **Time filter.** Decide intentionally: Dashboard global time filter overrides all the reports. Don't use it when you want each report to have its own default range.
 - **Text cards.** Identify where they add real value (see rules below).
