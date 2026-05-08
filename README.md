@@ -12,67 +12,36 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 
 ## Prerequisites
 
-The **deep-research** and **create-dashboard** skills require the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) to be connected and authenticated. Before using these skills:
-
-1. An org admin must enable MCP in your Mixpanel organization (Settings → Organization Settings → Overview).
-2. Connect the Mixpanel MCP server in your AI tool (see setup instructions below).
+The **deep-research** and **create-dashboard** skills require the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) to be connected and authenticated. An org admin must enable MCP in your Mixpanel organization (Settings → Organization Settings → Overview) before the server can connect.
 
 The **tracking-implementation** skill works without the MCP server.
 
 ## Getting Started
 
+Install the plugin that matches your Mixpanel data residency region. Each plugin bundles the Mixpanel MCP server for its region — no manual MCP configuration needed.
+
+| Region | Plugin | Claude Code | Cursor |
+|---|---|---|---|
+| US (default) | `mixpanel-mcp` | `claude plugin install mixpanel-mcp` | Install from marketplace |
+| EU | `mixpanel-mcp-eu` | `claude plugin install mixpanel-mcp-eu` | Install from marketplace |
+| India | `mixpanel-mcp-in` | `claude plugin install mixpanel-mcp-in` | Install from marketplace |
+
 ### Claude Code
 
-Add the Mixpanel marketplace and install the plugin:
+Add the Mixpanel marketplace, then install the plugin for your region:
 
 ```bash
 claude plugin marketplace add mixpanel/ai-plugins
 claude plugin install mixpanel-mcp
 ```
 
-This installs all three skills. Type `/` in Claude Code to see them listed.
-
-To connect the Mixpanel MCP server (required for deep-research and create-dashboard):
-
-```bash
-claude mcp add mixpanel -- npx -y mcp-remote https://mcp.mixpanel.com/mcp
-```
-
-You will be prompted to authenticate with your Mixpanel credentials on first use.
-
-<details>
-<summary>Regional endpoints</summary>
-
-| Region | Endpoint |
-|---|---|
-| US (default) | `https://mcp.mixpanel.com/mcp` |
-| EU | `https://mcp-eu.mixpanel.com/mcp` |
-| IN | `https://mcp-in.mixpanel.com/mcp` |
-
-</details>
+The MCP server connects automatically. You will be prompted to authenticate with your Mixpanel credentials on first use.
 
 ### Cursor
 
-Install the plugin from the Cursor marketplace or have a team admin import this GitHub repository as a team marketplace (Dashboard → Settings → Plugins → Import).
+Install the plugin from the Cursor marketplace, or have a team admin import this GitHub repository as a team marketplace (Dashboard → Settings → Plugins → Import).
 
-Once installed, skills appear in **Cursor Settings → Rules** under the **Agent Decides** section and can be invoked with `/skill-name` in chat.
-
-To connect the Mixpanel MCP server (required for deep-research and create-dashboard), add the following to `.cursor/mcp.json` in your project root (create the file if it doesn't exist):
-
-```json
-{
-  "mcpServers": {
-    "mixpanel": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "https://mcp.mixpanel.com/mcp"]
-    }
-  }
-}
-```
-
-Replace the URL with your [regional endpoint](#regional-endpoints) if needed.
-
-Restart Cursor for the MCP server to connect. You will be prompted to authenticate with your Mixpanel credentials on first use.
+Once installed, skills appear in **Cursor Settings → Rules** under the **Agent Decides** section and can be invoked with `/skill-name` in chat. The MCP server connects automatically.
 
 ## Contributing
 
