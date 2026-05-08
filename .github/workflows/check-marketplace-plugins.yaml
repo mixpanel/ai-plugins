@@ -1,0 +1,47 @@
+name: Check Marketplace Plugins
+
+on:
+  push:
+    branches:
+      - main
+    paths: &paths
+      - '.github/workflows/check-marketplace-plugins.yaml'
+      - '.claude-plugin/**'
+      - 'plugins/**'
+  pull_request:
+    paths: *paths
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  check-marketplace-plugins:
+    runs-on: ubuntu-slim
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5
+
+      - name: Verify plugin directories match marketplace.json
+        run: |
+          plugin_dirs=$(find plugins -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
+          marketplace_plugins=$(jq -r '.plugins[].name' .claude-plugin/marketplace.json | sort)
+
+          if [ "$plugin_dirs" != "$marketplace_plugins" ]; then
+            echo "::error::Mismatch between plugin directories and marketplace.json"
+            echo ""
+            echo "Plugin directories:"
+            echo "$plugin_dirs"
+            echo ""
+            echo "marketplace.json entries:"
+            echo "$marketplace_plugins"
+            echo ""
+            echo "Diff (< = directory only, > = marketplace.json only):"
+            diff <(echo "$plugin_dirs") <(echo "$marketplace_plugins")
+            exit 1
+          fi
+
+          echo "All plugin directories are registered in marketplace.json."
