@@ -17,7 +17,7 @@ if [ -n "$eu_changed" ] || [ -n "$in_changed" ]; then
         echo ""
         echo -e "  ${BOLD}plugins/mixpanel-mcp/skills${RESET} is the source of truth."
         echo -e "  Edit skills there, then run ${YELLOW}make sync-skills${RESET} to propagate."
-        echo -e "  To skip this check: ${YELLOW}git commit -n${RESET}"
+        echo -e "  To skip this check: ${YELLOW}git commit -n -m 'commit message'${RESET}"
         echo ""
         exit 1
     fi
