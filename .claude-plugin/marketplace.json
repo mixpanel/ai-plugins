@@ -4,6 +4,8 @@
     "name": "Mixpanel"
   },
   "plugins": [
-    { "name": "mixpanel-mcp", "source": "./plugins/mixpanel-mcp" }
+    { "name": "mixpanel-mcp", "source": "./plugins/mixpanel-mcp" },
+    { "name": "mixpanel-mcp-eu", "source": "./plugins/mixpanel-mcp-eu" },
+    { "name": "mixpanel-mcp-in", "source": "./plugins/mixpanel-mcp-in" }
   ]
 }
