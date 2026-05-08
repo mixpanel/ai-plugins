@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-skills-sync
+        name: Check EU/IN skills are in sync with US
+        entry: just check-skills-sync
+        language: system
+        pass_filenames: false
+        files: ^plugins/mixpanel-mcp.*/skills/
