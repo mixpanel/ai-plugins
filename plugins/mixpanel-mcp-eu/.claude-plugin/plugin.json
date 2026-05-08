@@ -1,0 +1,7 @@
+{
+  "name": "mixpanel-mcp-eu",
+  "version": "0.1.0",
+  "description": "Mixpanel skills for Claude Code (EU data residency) — tracking implementation, metric investigation, and more.",
+  "author": { "name": "Mixpanel" },
+  "license": "Apache-2.0"
+}
