@@ -10,16 +10,9 @@ Your job is to design a coherent analytical narrative, not just drop reports int
 
 ## Requirements
 
-- Mixpanel MCP server connected and authenticated.
+- Mixpanel MCP server connected and authenticated (bundled with the plugin).
 
-If the MCP server is not connected, stop and help the user set it up before continuing:
-
-1. Ask which data residency region their Mixpanel organization uses (US, EU, or IN).
-2. Provide the setup command for their region:
-   - **US (default):** `https://mcp.mixpanel.com/mcp`
-   - **EU:** `https://mcp-eu.mixpanel.com/mcp`
-   - **IN:** `https://mcp-in.mixpanel.com/mcp`
-3. Remind them that an org admin must enable MCP in Mixpanel (Settings → Organization Settings → Overview).
+If the MCP server is not connected, tell the user to install the correct regional plugin (`mixpanel-mcp` for US, `mixpanel-mcp-eu` for EU, or `mixpanel-mcp-in` for India) and ensure an org admin has enabled MCP in Mixpanel (Settings → Organization Settings → Overview).
 
 ---
 
