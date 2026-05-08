@@ -1,18 +1,23 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check if staged files include mixpanel-mcp-eu or mixpanel-mcp-in skills
-# but NOT the mixpanel-mcp source.
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BOLD='\033[1m'
+RESET='\033[0m'
+
 source_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp/skills/ | head -1)
 eu_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp-eu/skills/ | head -1)
 in_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp-in/skills/ | head -1)
 
 if [ -n "$eu_changed" ] || [ -n "$in_changed" ]; then
     if [ -z "$source_changed" ]; then
-        echo "ERROR: You are committing changes to mixpanel-mcp-eu/mixpanel-mcp-in skills without changing the source."
         echo ""
-        echo "plugins/mixpanel-mcp/skills/ is the source of truth."
-        echo "Edit skills there, then run 'make sync-skills' to propagate."
+        echo -e "${RED}${BOLD}ERROR:${RESET} You are committing changes to mixpanel-mcp-eu/mixpanel-mcp-in skills without changing the source."
+        echo ""
+        echo -e "  ${BOLD}plugins/mixpanel-mcp/skills/${RESET} is the source of truth."
+        echo -e "  Edit skills there, then run ${YELLOW}make sync-skills${RESET} to propagate."
+        echo ""
         exit 1
     fi
 fi
