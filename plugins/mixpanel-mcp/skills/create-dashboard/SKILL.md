@@ -10,9 +10,7 @@ Your job is to design a coherent analytical narrative, not just drop reports int
 
 ## Requirements
 
-- Mixpanel MCP server connected and authenticated (bundled with the plugin).
-
-If the MCP server is not connected, tell the user to install the correct regional plugin (`mixpanel-mcp` for US, `mixpanel-mcp-eu` for EU, or `mixpanel-mcp-in` for India) and ensure an org admin has enabled MCP in Mixpanel (Settings → Organization Settings → Overview).
+- Mixpanel MCP server (bundled with the plugin).
 
 ---
 

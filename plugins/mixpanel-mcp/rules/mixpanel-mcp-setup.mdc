@@ -1,5 +1,5 @@
 ---
-description: Mixpanel MCP server connection check. Ensures the Mixpanel MCP server is connected before using skills that require it.
+description: Mixpanel MCP server context. The MCP server is bundled with this plugin and connects automatically.
 alwaysApply: true
 ---
 
@@ -8,11 +8,3 @@ alwaysApply: true
 The Mixpanel MCP server is bundled with this plugin and connects automatically.
 
 The **deep-research** and **create-dashboard** skills require it. The **tracking-implementation** skill works without it.
-
-If the MCP server is not connected when a skill needs it, tell the user to:
-
-1. Verify they installed the correct regional plugin for their Mixpanel data residency:
-   - **US (default):** `mixpanel-mcp`
-   - **EU:** `mixpanel-mcp-eu`
-   - **India:** `mixpanel-mcp-in`
-2. Ensure an org admin has enabled MCP in Mixpanel (Settings → Organization Settings → Overview).

@@ -10,9 +10,7 @@ This skill is a structured investigation, not a one-shot answer.
 
 ## Requirements
 
-- Mixpanel MCP server connected and authenticated (bundled with the plugin).
-
-If the MCP server is not connected, tell the user to install the correct regional plugin (`mixpanel-mcp` for US, `mixpanel-mcp-eu` for EU, or `mixpanel-mcp-in` for India) and ensure an org admin has enabled MCP in Mixpanel (Settings → Organization Settings → Overview).
+- Mixpanel MCP server (bundled with the plugin).
 
 ---
 
