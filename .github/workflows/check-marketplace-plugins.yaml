@@ -60,7 +60,7 @@ jobs:
           for region in eu in; do
             if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-${region}/skills/"; then
               echo "::error::plugins/mixpanel-mcp-${region}/skills/ is out of sync with plugins/mixpanel-mcp/skills/"
-              echo "Run 'just sync-skills' to fix."
+              echo "Run 'make sync-skills' to fix."
               exit 1
             fi
           done
