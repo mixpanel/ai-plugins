@@ -1,0 +1,7 @@
+{
+  "name": "mixpanel-mcp",
+  "version": "0.1.0",
+  "description": "Mixpanel skills for Cursor — tracking implementation, metric investigation, and more. Some skills require external MCP servers; see each skill's Requirements section.",
+  "author": { "name": "Mixpanel" },
+  "license": "Apache-2.0"
+}

@@ -6,11 +6,22 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 
 | Skill | Description |
 |---|---|
-| [`tracking-implementation`](skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
-| [`create-dashboard`](skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
-| [`deep-research`](skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks *why* a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
+| [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
+| [`create-dashboard`](plugins/mixpanel-mcp/skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
+| [`deep-research`](plugins/mixpanel-mcp/skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks *why* a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
+
+## Prerequisites
+
+The **deep-research** and **create-dashboard** skills require the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) to be connected and authenticated. Before using these skills:
+
+1. An org admin must enable MCP in your Mixpanel organization (Settings → Organization Settings → Overview).
+2. Connect the Mixpanel MCP server in your AI tool (see setup instructions below).
+
+The **tracking-implementation** skill works without the MCP server.
 
 ## Getting Started
+
+### Claude Code
 
 Add the Mixpanel marketplace and install the plugin:
 
@@ -18,6 +29,63 @@ Add the Mixpanel marketplace and install the plugin:
 claude plugin marketplace add mixpanel/ai-plugins
 claude plugin install mixpanel-mcp
 ```
+
+This installs all three skills. Type `/` in Claude Code to see them listed.
+
+To connect the Mixpanel MCP server (required for deep-research and create-dashboard):
+
+```bash
+claude mcp add mixpanel -- npx -y mcp-remote https://mcp.mixpanel.com/mcp
+```
+
+You will be prompted to authenticate with your Mixpanel credentials on first use.
+
+<details>
+<summary>Regional endpoints</summary>
+
+| Region | Endpoint |
+|---|---|
+| US (default) | `https://mcp.mixpanel.com/mcp` |
+| EU | `https://mcp-eu.mixpanel.com/mcp` |
+| IN | `https://mcp-in.mixpanel.com/mcp` |
+
+</details>
+
+### Cursor
+
+These skills use the [Agent Skills](https://agentskills.io) open standard, which Cursor supports natively.
+
+**1. Install the skills**
+
+Copy the skill folders into your project:
+
+```bash
+git clone https://github.com/mixpanel/ai-plugins.git /tmp/mixpanel-ai-plugins
+mkdir -p .cursor/skills
+cp -r /tmp/mixpanel-ai-plugins/plugins/mixpanel-mcp/skills/* .cursor/skills/
+rm -rf /tmp/mixpanel-ai-plugins
+```
+
+Reload the Cursor window (`Cmd+Shift+P` → "Developer: Reload Window") for the skills to be discovered.
+
+**2. Connect the Mixpanel MCP server** (required for deep-research and create-dashboard)
+
+Add the following to `.cursor/mcp.json` in your project root (create the file if it doesn't exist):
+
+```json
+{
+  "mcpServers": {
+    "mixpanel": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://mcp.mixpanel.com/mcp"]
+    }
+  }
+}
+```
+
+Replace the URL with your [regional endpoint](#regional-endpoints) if needed.
+
+Restart Cursor for the MCP server to connect. You will be prompted to authenticate with your Mixpanel credentials on first use.
 
 ## Contributing
 
