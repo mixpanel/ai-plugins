@@ -56,11 +56,11 @@ After cloning, enable the git hooks:
 make setup
 ```
 
-This configures a pre-commit hook that prevents committing changes to EU/IN skills without also changing the US source.
+This configures a pre-commit hook that prevents committing changes to `mixpanel-mcp-eu` or `mixpanel-mcp-in` skills without also changing the `mixpanel-mcp` source.
 
 ### Editing skills
 
-The `mixpanel-mcp` plugin (US) is the source of truth for skills. The EU and IN plugins contain copies that must stay in sync.
+The `mixpanel-mcp` plugin is the source of truth for skills. The `mixpanel-mcp-eu` and `mixpanel-mcp-in` plugins contain copies that must stay in sync.
 
 **Always edit skills in `plugins/mixpanel-mcp/skills/`**, then run:
 
@@ -68,7 +68,7 @@ The `mixpanel-mcp` plugin (US) is the source of truth for skills. The EU and IN 
 make sync-skills
 ```
 
-This copies the skills to the EU and IN plugins. If EU/IN already have local changes, the command will warn you and refuse — run `make sync-skills FORCE=1` to override.
+This copies the skills to `mixpanel-mcp-eu` and `mixpanel-mcp-in`. If they already have local changes, the command will warn you and refuse — run `make sync-skills FORCE=1` to override.
 
 CI will fail if the skills are out of sync.
 
@@ -79,7 +79,7 @@ CI will fail if the skills are out of sync.
 3. Keep the main file under 500 lines — move detailed reference material to `references/`.
 4. **Test the plugin end-to-end** before submission — confirm it triggers on the expected prompts and produces the output you expect.
 5. **Include examples in the PR description** showing prompts the plugin handles and what it returns.
-6. **Run `make sync-skills`** to ensure EU and IN plugins are up to date.
+6. **Run `make sync-skills`** to ensure `mixpanel-mcp-eu` and `mixpanel-mcp-in` are up to date.
 
 ## License
 

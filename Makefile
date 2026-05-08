@@ -9,14 +9,14 @@ sync-skills:
 	for region in eu in; do \
 		if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-$${region}/skills/" > /dev/null 2>&1; then \
 			echo ""; \
-			echo "=== plugins/mixpanel-mcp-$${region}/skills/ differs from US source ==="; \
+			echo "=== plugins/mixpanel-mcp-$${region}/skills/ differs from mixpanel-mcp source ==="; \
 			diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-$${region}/skills/" || true; \
 			out_of_sync=1; \
 		fi; \
 	done; \
 	if [ "$$out_of_sync" = "1" ] && [ "$(FORCE)" != "1" ]; then \
 		echo ""; \
-		echo "WARNING: The above changes in EU/IN will be overwritten by the US source."; \
+		echo "WARNING: The above changes in mixpanel-mcp-eu/mixpanel-mcp-in will be overwritten by mixpanel-mcp."; \
 		echo "If you meant to edit skills, edit plugins/mixpanel-mcp/skills/ instead."; \
 		echo "To proceed anyway, run: make sync-skills FORCE=1"; \
 		exit 1; \
