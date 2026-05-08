@@ -13,10 +13,11 @@ in_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp-in/skills/ | 
 if [ -n "$eu_changed" ] || [ -n "$in_changed" ]; then
     if [ -z "$source_changed" ]; then
         echo ""
-        echo -e "${RED}${BOLD}ERROR:${RESET} You are committing changes to mixpanel-mcp-eu/mixpanel-mcp-in skills without changing the source."
+        echo -e "${RED}${BOLD}ERROR:${RESET} Don't edit skills in \`mixpanel-mcp-eu\` or \`mixpanel-mcp-in\` only."
         echo ""
-        echo -e "  ${BOLD}plugins/mixpanel-mcp/skills/${RESET} is the source of truth."
+        echo -e "  ${BOLD}plugins/mixpanel-mcp/skills${RESET} is the source of truth."
         echo -e "  Edit skills there, then run ${YELLOW}make sync-skills${RESET} to propagate."
+        echo -e "  To skip this check: ${YELLOW}git commit -n${RESET}"
         echo ""
         exit 1
     fi
