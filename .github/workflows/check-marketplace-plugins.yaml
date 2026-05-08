@@ -54,3 +54,15 @@ jobs:
           done
 
           echo "All plugin directories are registered in both marketplace manifests."
+
+      - name: Verify EU/IN skills are in sync with US
+        run: |
+          for region in eu in; do
+            if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-${region}/skills/"; then
+              echo "::error::plugins/mixpanel-mcp-${region}/skills/ is out of sync with plugins/mixpanel-mcp/skills/"
+              echo "Run 'just sync-skills' to fix."
+              exit 1
+            fi
+          done
+
+          echo "All regional skills are in sync."
