@@ -12,7 +12,7 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 
 ## Prerequisites
 
-The **deep-research** and **create-dashboard** skills require the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) to be connected and authenticated. An org admin must enable MCP in your Mixpanel organization (Settings → Organization Settings → Overview) before the server can connect.
+The **deep-research** and **create-dashboard** skills use the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) (bundled with the plugin). An org admin must enable MCP in your Mixpanel organization (Settings → Organization Settings → Overview) before the server can connect. You will be prompted to authenticate on first use.
 
 The **tracking-implementation** skill works without the MCP server.
 

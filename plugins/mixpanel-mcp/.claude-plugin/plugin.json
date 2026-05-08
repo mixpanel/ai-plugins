@@ -1,7 +1,7 @@
 {
   "name": "mixpanel-mcp",
   "version": "0.1.0",
-  "description": "Mixpanel skills for Claude Code — tracking implementation, metric investigation, and more. Some skills require external MCP servers; see each skill's Requirements section.",
+  "description": "Mixpanel skills for Claude Code — tracking implementation, metric investigation, and more.",
   "author": { "name": "Mixpanel" },
   "license": "Apache-2.0"
 }
