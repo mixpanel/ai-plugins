@@ -6,7 +6,7 @@ license: Apache-2.0
 
 # Deep Research / Metric Investigation
 
-This skill is a structured investigation, not a one-shot answer.
+This skill is a structured investigation, not a one-shot answer. TEST EDIT TO TRIGGER CI FAILURE.
 
 ## Requirements
 
