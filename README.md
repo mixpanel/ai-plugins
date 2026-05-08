@@ -53,24 +53,11 @@ You will be prompted to authenticate with your Mixpanel credentials on first use
 
 ### Cursor
 
-These skills use the [Agent Skills](https://agentskills.io) open standard, which Cursor supports natively.
+Install the plugin from the Cursor marketplace or have a team admin import this GitHub repository as a team marketplace (Dashboard → Settings → Plugins → Import).
 
-**1. Install the skills**
+Once installed, skills appear in **Cursor Settings → Rules** under the **Agent Decides** section and can be invoked with `/skill-name` in chat.
 
-Copy the skill folders into your project:
-
-```bash
-git clone https://github.com/mixpanel/ai-plugins.git /tmp/mixpanel-ai-plugins
-mkdir -p .cursor/skills
-cp -r /tmp/mixpanel-ai-plugins/plugins/mixpanel-mcp/skills/* .cursor/skills/
-rm -rf /tmp/mixpanel-ai-plugins
-```
-
-Reload the Cursor window (`Cmd+Shift+P` → "Developer: Reload Window") for the skills to be discovered.
-
-**2. Connect the Mixpanel MCP server** (required for deep-research and create-dashboard)
-
-Add the following to `.cursor/mcp.json` in your project root (create the file if it doesn't exist):
+To connect the Mixpanel MCP server (required for deep-research and create-dashboard), add the following to `.cursor/mcp.json` in your project root (create the file if it doesn't exist):
 
 ```json
 {
