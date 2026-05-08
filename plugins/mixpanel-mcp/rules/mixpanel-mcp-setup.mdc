@@ -1,0 +1,39 @@
+---
+description: Mixpanel MCP server connection check. Ensures the Mixpanel MCP server is connected and configured with the correct regional endpoint before using skills that require it.
+alwaysApply: true
+---
+
+# Mixpanel MCP Server
+
+The **deep-research** and **create-dashboard** skills require the Mixpanel MCP server to be connected and authenticated. The **tracking-implementation** skill works without it.
+
+Before using a skill that requires the MCP server, check if it is connected by attempting to use a Mixpanel MCP tool (e.g., listing projects). If the server is not connected, guide the user through setup:
+
+1. **Ask which data residency region their Mixpanel organization uses:**
+
+| Region | Endpoint |
+|---|---|
+| US (default) | `https://mcp.mixpanel.com/mcp` |
+| EU | `https://mcp-eu.mixpanel.com/mcp` |
+| IN | `https://mcp-in.mixpanel.com/mcp` |
+
+2. **Provide the setup command for their tool:**
+
+**Claude Code:**
+```bash
+claude mcp add mixpanel -- npx -y mcp-remote <endpoint>
+```
+
+**Cursor:** Add to `.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "mixpanel": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "<endpoint>"]
+    }
+  }
+}
+```
+
+3. An org admin must have enabled MCP in Mixpanel (Settings → Organization Settings → Overview).
