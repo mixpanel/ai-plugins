@@ -48,6 +48,20 @@ Once installed, skills appear in **Cursor Settings → Rules** under the **Agent
 
 To propose a plugin, open a pull request — we prefer **one plugin per PR** so reviews stay focused, and we'll merge them as they're ready rather than batching.
 
+### Editing skills
+
+The `mixpanel-mcp` plugin (US) is the source of truth for skills. The EU and IN plugins contain copies that must stay in sync.
+
+**Always edit skills in `plugins/mixpanel-mcp/skills/`**, then run:
+
+```bash
+make sync-skills
+```
+
+This copies the skills to the EU and IN plugins. If EU/IN already have local changes, the command will warn you and refuse — run `make sync-skills FORCE=1` to override.
+
+CI will fail if the skills are out of sync.
+
 ### Before opening the PR
 
 1. Each skill lives in its own directory under `skills/` and must contain a `SKILL.md` with valid `name` and `description` frontmatter.
@@ -55,6 +69,7 @@ To propose a plugin, open a pull request — we prefer **one plugin per PR** so 
 3. Keep the main file under 500 lines — move detailed reference material to `references/`.
 4. **Test the plugin end-to-end** before submission — confirm it triggers on the expected prompts and produces the output you expect.
 5. **Include examples in the PR description** showing prompts the plugin handles and what it returns.
+6. **Run `make sync-skills`** to ensure EU and IN plugins are up to date.
 
 ## License
 
