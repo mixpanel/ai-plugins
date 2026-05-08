@@ -48,6 +48,16 @@ Once installed, skills appear in **Cursor Settings → Rules** under the **Agent
 
 To propose a plugin, open a pull request — we prefer **one plugin per PR** so reviews stay focused, and we'll merge them as they're ready rather than batching.
 
+### Setup
+
+After cloning, enable the git hooks:
+
+```bash
+make setup
+```
+
+This configures a pre-commit hook that prevents committing changes to EU/IN skills without also changing the US source.
+
 ### Editing skills
 
 The `mixpanel-mcp` plugin (US) is the source of truth for skills. The EU and IN plugins contain copies that must stay in sync.

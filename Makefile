@@ -1,4 +1,8 @@
-.PHONY: sync-skills check-skills-sync
+.PHONY: setup sync-skills check-skills-sync
+
+setup:
+	git config core.hooksPath .githooks
+	@echo "Git hooks configured."
 
 sync-skills:
 	@out_of_sync=0; \

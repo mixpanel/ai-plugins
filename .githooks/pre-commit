@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Check if staged files include EU/IN skills but NOT the US source.
+us_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp/skills/ | head -1)
+eu_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp-eu/skills/ | head -1)
+in_changed=$(git diff --cached --name-only -- plugins/mixpanel-mcp-in/skills/ | head -1)
+
+if [ -n "$eu_changed" ] || [ -n "$in_changed" ]; then
+    if [ -z "$us_changed" ]; then
+        echo "ERROR: You are committing changes to EU/IN skills without changing the US source."
+        echo ""
+        echo "The US plugin (plugins/mixpanel-mcp/skills/) is the source of truth."
+        echo "Edit skills there, then run 'make sync-skills' to propagate."
+        exit 1
+    fi
+fi
