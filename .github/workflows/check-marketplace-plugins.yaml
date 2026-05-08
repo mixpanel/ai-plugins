@@ -7,6 +7,7 @@ on:
     paths: &paths
       - '.github/workflows/check-marketplace-plugins.yaml'
       - '.claude-plugin/**'
+      - '.cursor-plugin/**'
       - 'plugins/**'
   pull_request:
     paths: *paths
@@ -28,20 +29,40 @@ jobs:
       - name: Verify plugin directories match marketplace.json
         run: |
           plugin_dirs=$(find plugins -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort)
-          marketplace_plugins=$(jq -r '.plugins[].name' .claude-plugin/marketplace.json | sort)
 
-          if [ "$plugin_dirs" != "$marketplace_plugins" ]; then
-            echo "::error::Mismatch between plugin directories and marketplace.json"
-            echo ""
-            echo "Plugin directories:"
-            echo "$plugin_dirs"
-            echo ""
-            echo "marketplace.json entries:"
-            echo "$marketplace_plugins"
-            echo ""
-            echo "Diff (< = directory only, > = marketplace.json only):"
-            diff <(echo "$plugin_dirs") <(echo "$marketplace_plugins")
-            exit 1
-          fi
+          for manifest in .claude-plugin/marketplace.json .cursor-plugin/marketplace.json; do
+            if [ ! -f "$manifest" ]; then
+              echo "::error::Missing manifest: $manifest"
+              exit 1
+            fi
 
-          echo "All plugin directories are registered in marketplace.json."
+            marketplace_plugins=$(jq -r '.plugins[].name' "$manifest" | sort)
+
+            if [ "$plugin_dirs" != "$marketplace_plugins" ]; then
+              echo "::error::Mismatch between plugin directories and $manifest"
+              echo ""
+              echo "Plugin directories:"
+              echo "$plugin_dirs"
+              echo ""
+              echo "$manifest entries:"
+              echo "$marketplace_plugins"
+              echo ""
+              echo "Diff (< = directory only, > = $manifest only):"
+              diff <(echo "$plugin_dirs") <(echo "$marketplace_plugins")
+              exit 1
+            fi
+          done
+
+          echo "All plugin directories are registered in both marketplace manifests."
+
+      - name: Verify EU/IN skills are in sync with US
+        run: |
+          for region in eu in; do
+            if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-${region}/skills/"; then
+              echo "::error::plugins/mixpanel-mcp-${region}/skills/ is out of sync with plugins/mixpanel-mcp/skills/"
+              echo "Run 'make sync-skills' to fix."
+              exit 1
+            fi
+          done
+
+          echo "All regional skills are in sync."
