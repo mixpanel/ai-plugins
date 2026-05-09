@@ -1,0 +1,21 @@
+{
+  "name": "Event Volume Ranking",
+  "metrics": [
+    {
+      "eventName": "$all_events",
+      "measurement": { "type": "basic", "math": "total" }
+    }
+  ],
+  "chartType": "table",
+  "unit": "day",
+  "dateRange": {
+    "type": "relative",
+    "range": { "unit": "day", "value": 7 }
+  },
+  "breakdowns": [
+    {
+      "property": { "name": "$event_name", "resourceType": "events" },
+      "typeCast": null
+    }
+  ]
+}
