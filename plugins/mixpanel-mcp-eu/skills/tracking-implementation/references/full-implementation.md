@@ -287,11 +287,13 @@ Owner: <team or email>
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+- Confirm to the user: > "Phase 5 done -- codebase access confirmed. Moving on to Phase 6: Implementation."
 - Proceed with Phase 6 (Implementation)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+- Confirm to the user: > "Phase 5 done -- no codebase access right now. Skipping direct implementation (Phases 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Phase 7)
 - Collect any remaining technical details:
   - Specific file paths (if they know them)

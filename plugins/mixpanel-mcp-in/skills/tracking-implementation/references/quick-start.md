@@ -164,11 +164,13 @@ For Quick Start:
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+- Confirm to the user: > "Step 5 done -- codebase access confirmed. Moving on to Step 6: Implementation."
 - Proceed with Step 6 (Implementation + Identity)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+- Confirm to the user: > "Step 5 done -- no codebase access right now. Skipping direct implementation (Steps 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Step 7)
 - Collect any remaining technical details:
   - Specific file paths (if they know them)
