@@ -195,7 +195,7 @@ If the platform confirmed in Step 1 is JavaScript (web), ask:
 
 > "Mixpanel can automatically capture clicks, form submissions, and page views without manual `track()` calls (Autocapture). It can also record user sessions for replay so you can watch exactly what users did (Session Replay). Would you like to enable either or both?"
 
-- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config. Update the Context Block.
+- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel.
 - **Session Replay:** If yes, ask for a sample rate (e.g. 1% for high-traffic, 100% for low-traffic or testing), then add `record_sessions_percent: [N]` to the init config. Remind the customer to review their privacy policy if recording EU/CA users. Update the Context Block.
 - **Neither / non-web platform:** Skip this check and note `disabled` in the Context Block.
 

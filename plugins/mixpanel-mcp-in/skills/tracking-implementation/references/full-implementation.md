@@ -353,7 +353,7 @@ If the confirmed platform includes JavaScript (web), ask before finalizing the i
 
 > "Mixpanel offers two additional data collection features for web: Autocapture (automatically tracks clicks, form submissions, and page views without manual `track()` calls) and Session Replay (records user sessions so you can watch exactly what users did). Would you like to enable either or both?"
 
-- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. Note: Autocapture supplements -- it does not replace -- the custom events in the tracking plan.
+- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. Note: Autocapture supplements -- it does not replace -- the custom events in the tracking plan. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel. If the tracking plan contains a manual `page_viewed` event, remove it before implementation.
 - **Session Replay:** If yes, confirm a sample rate appropriate for traffic volume (1--10% for high-traffic production; 100% for low-traffic or testing). Add `record_sessions_percent: [N]` to the init config. If EU/CA users were flagged in Phase 2, remind the customer that Session Replay data must comply with applicable privacy regulations and their privacy policy should reference it. Update the Context Block.
 - **Neither / non-web platform:** Note `disabled` in the Context Block and proceed.
 

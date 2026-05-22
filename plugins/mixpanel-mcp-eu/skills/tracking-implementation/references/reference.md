@@ -1496,7 +1496,7 @@ import mixpanel from 'mixpanel-browser';
 // Use localStorage for reliability (cookie is default but fragile cross-subdomain)
 mixpanel.init('YOUR_PROJECT_TOKEN', {
   debug: process.env.NODE_ENV !== 'production', // logs all calls in dev
-  track_pageview: true,     // auto-tracks Page View on every navigation
+  track_pageview: true,     // auto-tracks Page View on every navigation -- OMIT THIS if autocapture: true is set (autocapture already fires page views; combining both produces duplicates)
   persistence: 'localStorage'
 });
 ```
