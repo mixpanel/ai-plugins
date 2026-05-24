@@ -3,27 +3,29 @@
 > **Session reads:** `event_list`, `volume_rank_map`, `event_details_cache`
 > **Session writes:** `issues_list`, `event_list`, `volume_rank_map`
 
-Fetch open data quality issues, triage by severity, produce prioritised report. Execute silently.
-
-> Apply exclusions per `references/exclusions.md`. See `references/gotchas.md` for graceful-degradation behaviour when volume rank is unavailable.
+Fetch open data quality issues, triage by severity, produce a prioritised report. Execute silently.
 
 ---
 
 ## Phase 1 — Fetch Issues
 
-Call `Get-Issues(project_id)`. The tool returns all open issues for the project in a single response — no manual pagination.
+Pull every open data quality issue for the project and normalise into `issues_list`.
+
+Fetch the project's open issues in a single bulk call — no manual pagination.
 
 If the response exceeds 200 entries, sort by timestamp descending and keep the top 200. This is a UX cap to keep the triage report navigable — the rest can be reviewed in subsequent runs as the top ones are dismissed.
 
-Deduplicate on `(event_name, property_name, issue_type)` — keep most recent timestamp.
+Deduplicate on `(event_name, property_name, issue_type)` — keep the most recent timestamp.
 
-Store as `issues_list`. Each: `{ id, issue_type, description, event_name, property_name, timestamp, status }`.
+Store as `issues_list`. Each entry: `{ id, issue_type, description, event_name, property_name, timestamp, status }`.
 
 If zero issues → output `✅ No open data quality issues.` → return to Execution loop.
 
 ---
 
 ## Phase 2 — Triage
+
+Group every issue by type, then assign a severity to each.
 
 ### Group by type (precedence order — first match wins)
 
@@ -36,7 +38,7 @@ Evaluate each issue against these patterns in order. Assign to the first group t
 
 ### Assign severity
 
-If `volume_rank_map` is not in session, fetch it now: call `Run-Query` with the payload in `assets/volume-ranking-query.json`. Parse the response into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — severity scoring below will skip the volume tiebreaker.
+If `volume_rank_map` is not in session, fetch it now: run the payload in `assets/volume-ranking-query.json` and parse into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — severity scoring below will skip the volume tiebreaker.
 
 **Null Property Values:**
 - High → property on top-20 event OR key dimension (`user_id`, `content_id`, `platform`, `plan_id`, `subscription_status`, `device_type`)
@@ -54,6 +56,7 @@ If `volume_rank_map` is not in session, fetch it now: call `Run-Query` with the 
 - Low → spike (informational)
 
 ### Rank
+
 Sort: High → Medium → Low. Within severity: highest event volume first.
 Top 5 critical = first 5 High (fill from Medium if <5).
 
@@ -61,7 +64,7 @@ Top 5 critical = first 5 High (fill from Medium if <5).
 
 ## Phase 3 — Output
 
-Render directly:
+Render the triage report directly.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -96,20 +99,22 @@ Volume Anomalies ([N])
 
 ## Phase 4 — Interactive (only if user selects a/b)
 
+Run deep-dive context queries or dismiss issues based on user choice.
+
 ### Deep Dive
+
 User picks by number or event name. Run contextual query:
 - Null values → Insights breakdown by null property, 30 days
 - Type drift → Insights breakdown by drifting property, 30 days
 - Volume anomaly → Insights trend, daily, 30 days
 
-Display results (use `Display-Query` if available). Then: `(a) Dismiss  (b) Another  (c) Done`
+Display results. Then: `(a) Dismiss  (b) Another  (c) Done`
 
 ### Dismiss
+
 User specifies by number, range ("1-5"), or "all low". **Confirm before each dismiss.**
 
-Call `Dismiss-Issues(project_id, event_name, property_name, issue_type, dismiss_all_matching)`.
-
-Update `issues_list`. Show: `Dismissed [N]. [N] remaining.`
+Dismiss the matching issue(s) via the issues endpoint. Update `issues_list`. Show: `Dismissed [N]. [N] remaining.`
 
 If any issues were dismissed in this session, append a summary to `data-governance-runs/[ISO-timestamp]-review-issues.json`:
 
@@ -123,7 +128,7 @@ If any issues were dismissed in this session, append a summary to `data-governan
 }
 ```
 
-Loop back to action prompt until user picks (c) Done.
+Loop back to the action prompt until user picks (c) Done.
 
 ---
 

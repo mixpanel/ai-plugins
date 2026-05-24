@@ -5,25 +5,23 @@
 
 Audit Lexicon metadata coverage and compute a health score (0–100). Self-contained pipeline: fetch → audit → score → report. Execute silently — no phase announcements.
 
-> Apply exclusions per `references/exclusions.md` before building the working set. Excluded items must not appear in scores or gap lists. Read `references/gotchas.md` if you hit an unfamiliar error.
-
 ---
 
 ## Phase 1 — Fetch Schema
 
-Reuse anything already in session. Fetch only what's missing.
+Load the events, properties, and volume ranking the audit needs.
 
-1. **Events + metadata** → if `event_list` and `event_details_cache` are unset, call `Get-Events(project_id)`. One call returns full metadata for every event. Populate both variables.
-2. **Volume ranking** → if `volume_rank_map` is unset, call `Run-Query` with the payload in `assets/volume-ranking-query.json`. Parse the response into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — downstream degrades gracefully.
-3. **Properties + metadata** → if `property_names` and `property_details_cache` are unset, issue two calls (one per resource type): `Get-Properties(project_id, resource_type: "Event")` and `Get-Properties(project_id, resource_type: "User")`. Merge into `property_names: { event: [...], user: [...] }` and `property_details_cache`.
+Ensure the required Session reads are loaded; fetch any that aren't.
 
-All metadata returns in the bulk reads — no per-entity loops, no sampling.
+- **Events + metadata.** Single bulk read returns full metadata for every event.
+- **Volume ranking.** Run the payload in `assets/volume-ranking-query.json`. Parse the response into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — downstream degrades gracefully (the score still renders; severity scoring in `review-issues` skips the volume tiebreaker).
+- **Properties + metadata.** Property reads are single-resource-type per call — issue two reads (one for `Event` properties, one for `User`). Merge into `property_names: { event: [...], user: [...] }` and `property_details_cache`.
 
 ---
 
 ## Phase 2 — Audit Event Metadata
 
-For each event in working set, evaluate:
+Score every event in the working set against the four metadata fields plus hygiene.
 
 | Field | Pass condition |
 |---|---|
@@ -41,7 +39,9 @@ Collect **zero-metadata events** (all four of description, display_name, verifie
 
 ## Phase 3 — Audit Property Metadata
 
-For each property in `property_details_cache` (full set, post-exclusions), evaluate:
+Score every property against description and display name.
+
+For each property in `property_details_cache` (full set, post-exclusions):
 
 | Field | Pass condition |
 |---|---|
@@ -54,7 +54,9 @@ Compute coverage for event properties and user properties separately.
 
 ## Phase 4 — Compute Score
 
-Weighted average of sub-scores (each 0–100):
+Combine the sub-scores into a single weighted 0–100 score and grade.
+
+Weighted average (each sub-score 0–100):
 
 | Sub-score | Weight |
 |---|---|
@@ -67,7 +69,7 @@ Weighted average of sub-scores (each 0–100):
 | Dropped/hidden hygiene | 10% |
 | Data quality issues | 10% |
 
-**Issues sub-score:** If `issues_list` in session → `max(0, 100 - (open_count × 2))`. Otherwise redistribute that 10% weight across the other six sub-scores. Do not display a `0/100` issues row when no data is available — see `references/gotchas.md`.
+**Issues sub-score:** if `issues_list` is in session → `max(0, 100 - (open_count × 2))`. Otherwise redistribute that 10% weight across the other six sub-scores. Do not display a `0/100` issues row when no data is available.
 
 | Score | Grade |
 |---|---|
@@ -81,7 +83,7 @@ Weighted average of sub-scores (each 0–100):
 
 ## Phase 5 — Output
 
-Render the score report directly:
+Render the score report directly.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -114,7 +116,9 @@ ZERO-METADATA EVENTS
 
 ## Phase 6 — Auto-Offer Bulk Enrichment
 
-After rendering the score report, check if any of these gap conditions are true:
+Offer the bulk enrich handoff if the score report surfaced any actionable gaps.
+
+Gap conditions (any of):
 - Event description coverage < 100%
 - Event display name coverage < 100%
 - Event tag coverage < 100%
@@ -131,7 +135,7 @@ After rendering the score report, check if any of these gap conditions are true:
 
 Selection handling:
 - **(a)** → Read `commands/enrich-and-tag.md` and execute. Session cache is already populated — `enrich-and-tag` reuses it with no re-fetching.
-- **(b)** → Return control to the Execution loop in SKILL.md.
+- **(b)** → Return control to the Execution loop.
 
 **If no gaps →** no handoff prompt. Return control to the Execution loop.
 

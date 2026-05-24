@@ -6,12 +6,12 @@ description: >
   for a Mixpanel project. Use whenever the user wants to score Lexicon health,
   bulk-fill missing descriptions / display names / tags, reset metadata, triage
   data quality issues (type drift, null values, volume anomalies), or rename
-  and delete tags. Also use when the user describes the problem without naming
-  the tool — "event names are a mess", "half my events have no descriptions",
-  "tracking plan audit", "clean up the schema", "score our instrumentation" —
-  as long as Mixpanel is the context. Trigger phrases: "score lexicon",
-  "enrich lexicon", "bulk enrich", "auto-tag events", "reset lexicon",
-  "wipe tags", "review data quality issues", "rename/delete Lexicon tags".
+  and delete tags. Also use when the user describes the problem in their own
+  words — "score lexicon", "enrich lexicon", "bulk enrich", "auto-tag events",
+  "reset lexicon", "wipe tags", "review data quality issues", "rename/delete
+  Lexicon tags", "event names are a mess", "half my events have no
+  descriptions", "tracking plan audit", "clean up the schema", "score our
+  instrumentation" — as long as Mixpanel is the context.
   Do NOT use for: deleting event data or user profiles; dashboard cleanup;
   cohort tagging; customer health scoring. Requires Mixpanel MCP.
 ---
@@ -57,36 +57,47 @@ Shown when no command was detected or inferred.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Session context
+## Session vocabulary
 
-Persists across commands within a session. Always reuse — never re-fetch what already exists.
+The skill maintains a typed vocabulary of session state that persists across commands within a single session. Each command declares which keys it reads and writes at the top of its file (`Session reads:` / `Session writes:`). Commands check the session first and only fetch what's missing — never re-fetch what already exists.
 
-| Variable | Description |
-|---|---|
-| `project_id`, `project_name` | Active project (see Set Project below) |
-| `event_list`, `event_details_cache` | Event names and `event_name → metadata` map |
-| `property_names`, `property_details_cache` | Event + User property name lists and metadata map |
-| `volume_rank_map` | `event_name → { volume, rank }` |
-| `issues_list` | Normalised issues from `review-issues` |
+| Key | Shape | Description |
+|---|---|---|
+| `project_id`, `project_name` | string | Active project (set in Step 1). |
+| `event_list` | `string[]` | Event names in the project's Lexicon, post-exclusions. |
+| `event_details_cache` | map | `event_name → full metadata` (description, display_name, verified, tags, hidden, dropped). |
+| `property_names` | `{ event: [], user: [] }` | Property name lists split by resource type. |
+| `property_details_cache` | map | `property_name → full metadata`. |
+| `volume_rank_map` | map | `event_name → { volume, rank }`. Empty `{}` if volume query fails. |
+| `issues_list` | array | Normalised data quality issues, populated by `review-issues`. |
+| `existing_tags` | array | Tag names in use across the project, populated by `manage-tags` and `enrich-and-tag`. |
 
-## Reference files
+## Exclusions
 
-Loaded on demand by individual commands. Do not pre-load.
+Always-on filters. Apply before building any working set, gap list, or write payload — excluded entities are never read, scored, or written.
 
-| File | When to read |
-|---|---|
-| `references/exclusions.md` | Every command before building working sets — defines ignored events / properties (`$ae_*`, `$session_*`, `mp_*`, `$`-prefixed) |
-| `references/gotchas.md` | When an unfamiliar MCP error or edge case appears |
+**Ignored events**
+- `$ae_first_open`, `$ae_updated`, `$ae_session`, `$ae_iap`, `$ae_crashed` — legacy auto-tracked mobile SDK events. Mixpanel-managed; customers cannot edit metadata.
+- `$session_start`, `$session_end` — virtual events (project session definitions). No Lexicon row.
+
+**Ignored properties**
+- Any property name starting with `mp_` — Mixpanel-managed reserved namespace.
+- Any property name starting with `$` — Mixpanel system properties.
+
+**Not excluded:** custom events that happen to start with `$` (only the explicit `$ae_*` / `$session_*` list is filtered). Hidden and dropped events stay in the working set — they're part of hygiene scoring.
 
 ## Behaviour rules
 
-1. **No phase narration.** Output only what the user needs to see — progress lines during batched writes, previews, confirmation prompts, errors, and final results. No "I'll now fetch your events…" or "Let me analyze the score…" Just do the work and surface results.
+1. **No phase narration.** Output only what the user needs to see — progress lines during batched writes, previews, confirmation prompts, errors, and final results. No "I'll now fetch your events…" or "Let me analyze the score…". Do the work and surface results.
 2. **Preview before writes.** Show before/after and require explicit confirmation before any Lexicon mutation.
-3. **Destructive writes require literal `CONFIRM`.** `reset-lexicon` requires the user to type `CONFIRM` (case-sensitive).
+3. **Destructive writes require literal `CONFIRM`** (case-sensitive). Anything else cancels, except `EXPORT`, which writes the preview to JSON without committing.
 4. **`exit` always valid.** Stop, discard uncommitted work, return to the Command menu.
 5. **Project switching.** Don't change `project_id` mid-command. Between commands, the user may switch projects by naming a different one — re-run Set Project.
 6. **If a command can't complete, explain why.** Tell the user what failed and what they can try. Don't fail silently.
 7. **Audit trail.** After every successful write command, append `data-governance-runs/[ISO-timestamp]-[command].json` in the working directory. Include `project_id`, command, counts of entities written, counts of failures.
+8. **Tag bulk-writes are uniform per call.** A single bulk-edit-events call applies its `tags` payload to every event in the call. To set different tag arrays per event, group events by identical target set and issue one bulk call per group.
+9. **Use `add` for tag enrichment; `set` only for explicit clearing.** In `enrich-and-tag`, never use `set` — it clobbers tags the customer added manually. Use `set` only in `reset-lexicon` for clearing (pass `names: []`).
+10. **Fill-only-empty in `enrich-and-tag`.** Every field write checks the target field is currently null/empty before being included in the write payload. Existing metadata is never overwritten. No config flag bypasses this — use `reset-lexicon` first if regenerating.
 
 ---
 
@@ -98,26 +109,26 @@ Follow these steps in order.
 
 Resolve which Mixpanel project the user wants to operate on.
 
-- **User named a project (name or ID):** Call `Get-Projects`. Match by ID first, then by case-insensitive name. If one match → `✅ [Project Name] ([project_id])`, proceed.
-- **Multiple name matches:** Show the matches in a numbered list, ask the user to pick.
-- **No match:** Tell the user what wasn't found, offer to `list` (which re-calls `Get-Projects` and shows the table).
-- **User named nothing:** Ask which project. `list` → `Get-Projects` → show table.
+- **User named a project (name or ID):** list all projects in the workspace. Match by ID first, then by case-insensitive name. If one match → `✅ [Project Name] ([project_id])`, proceed.
+- **Multiple name matches:** show the matches in a numbered list, ask the user to pick.
+- **No match:** tell the user what wasn't found, offer to `list` (which re-fetches the project list and shows the table).
+- **User named nothing:** ask which project. `list` → fetch projects → show table.
 
-If `Get-Projects` fails with tool-not-found, tell the user to connect the Mixpanel MCP and stop.
+If the project listing fails with tool-not-found, tell the user to connect the Mixpanel MCP and stop.
 
 ## 2. Set session context
 
-Initialise empty. Each command populates only what it needs through the bulk-read tools (`Get-Events`, `Get-Properties`, `Get-Issues`, `Get-Business-Context`). Commands check cache first and skip fetches whose data already exists in session.
+Start empty. Commands populate what they need and skip fetches whose data already exists in session.
 
 ## 3. Command loop
 
 For each user request, run these steps. Loop until the user exits or starts a new project.
 
-### 3a. Set command
+### 3a. Choose command
 
-- **Explicit:** User names a command (`/score-lexicon`, "run reset", etc.) → use that command.
-- **Implicit:** Message matches exactly one canonical trigger phrase → use that command.
-- **Ambiguous or none:** Show the Command menu, take the user's choice.
+- **Explicit:** user names a command (`/score-lexicon`, "run reset", etc.) → use that command.
+- **Implicit:** message matches exactly one canonical trigger phrase → use that command.
+- **Ambiguous or none:** show the Command menu, take the user's choice.
 
 ### 3b. Load command
 
@@ -129,6 +140,6 @@ Follow the instructions in the command file. Reuse session context wherever poss
 
 ### 3d. Complete command
 
-Print `✅ Done.` Write the audit log entry (rule 9). Return to step 3a.
+Print `✅ Done.` Write the audit log entry per the Audit trail rule. Return to choosing the next command.
 
-If the command itself produced a follow-on offer (Score → Enrich, Reset → Enrich, Review-Issues triage), honour that handoff before returning to step 3a.
+If the command itself produced a follow-on offer (Score → Enrich, Reset → Enrich, Review-Issues triage), honour that handoff before returning to command selection.

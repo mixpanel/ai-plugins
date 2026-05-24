@@ -1,24 +1,17 @@
 # Command — Enrich & Tag Lexicon
 
 > **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
-> **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`
+> **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `existing_tags`
 
-Single-pass enrichment: auto-generate display names, descriptions, and tags for events and properties in one combined preview. Writes happen sequentially after a single confirm: events (bulk) → tags (bulk) → properties (bulk). Execute silently.
-
-**Fill-only-empty guarantee:** every field write checks that the target field is currently null/empty before including it in the write payload. Existing metadata is never overwritten. Hard rule — no config flag bypasses it (use `reset-lexicon` first if regenerating).
-
-> Apply exclusions per `references/exclusions.md` before building gap lists. Read `references/gotchas.md` for tag-operation semantics, single-resource-type quirks, and bulk-write fallback patterns.
+Auto-generate display names, descriptions, and tags for events and properties that are missing them. One combined preview, one confirmation, then three sequential bulk writes: events → tags → properties. Execute silently.
 
 ---
 
 ## Phase 1 — Identify Gaps
 
-Reuse anything already in session. If `event_list` / `event_details_cache` / `property_names` / `property_details_cache` are unset, fetch them now:
+Find events and properties without descriptions, display names, or tags.
 
-1. **Events:** `Get-Events(project_id)` — one call returns full metadata for every event. Populate `event_list` and `event_details_cache`.
-2. **Properties:** Two calls — `Get-Properties(project_id, resource_type: "Event")` and `Get-Properties(project_id, resource_type: "User")`. `Bulk-Edit-Properties` is single-resource-type and so is the matching read. Merge into `property_names` and `property_details_cache`.
-
-All metadata comes back in bulk reads — no sampling, no per-entity loop.
+Ensure the required Session reads are loaded; fetch any that aren't. Properties are split by resource type — fetch event properties and user properties separately and merge.
 
 Build three gap lists:
 
@@ -36,43 +29,34 @@ If all three lists are empty → output `✅ All events and properties already h
 
 ## Phase 2 — Generate Suggestions
 
-**Seed with business context.** Before generating, call `Get-Business-Context(project_id)` once. Capture: company name, product domain, business model, key user flows. Pass this context into every description and tag generation prompt — it produces enrichment that matches the actual product instead of generic guesses from event names.
+Generate the new values for every gap found in Phase 1.
 
-If `Get-Business-Context` returns empty or fails → log, fall back to name-based generation only.
+### General rules
 
-**Default casing:** Title Case for display names and tags. The user can override in the preview — no upfront config prompt.
+- **Seed with business context.** Before generating, fetch the project's business context (company name, product domain, business model, key user flows). Pass it into every description and tag prompt so enrichment matches the actual product instead of generic guesses from event names. Fall back to name-based generation if business context is unavailable.
+- **Default casing:** Title Case for display names and tags. The user can override in the preview — no upfront config prompt.
 
-**For each event gap — display name:** Convert raw name from snake_case / camelCase / kebab-case. Strip prefixes (`mp_`, `$mp_`, `$`). System events (`$`-prefixed) get readable display names.
+### Display names (events and properties)
 
-**For each event gap — description:** Infer purpose from name + schema context + business context. 1–2 sentences, under 120 chars. Analytics-perspective framing.
+Convert raw names from snake_case / camelCase / kebab-case into a human-readable form. Strip prefixes (`mp_`, `$mp_`, `$`). System events (`$`-prefixed) still get readable display names.
 
-**For each event tag gap — tags:** Assign 1–3 tags per event using these strategies combined:
+### Descriptions (events and properties)
 
-*Prefix clustering:* `checkout_*` → "Checkout", `onboarding_*` → "Onboarding", `$mp_*` / `$ae_*` → "Mixpanel System".
+Infer purpose from the entity name plus schema and business context. One to two sentences, under 120 characters. Use analytics-perspective framing.
 
-*Functional domain (default suggestions — agent may propose alternatives that match the customer's domain better; customer can override in preview):*
-- purchase / order / cart / payment → "Commerce"
-- login / signup / auth / register → "Authentication"
-- view / page / screen / navigate → "Navigation"
-- click / tap / button / cta → "Engagement"
-- error / fail / crash → "Errors"
-- search / filter / sort / query → "Search"
-- share / invite / refer → "Virality"
-- notification / push / email / sms → "Messaging"
-- play / watch / stream / video → "Media"
-- subscribe / plan / upgrade / downgrade → "Subscription"
+### Tags (events only)
 
-The taxonomy above is a starting point, not a closed list. If the business context indicates a domain not covered (e.g. fintech transactions, healthtech consults, gaming sessions), propose domain-fitting tags and surface them in the preview for the customer's call.
+Assign one to three tags per event, combining two strategies:
 
-**For each property gap — display name and description:** Same rules as events.
+*Prefix clustering:* group events by name prefix when the cluster maps cleanly to a product area. Examples: `checkout_*` → "Checkout", `onboarding_*` → "Onboarding", `$mp_*` / `$ae_*` → "Mixpanel System".
 
-Process in internal batches of 10 for generation consistency.
+*Functional domain:* match the event verb/noun to the customer's product domain. Pull domain naming from the business context above. Baseline patterns: commerce events (purchase, cart, payment) → "Commerce"; auth events (login, signup, register) → "Authentication"; engagement events (click, view, navigate) → "Engagement"; errors (error, fail, crash) → "Errors". These are starting points — propose domain-fitting tags from the business context when the defaults don't match (e.g., fintech transactions, healthtech consults, gaming sessions).
 
 ---
 
 ## Phase 3 — Combined Preview
 
-Show everything in one table. This is the first user-visible output:
+Show every proposed change in one table so the user confirms once for all three write groups.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -106,21 +90,23 @@ PROPERTY METADATA  ([N])
 (a) Apply all   (b) Edit specific rows   (c) Cancel   (d) Export preview as JSON
 ```
 
-**Edit flow:** User references rows by number or name. Update in memory, re-display, re-confirm.
+**Apply all (a):** single confirmation covering all three write groups in Phase 4. Proceed.
 
-**Cancel:** Return to Execution loop.
+**Edit (b):** user references rows by number or name. Update in memory, re-display, re-confirm.
 
-**Export preview as JSON:** Write the preview payload (events + tag groups + properties) to `data-governance-runs/[ISO-timestamp]-enrich-preview.json` in the working directory. Confirm path to user. No writes to Mixpanel. Return to Execution loop.
+**Cancel (c):** return to Execution loop.
+
+**Export (d):** write the preview payload (events + tag groups + properties) to `data-governance-runs/[ISO-timestamp]-enrich-preview.json` in the working directory. Confirm path to user. No writes to Mixpanel. Return to Execution loop.
 
 ---
 
 ## Phase 4 — Apply (sequential)
 
-Execute in this order. If any step fails, log and continue — do not abort.
+Execute the three write groups in order. One user confirmation already gave consent for all three; do not re-prompt between groups. If any step fails, log and continue — do not abort.
 
 **Bulk write conventions used below:**
-- `Bulk-Edit-Events` and `Bulk-Edit-Properties` accept up to 50 entries per call. Split larger payloads into 50-chunks.
-- If a bulk chunk errors, fall back to per-entity `Edit-Event` / `Edit-Property` for that chunk in batches of 10. Log the failure and continue.
+- Bulk-edit calls (events and properties) accept up to 50 entries per call. Split larger payloads into 50-chunks.
+- If a bulk chunk errors, fall back to per-entity edits for that chunk in batches of 10. Log the failure and continue.
 - Each entry should include **only fields that need updating** — partial payloads are correct.
 
 ### Step 4a — Events: metadata (bulk)
@@ -135,61 +121,46 @@ events = [
 ]
 ```
 
-Call `Bulk-Edit-Events(project_id, events: [...])` in chunks of up to 50. Progress: `✅ Events: 50/112 metadata updated...`
+Issue the bulk events edit in chunks of up to 50. Progress: `✅ Events: 50/112 metadata updated...`
 
 ### Step 4b — Tags: create missing tags
 
-Compute the set of new tag names (from Phase 2 tag proposals not already in `existing_tags`). For each: `Create-Tag(project_id, name)`. Log failures, continue.
+Compute the set of new tag names (Phase 2 proposals not already in `existing_tags`). Create each one. Log failures, continue.
 
 ### Step 4c — Tags: assign to events (bulk, grouped)
 
-**Critical quirk:** `Bulk-Edit-Events` applies its `tags` payload **uniformly across the entire events list in the call**. You cannot mix different tag sets in one call. Group events by **identical target tag set**, then issue one bulk call per group:
+A single bulk-edit-events call applies its `tags` payload uniformly to every event in the call (see Behaviour rules in SKILL.md). Group events by identical target tag set, then issue one bulk call per group:
 
 ```
 # group { events: [e1, e2], tags: ["Commerce"] }
-Bulk-Edit-Events(
-  project_id,
-  events: [{name: "e1"}, {name: "e2"}],
-  tags: { names: ["Commerce"], operation: "add" }
-)
+events: [{name: "e1"}, {name: "e2"}]
+tags:   { names: ["Commerce"], operation: "add" }
 ```
 
-Use `operation: "add"` — **never `"set"` in enrich-and-tag** (set clobbers tags the customer added manually). Chunk each group into calls of up to 50 events.
+Always use `operation: "add"` here — never `"set"`. `set` clobbers tags the customer added manually outside this tool. Chunk each group into calls of up to 50 events.
 
 Progress: `✅ Tags: group 2/5 applied (Commerce → 18 events)...`
 
 ### Step 4d — Properties: metadata (bulk)
 
-`Bulk-Edit-Properties` is **single-resource-type per call** — the MCP will reject a mixed list. Split gaps by `Event` vs `User` and issue two calls (chunked to 50 each):
+Property bulk-edits are single-resource-type per call — the request will be rejected if event and user properties are mixed. Split gaps by `Event` vs `User` and issue two calls (chunked to 50 each):
 
 ```
-Bulk-Edit-Properties(
-  project_id,
-  resource_type: "Event",
-  properties: [
-    { name: "platform", display_name: "Platform", description: "..." },
-    { name: "source", description: "..." },  // display_name already existed, omit
-    ...
-  ]
-)
+resource_type: "Event"
+properties: [
+  { name: "platform", display_name: "Platform", description: "..." },
+  { name: "source", description: "..." },  // display_name already existed, omit
+  ...
+]
 ```
 
 Progress: `✅ Properties: 50/120 metadata updated...`
 
-If a bulk call fails, fall back to per-property `Edit-Property` for that chunk in batches of 10. Log and continue.
+If a bulk call fails, fall back to per-property edits for that chunk in batches of 10. Log and continue.
 
 ---
 
-## Phase 5 — Update Session Cache
-
-After all writes succeed:
-- Merge new fields into `event_details_cache[event_name]` for each updated event.
-- Merge new fields into `property_details_cache[property_name]` for each updated property.
-- Append new tags to `existing_tags`.
-
----
-
-## Phase 6 — Audit Trail
+## Phase 5 — Audit Trail
 
 Append a one-line summary to `data-governance-runs/[ISO-timestamp]-enrich.json`:
 
@@ -208,7 +179,7 @@ Append a one-line summary to `data-governance-runs/[ISO-timestamp]-enrich.json`:
 
 ---
 
-## Phase 7 — Output
+## Phase 6 — Output
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
