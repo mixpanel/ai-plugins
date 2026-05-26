@@ -57,6 +57,8 @@ Maintain this minimal context during Quick Start:
 - **Event 2:** [Value Moment event] -- properties: [list]
 - **Project token:**
 - **Identity complexity flags:** [none / anonymous browsing / multi-device / shared devices / account switching]
+- **Autocapture:** enabled / disabled
+- **Session Replay:** enabled / disabled / [sample rate %]
 
 ### Step 1 -- Mandatory Questions (No One-Way Doors Only)
 
@@ -162,11 +164,13 @@ For Quick Start:
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+- Confirm to the user: > "Step 5 done -- codebase access confirmed. Moving on to Step 6: Implementation."
 - Proceed with Step 6 (Implementation + Identity)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+- Confirm to the user: > "Step 5 done -- no codebase access right now. Skipping direct implementation (Steps 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Step 7)
 - Collect any remaining technical details:
   - Specific file paths (if they know them)
@@ -185,6 +189,25 @@ This is the core of Quick Start. The agent writes real code, placed in specific 
 3. `sign_up_completed` event call
 4. Value Moment event call
 5. Basic identity: `identify()` on login/signup, `reset()` on logout
+6. Autocapture and Session Replay (web only -- see check below)
+
+**Autocapture and Session Replay check (JavaScript/web only):**
+
+If the platform confirmed in Step 1 is JavaScript (web), ask:
+
+> "Mixpanel can automatically capture clicks, form submissions, and page views without manual `track()` calls (Autocapture). It can also record user sessions for replay so you can watch exactly what users did (Session Replay). Would you like to enable either or both?"
+
+- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel.
+- **Session Replay:** If yes, ask for a sample rate (e.g. 1% for high-traffic, 100% for low-traffic or testing), then add `record_sessions_percent: [N]` to the init config. Remind the customer to review their privacy policy if recording EU/CA users. Update the Context Block.
+- **Neither / non-web platform:** Skip this check and note `disabled` in the Context Block.
+
+Example init with both enabled:
+```js
+mixpanel.init('YOUR_TOKEN', {
+  autocapture: true,
+  record_sessions_percent: 10  // records 10% of sessions
+});
+```
 
 **Use the Quick Start Reference section at the top of `reference.md`** for minimal SDK snippets (init + track + identify/reset) for each platform. These provide the fastest path to working code without navigating the full SDK lifecycle guide.
 

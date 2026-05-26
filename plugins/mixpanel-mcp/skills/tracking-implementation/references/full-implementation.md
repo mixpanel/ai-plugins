@@ -22,6 +22,8 @@ After each phase, update a structured context block in your working notes. Refer
 - **Dev project token:**
 - **Prod project token:**
 - **Tracking method:** server-side / client-side / CDP integration
+- **Autocapture:** enabled / disabled
+- **Session Replay:** enabled / disabled / [sample rate %]
 - **Event 1:** `sign_up_completed` -- properties: [list]
 - **Event 2:** [Value Moment event name] -- properties: [list]
 
@@ -285,11 +287,13 @@ Owner: <team or email>
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+- Confirm to the user: > "Phase 5 done -- codebase access confirmed. Moving on to Phase 6: Implementation."
 - Proceed with Phase 6 (Implementation)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+- Confirm to the user: > "Phase 5 done -- no codebase access right now. Skipping direct implementation (Phases 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Phase 7)
 - Collect any remaining technical details:
   - Specific file paths (if they know them)
@@ -344,6 +348,26 @@ Place each `track()` call as close to the triggering action as possible -- in th
 **Server-side:** Forward client IP (`ip`) only when policy and consent rules permit geolocation enrichment. Always set `$insert_id` for deduplication. Parse User-Agent manually for `$browser`, `$os`, `$device`.
 
 **QA gate -- verify before proceeding to Phase 7:** Ask the customer to deploy their current changes to the dev environment, open Mixpanel Live View (mixpanel.com -> dev project -> Live View), and confirm at least one event appears. Do not proceed to identity management until basic event ingestion is confirmed working. Debugging initialization and identity at the same time makes root-cause analysis very difficult.
+
+**Autocapture and Session Replay check (JavaScript/web only):**
+
+If the confirmed platform includes JavaScript (web), ask before finalizing the init code:
+
+> "Mixpanel offers two additional data collection features for web: Autocapture (automatically tracks clicks, form submissions, and page views without manual `track()` calls) and Session Replay (records user sessions so you can watch exactly what users did). Would you like to enable either or both?"
+
+- **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. Note: Autocapture supplements -- it does not replace -- the custom events in the tracking plan. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel. If the tracking plan contains a manual `page_viewed` event, remove it before implementation.
+- **Session Replay:** If yes, confirm a sample rate appropriate for traffic volume (1--10% for high-traffic production; 100% for low-traffic or testing). Add `record_sessions_percent: [N]` to the init config. If EU/CA users were flagged in Phase 2, remind the customer that Session Replay data must comply with applicable privacy regulations and their privacy policy should reference it. Update the Context Block.
+- **Neither / non-web platform:** Note `disabled` in the Context Block and proceed.
+
+Example init with both enabled:
+```js
+mixpanel.init('YOUR_TOKEN', {
+  autocapture: true,
+  record_sessions_percent: 10  // records 10% of sessions
+});
+```
+
+If Session Replay is enabled, add a verification step to the QA gate below: after deploying to dev, open Mixpanel -> Session Replay and confirm at least one session appears.
 
 **Post-deploy verification (after each new event or batch):** Beyond Live View, confirm the event appears in Reports for the expected date range (e.g. run a segmentation or Insights query filtered by the event name and today's date). Check that key properties are populating with expected values. Event and property names are case-sensitive -- zero results often mean a typo or casing mismatch. See `reference.md Section Phase 8 -- Post-Deploy Verification` for details.
 
