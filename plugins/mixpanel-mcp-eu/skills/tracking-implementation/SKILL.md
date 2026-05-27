@@ -21,6 +21,7 @@ CRITICAL -- DO NOT WRITE ANY CODE YET
 3. Whether they use a CDP like Segment (if yes, direct SDK installation is wrong -- data must route through the CDP)
 4. Whether they have EU or California users (if yes, events fired before consent = compliance violation requiring data deletion)
 5. What their Value Moment is -- the most important user action (you can't write tracking code without knowing what to track)
+6. For web/JavaScript platforms: whether they want Autocapture and/or Session Replay enabled -- if Autocapture is on, do NOT also set `track_pageview: true` or write manual page view events (duplicates)
 
 **If you do not have explicit answers to items 2--5, ASK. Do not assume. Do not infer from the project name. Do not start building.**
 
@@ -203,11 +204,19 @@ These checklists apply to Full Implementation mode. Quick Start uses Live View v
 - Naming conventions validated (`snake_case`, stable values).
 - Tracking plan reviewed and approved by product, engineering, and analytics.
 
+**Phase 5 exit**
+
+- Codebase access status confirmed and communicated to the user.
+- If access confirmed: explicitly stated "Phase 5 done -- moving to Phase 6: Implementation."
+- If no access: explicitly stated "Phase 5 done -- skipping Phases 6 and 7, generating Developer Handoff Spec instead." Handoff details (file paths, env conventions, code style) collected and `handoff_mode: true` marked in Context Block.
+
 **Phase 6 exit**
 
 - Initialization and event calls implemented in codebase.
 - At least one event observed in dev Live View.
 - Tracking path (SDK/CDP/warehouse) matches discovery decisions.
+- If web platform and Autocapture enabled: `autocapture: true` set in init; `track_pageview` omitted; no manual page view `track()` calls written.
+- If Session Replay enabled: `record_sessions_percent` set; at least one session observed in Mixpanel Session Replay in dev.
 
 **Phase 7 exit**
 
@@ -274,6 +283,7 @@ Get these wrong and the data is permanently corrupted or very expensive to fix. 
 - Mixpanel is case-sensitive: `checkout_completed` !=  `Checkout_Completed` -- enforce snake_case from day one
 - **One event, one meaning** -- do not reuse one event name for two different user actions (e.g. the same "Button Clicked" for nav and checkout); use a specific event per action
 - **Avoid duplicate events** -- before creating a new event, check existing events in Lexicon or the project; extend an existing event with a property when possible
+- **Autocapture and page views are mutually exclusive** -- if `autocapture: true` is set in the JS SDK init, do NOT also set `track_pageview: true` and do NOT write manual `track('page_viewed', ...)` calls; autocapture already fires page view events and combining them produces duplicates
 - **Property shape** -- prefer flat properties for reporting; avoid nested objects unless the tracking plan explicitly uses list/object types
 - **Server + client** -- if the same event can fire from both server and client, ensure consistent `distinct_id`/identity or you will get identity graph issues
 
