@@ -10,7 +10,7 @@ This skill is a structured investigation, not a one-shot answer.
 
 ## Requirements
 
-- Access to the Mixpanel API (query schemas, run queries, manage dashboards).
+- Access to Mixpanel (query schemas, run queries, manage dashboards).
 
 ---
 

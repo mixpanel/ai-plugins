@@ -10,7 +10,7 @@ Your job is to design a coherent analytical narrative, not just drop reports int
 
 ## Requirements
 
-- Access to the Mixpanel API (query schemas, run queries, manage dashboards).
+- Access to Mixpanel (query schemas, run queries, manage dashboards).
 
 ---
 
