@@ -10,7 +10,7 @@ This skill is a structured investigation, not a one-shot answer.
 
 ## Requirements
 
-- Mixpanel MCP server (bundled with the plugin).
+- Access to the Mixpanel API (query schemas, run queries, manage dashboards).
 
 ---
 
@@ -34,7 +34,7 @@ Do **not** trigger for one-off lookups ("what was DAU yesterday?"). Those are di
 
 Do not run analysis queries until scope is confirmed.
 
-Using the MCP tools, do your best to find the following information from the user's question and context. If anything is missing or ambiguous, ask clarifying questions before proceeding.
+Do your best to find the following information from the user's question and context. If anything is missing or ambiguous, ask clarifying questions before proceeding.
 
 1. **Project.** Which Mixpanel project? If the user has access to several, ask.
 2. **Events.** Which events relate to the question?
