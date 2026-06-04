@@ -11,11 +11,11 @@ Audit Lexicon metadata coverage and compute a health score (0–100). Self-conta
 
 Load the events, properties, and volume ranking the audit needs.
 
-Ensure the required Session reads are loaded; fetch any that aren't.
+Ensure the required Session reads are loaded; load any that aren't.
 
-- **Events + metadata.** Single bulk read returns full metadata for every event.
+- **Events + metadata.** Load event metadata for the full project.
 - **Volume ranking.** Run the payload in `assets/volume-ranking-query.json`. Parse the response into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — downstream degrades gracefully (the score still renders; severity scoring in `review-issues` skips the volume tiebreaker).
-- **Properties + metadata.** Property reads are single-resource-type per call — issue two reads (one for `Event` properties, one for `User`). Merge into `property_names: { event: [...], user: [...] }` and `property_details_cache`.
+- **Properties + metadata.** Load property metadata for event properties and user properties separately. Merge into `property_names: { event: [...], user: [...] }` and `property_details_cache`.
 
 ---
 

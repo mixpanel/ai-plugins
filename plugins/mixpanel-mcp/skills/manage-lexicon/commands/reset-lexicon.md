@@ -29,7 +29,7 @@ Parse selection. Store as `reset_scope` set.
 
 Build the lists of entities that will actually have something cleared.
 
-Ensure the required Session reads are loaded; fetch any that aren't. Properties are split by resource type — fetch event properties and user properties separately.
+Ensure the required Session reads are loaded; load any that aren't.
 
 For each scope item, build the target list — only include entities where the field is currently **non-empty** (no point "clearing" an already-empty field):
 
@@ -82,54 +82,25 @@ or anything else to cancel:
 
 ## Phase 4 — Apply
 
-Execute the clears in order. Log failures, continue.
+Execute the clears in order. If any step fails partially, log and continue — don't abort.
 
-**Bulk write conventions:**
-- Bulk-edit calls (events and properties) accept up to 50 entries per call. Chunk larger payloads.
-- On a chunk error, fall back to per-entity edits in batches of 10. Log and continue.
-- Send empty strings (`""`) to clear text fields; empty array (`[]`) with `operation: "set"` to clear tags.
+### Step 4a — Events: descriptions and display names
 
-### Step 4a — Events: descriptions and display names (bulk)
+Clear the selected fields on every affected event. Only the fields the user selected in Phase 1.
 
-If either event-description or event-display-name reset is in scope, build the events array with empty strings for the selected fields:
+Progress: `✅ Events metadata cleared: 50/112...`
 
-```
-events = [
-  { name: "event_1", description: "", display_name: "" },  // both in scope
-  { name: "event_2", description: "" },                    // only description in scope
-  ...
-]
-```
+### Step 4b — Events: tags
 
-Issue the bulk events edit in chunks of 50. Progress: `✅ Events metadata cleared: 50/112...`
+If event-tag reset is in scope, clear the tag arrays on every affected event.
 
-### Step 4b — Events: tags (bulk, uniform)
+Progress: `✅ Event tags cleared: 50/112...`
 
-If event-tag reset is in scope, group all affected events and clear tags uniformly. Tag bulk-writes apply uniformly to every event in the call. This is the only place `operation: "set"` is correct — it replaces the tag array, and an empty array clears it:
+### Step 4c — Properties: descriptions and display names
 
-```
-events: [{name: "e1"}, {name: "e2"}, ...]
-tags:   { names: [], operation: "set" }
-```
+Clear the selected fields on every affected property. Update event properties and user properties separately.
 
-Chunks of 50 events per call. Progress: `✅ Event tags cleared: 50/112...`
-
-### Step 4c — Properties: descriptions and display names (bulk)
-
-Property bulk-edits are single-resource-type per call — the request will be rejected if event and user properties are mixed. Split by `Event` vs `User` and pass empty strings for each field in scope:
-
-```
-resource_type: "Event"
-properties: [
-  { name: "platform", description: "", display_name: "" },  // both in scope
-  { name: "source", description: "" },                      // only description in scope
-  ...
-]
-```
-
-Chunks of up to 50 per call. Progress: `✅ Properties cleared: 50/120...`
-
-If a bulk call fails, fall back to per-property edits for that chunk in batches of 10. Log and continue.
+Progress: `✅ Properties cleared: 50/120...`
 
 ---
 

@@ -11,7 +11,7 @@ Fetch open data quality issues, triage by severity, produce a prioritised report
 
 Pull every open data quality issue for the project and normalise into `issues_list`.
 
-Fetch the project's open issues in a single bulk call — no manual pagination.
+Load the project's open issues.
 
 If the response exceeds 200 entries, sort by timestamp descending and keep the top 200. This is a UX cap to keep the triage report navigable — the rest can be reviewed in subsequent runs as the top ones are dismissed.
 

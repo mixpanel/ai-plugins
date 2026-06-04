@@ -11,7 +11,7 @@ Rename or delete existing Lexicon tags. Execute silently.
 
 Build `existing_tags` and show the user the current tag list with event counts.
 
-Ensure the required Session reads are loaded; fetch any that aren't. A single bulk events read returns full metadata including tags.
+Ensure the required Session reads are loaded; load any that aren't.
 
 Build `existing_tags`: unique tag names from `event_details_cache`, each with event count.
 
@@ -37,18 +37,15 @@ Display:
 
 ## Phase 2 — Rename
 
-Rename a tag with an atomic-then-merge-fallback pattern.
+Rename a tag, with a merge fallback when the new name already exists.
 
 User picks tag by number or name, provides new name.
 
 **Confirm:** `Rename "[old]" → "[new]" across [N] events?`
 
-**Atomic path (preferred):** call the project's rename-tag endpoint. Propagates to all events server-side. No per-event loop.
+**Atomic rename (preferred):** rename the tag at the project level. The change propagates to every event automatically.
 
-**Merge fallback:** if a tag with the new name already exists, the atomic rename may error (the new name is already in use). On error, run:
-
-1. For each event with the old tag → per-event edit with `tags: { names: [new_name, ...other_existing_minus_old], operation: "set" }`. Batches of 10.
-2. Delete the now-unused old tag.
+**Merge fallback:** if a tag with the new name already exists, the atomic rename will error. In that case: for each event with the old tag, replace `[old]` with `[new]` in its tag array (preserving every other tag the event had). Then delete the now-unused old tag from the project.
 
 Update `event_details_cache` and `existing_tags` to reflect the renamed/merged tag.
 
@@ -56,13 +53,13 @@ Update `event_details_cache` and `existing_tags` to reflect the renamed/merged t
 
 ## Phase 3 — Delete
 
-Delete a tag with a single atomic call.
+Delete a tag from the project.
 
 User picks tag by number, name, or range ("1-3").
 
 **Confirm:** `Delete tag "[name]"? This removes it from [N] events.`
 
-Execute the delete via the project's delete-tag endpoint. Single atomic call — removes the tag from all events automatically.
+Delete the tag at the project level. The change propagates to every event automatically.
 
 Update `event_details_cache` — remove the deleted tag from every event's `tags` array. Update `existing_tags`.
 

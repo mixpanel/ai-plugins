@@ -92,12 +92,11 @@ Always-on filters. Apply before building any working set, gap list, or write pay
 2. **Preview before writes.** Show before/after and require explicit confirmation before any Lexicon mutation.
 3. **Destructive writes require literal `CONFIRM`** (case-sensitive). Anything else cancels, except `EXPORT`, which writes the preview to JSON without committing.
 4. **`exit` always valid.** Stop, discard uncommitted work, return to the Command menu.
-5. **Project switching.** Don't change `project_id` mid-command. Between commands, the user may switch projects by naming a different one — re-run Set Project.
+5. **Project switching.** If the user wants to operate on a different project mid-session, suggest starting a new conversation first. If they insist, resolve the new project and continue with that `project_id`.
 6. **If a command can't complete, explain why.** Tell the user what failed and what they can try. Don't fail silently.
 7. **Audit trail.** After every successful write command, append `data-governance-runs/[ISO-timestamp]-[command].json` in the working directory. Include `project_id`, command, counts of entities written, counts of failures.
-8. **Tag bulk-writes are uniform per call.** A single bulk-edit-events call applies its `tags` payload to every event in the call. To set different tag arrays per event, group events by identical target set and issue one bulk call per group.
-9. **Use `add` for tag enrichment; `set` only for explicit clearing.** In `enrich-and-tag`, never use `set` — it clobbers tags the customer added manually. Use `set` only in `reset-lexicon` for clearing (pass `names: []`).
-10. **Fill-only-empty in `enrich-and-tag`.** Every field write checks the target field is currently null/empty before being included in the write payload. Existing metadata is never overwritten. No config flag bypasses this — use `reset-lexicon` first if regenerating.
+8. **In `enrich-and-tag`, add tags; don't replace.** Add new tags to events without removing or replacing existing ones.
+9. **Fill-only-empty in `enrich-and-tag`.** Only write to a field if it's currently null or empty. Never overwrite existing metadata. Use `reset-lexicon` first if regenerating.
 
 ---
 

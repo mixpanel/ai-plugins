@@ -3,7 +3,7 @@
 > **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
 > **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `existing_tags`
 
-Auto-generate display names, descriptions, and tags for events and properties that are missing them. One combined preview, one confirmation, then three sequential bulk writes: events → tags → properties. Execute silently.
+Auto-generate display names, descriptions, and tags for events and properties that are missing them. One combined preview, one confirmation, then three sequential write groups: events → tags → properties. Execute silently.
 
 ---
 
@@ -11,7 +11,7 @@ Auto-generate display names, descriptions, and tags for events and properties th
 
 Find events and properties without descriptions, display names, or tags.
 
-Ensure the required Session reads are loaded; fetch any that aren't. Properties are split by resource type — fetch event properties and user properties separately and merge.
+Ensure the required Session reads are loaded; load any that aren't.
 
 Build three gap lists:
 
@@ -33,7 +33,7 @@ Generate the new values for every gap found in Phase 1.
 
 ### General rules
 
-- **Seed with business context.** Before generating, fetch the project's business context (company name, product domain, business model, key user flows). Pass it into every description and tag prompt so enrichment matches the actual product instead of generic guesses from event names. Fall back to name-based generation if business context is unavailable.
+- **Seed with business context.** Load the project's business context (company name, product domain, business model, key user flows). Pass it into every description and tag prompt so enrichment matches the actual product instead of generic guesses from event names. Fall back to name-based generation if business context is unavailable.
 - **Default casing:** Title Case for display names and tags. The user can override in the preview — no upfront config prompt.
 
 ### Display names (events and properties)
@@ -100,63 +100,31 @@ PROPERTY METADATA  ([N])
 
 ---
 
-## Phase 4 — Apply (sequential)
+## Phase 4 — Apply
 
-Execute the three write groups in order. One user confirmation already gave consent for all three; do not re-prompt between groups. If any step fails, log and continue — do not abort.
+Execute the three write groups in order. The user's single confirmation in Phase 3 covers all three — don't re-prompt between groups. If any group fails partially, log and continue — don't abort.
 
-**Bulk write conventions used below:**
-- Bulk-edit calls (events and properties) accept up to 50 entries per call. Split larger payloads into 50-chunks.
-- If a bulk chunk errors, fall back to per-entity edits for that chunk in batches of 10. Log the failure and continue.
-- Each entry should include **only fields that need updating** — partial payloads are correct.
+### Step 4a — Events: metadata
 
-### Step 4a — Events: metadata (bulk)
+Update each affected event with its new display name and/or description. Only the fields that were empty for that event.
 
-Build the events array with only the fields that were empty for each event:
-
-```
-events = [
-  { name: "event_1", display_name: "...", description: "..." },
-  { name: "event_2", description: "..." },  // display_name already existed, omit
-  ...
-]
-```
-
-Issue the bulk events edit in chunks of up to 50. Progress: `✅ Events: 50/112 metadata updated...`
+Progress: `✅ Events: 50/112 metadata updated...`
 
 ### Step 4b — Tags: create missing tags
 
-Compute the set of new tag names (Phase 2 proposals not already in `existing_tags`). Create each one. Log failures, continue.
+Create the new tag names from Phase 2 that don't already exist in the project. Log failures, continue.
 
-### Step 4c — Tags: assign to events (bulk, grouped)
+### Step 4c — Tags: assign to events
 
-A single bulk-edit-events call applies its `tags` payload uniformly to every event in the call (see Behaviour rules in SKILL.md). Group events by identical target tag set, then issue one bulk call per group:
-
-```
-# group { events: [e1, e2], tags: ["Commerce"] }
-events: [{name: "e1"}, {name: "e2"}]
-tags:   { names: ["Commerce"], operation: "add" }
-```
-
-Always use `operation: "add"` here — never `"set"`. `set` clobbers tags the customer added manually outside this tool. Chunk each group into calls of up to 50 events.
+Add the proposed tags to each affected event. Don't remove or replace existing tags on those events — only add the new ones.
 
 Progress: `✅ Tags: group 2/5 applied (Commerce → 18 events)...`
 
-### Step 4d — Properties: metadata (bulk)
+### Step 4d — Properties: metadata
 
-Property bulk-edits are single-resource-type per call — the request will be rejected if event and user properties are mixed. Split gaps by `Event` vs `User` and issue two calls (chunked to 50 each):
-
-```
-resource_type: "Event"
-properties: [
-  { name: "platform", display_name: "Platform", description: "..." },
-  { name: "source", description: "..." },  // display_name already existed, omit
-  ...
-]
-```
+Update the property metadata with the new display names and descriptions. Only the fields that were empty for each property.
 
 Progress: `✅ Properties: 50/120 metadata updated...`
-
-If a bulk call fails, fall back to per-property edits for that chunk in batches of 10. Log and continue.
 
 ---
 
