@@ -4,11 +4,12 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 
 ## Skills
 
-| Skill | Description |
-|---|---|
-| [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
-| [`create-dashboard`](plugins/mixpanel-mcp/skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
-| [`deep-research`](plugins/mixpanel-mcp/skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks *why* a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
+| Skill                                                                             | Description                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes.                                                                                                                                                                                                                                 |
+| [`create-dashboard`](plugins/mixpanel-mcp/skills/create-dashboard/)               | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout.                                                                                                                                                                                                                                                                    |
+| [`deep-research`](plugins/mixpanel-mcp/skills/deep-research/)                     | Conducts a structured metric investigation in Mixpanel. Use when a user asks _why_ a metric changed, what's driving a trend, or requests a deep dive or root cause analysis.                                                                                                                                                                                         |
+| [`experiment-results`](plugins/mixpanel-mcp/skills/experiment-results/)           | Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read results, make a ship/iterate/kill/wait call, asks why statsig hasn't been reached, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the verdicts that `Get-Experiment` returns — never recomputes thresholds. |
 
 ## Getting Started
 
@@ -23,20 +24,22 @@ claude plugin marketplace add mixpanel/ai-plugins
 2. Install the plugin for your region:
 
 **US**
+
 ```bash
 claude plugin install mixpanel-mcp
 ```
 
 **EU**
+
 ```bash
 claude plugin install mixpanel-mcp-eu
 ```
 
 **India**
+
 ```bash
 claude plugin install mixpanel-mcp-in
 ```
-
 
 ### Cursor
 

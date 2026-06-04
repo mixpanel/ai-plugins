@@ -1,0 +1,48 @@
+name: confetti-8-metrics
+prd_source: |
+  Confetti — "8 metrics for new visitors"
+  Customer is running an experiment with 8 primary-ish metrics and explicitly
+  cares about new-visitor behavior. They want a segment-driven read, not a
+  dump of 8 lifts. The skill should pre-commit to segments tied to the
+  hypothesis (new vs returning), call out the multiple-testing concern with
+  8 metrics, and produce a verdict scoped to the segment that matters.
+
+trigger_phrase: |
+  We're tracking 8 metrics on this onboarding redesign experiment and I really
+  care about how new visitors respond. Can you read this and tell me whether
+  it's a ship for the new-user audience?
+
+get_experiment_summary:
+  hypothesis: |
+    If we redesign the first-session onboarding flow, then activation rate
+    among NEW visitors will increase by ≥5% relative, because reducing
+    cold-start friction shortens time-to-first-value.
+  settings:
+    controlKey: "control"
+    multipleTestingCorrection: "off" # mis-configured given 8 primaries
+    testingModel: "sequential"
+    confidenceLevel: 0.95
+  metrics_count: 8
+  primary_metrics_summary: |
+    Of 8 primaries: 2 significant positive (polarity-correct), 1 significant
+    negative (a "Time to First Action" metric with direction=down where
+    lift is -7% — actually a WIN once polarity-applied), 5 inconclusive.
+
+expected_behavior:
+  verdict: WAIT
+  must_mention:
+    - "Pre-commit to the new-vs-returning segment because the hypothesis names new visitors as the cohort that matters"
+    - "Recommend at most 3–5 segments and call new vs returning the primary slice"
+    - "Multiple-testing correction is OFF but there are 8 primaries — flag the inflated family-wise FPR explicitly (rough order: with 8 primaries × 1 variant at α=0.05, family-wise FPR is high enough to make a single significant result inconclusive on its own)"
+    - "Apply polarity recipe per metric — flag the Time to First Action 'negative bucket' as a win because direction=down"
+    - "Without correction enabled, don't ship on a single significant primary; either enable correction and re-analyze or look at the aggregate of all 8"
+    - "Verdict is WAIT (re-analyze with multiple-testing correction enabled, segmented to new visitors) — not SHIP"
+  must_not_do:
+    - "Slice by every available property after the fact (the fishing-expedition warning)"
+    - "Treat the 'Time to First Action' metric in the negative bucket as a loss without polarity-correcting"
+    - "Call the experiment a ship because 2 of 8 primaries are significant positive"
+    - "Pretend the agent can compute the corrected p-values itself — instead, recommend re-running with multipleTestingCorrection enabled"
+  references_consulted:
+    - segment-of-interest-selection.md
+    - per-metric-interpretation.md
+    - health-check-interpretation.md # for the misconfig flag
