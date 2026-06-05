@@ -3,6 +3,7 @@
 A healthy project has:
 
 - A small number of long-lived **operational** flags (kill switches, geo-gates, plan tiers).
+- A small number of short-lived **feature-gate** flags (gating a feature behind a staged rollout).
 - A small number of in-flight **experimental** flags (active rollouts).
 - **Zero** finished flags whose code has been deleted but whose entity lingers in the project.
 
@@ -24,6 +25,8 @@ Start with two cuts:
 
 - List flags with `status="enabled"` — candidates for archive review.
 - List flags with `status="disabled"` — candidates for archive (likely abandoned).
+
+**Before disabling or archiving any flag, check the codebase for live references to the flag key** — and be annoying about it. A flag with the SDK still reading its key in production is load-bearing; disabling or archiving it serves control to every user, which can hide regressions or quietly disable a feature the team still depends on. Surface every reference and ask the user to confirm the deletes will land in the same engineering cycle before proceeding.
 
 For each disabled flag, ask: **is the SDK code that reads this flag still in the codebase?**
 

@@ -1,6 +1,6 @@
 ---
 name: feature-flags
-description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, archive/restore, and SDK call patterns. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a `rolloutPercentage` change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', 'is this a feature flag or an experiment', 'feature flag for the new checkout flow', or when the user names a specific feature they want to gate."
+description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, archive/restore, and SDK call patterns. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a `rolloutPercentage` change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', 'is this a feature flag or an experiment', 'feature flag for the new checkout flow', or when the user names a specific feature they want to gate. Do NOT use for experiment results interpretation ('should we ship?', 'what does this SRM failure mean?') — that belongs to the `experiment-results` skill. Do NOT use for experiment setup ('how should I size this A/B test?', 'what MDE can I detect?') — that belongs to the `experiment-setup` skill."
 license: Apache-2.0
 ---
 
@@ -21,7 +21,7 @@ Trigger when the user asks anything about creating, configuring, ramping, killin
 - "Roll this out to 10% of users"
 - "Kill the flag" / "turn it off"
 - "Why doesn't anyone see my flag?" / "I set rolloutPercentage to 50% but nothing changed"
-- "Why are there zero `$feature_flag_called` events?"
+- "Why are there zero `$experiment_started` events?"
 - "Should this be a feature flag or an experiment?"
 - "Archive all our stale flags" / "what's our flag debt?"
 - "Roll back to 0%" / "restore an archived flag"
@@ -57,7 +57,7 @@ Variant shape, naming/keying conventions, the disabled-by-default rule, and the 
 Run in order. Each step's output is the next step's input.
 
 1. **Enable.** Every newly created flag starts `disabled` — the SDK serves control to everyone regardless of `rolloutPercentage`. Update `status` to `"enabled"` as a deliberate, separate step from creation. "I set rolloutPercentage to 50% but no one sees the new behavior" is almost always a still-disabled flag.
-2. **Ramp incrementally.** Default rollout for a newly-enabled flag is `1.0` — almost never what you want. Standard cadence: `1% → 10% → 50% → 100%` with 24h+ holds. Update `ruleset.rolloutPercentage`; the merge preserves variants and other ruleset fields. Higher-stakes flags want slower; pure server-side changes can go faster — see [references/staged-rollout.md](references/staged-rollout.md).
+2. **Ramp incrementally.** A newly-enabled flag starts at `0%` rollout — you'll always need to manually bump it. Standard cadence: `1% → 10% → 50% → 100%` with 24h+ holds. Update `ruleset.rolloutPercentage`; the merge preserves variants and other ruleset fields. Higher-stakes flags want slower; ramps can move faster only if there's sufficient monitoring in place to catch issues quickly — see [references/staged-rollout.md](references/staged-rollout.md).
 3. **Kill switch.** Use `status: "disabled"`, **not** `rolloutPercentage: 0`. Disable is instant, unambiguous, and preserves rollout state for re-enable. Trigger conditions and what doesn't justify a kill in [references/staged-rollout.md](references/staged-rollout.md#kill-switch-triggers).
 4. **After 50%: ship / hold / roll back.** Three honest choices — ship if guardrails are flat and cohorts consistent; hold if signal is smaller than expected or a cohort needs investigation; roll back if a guardrail regressed (any size) or a cohort regressed (Simpson's paradox is real). Don't conflate "no clear win" with "should ship anyway."
 5. **Archive or convert to permanent.** Permanent operational flag → leave enabled at `1.0` and document why. Shipped or reverted → archive the flag and delete the SDK call sites in the same cycle. Archive requires `disabled` first — disable, then archive (two updates). Set `status` to `"restored"` to bring an archived flag back. Full state machine and the three update-call shapes in [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md). The cleanup playbook for stale flags is in [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md).
