@@ -10,7 +10,7 @@ Your job is to design a coherent analytical narrative, not just drop reports int
 
 ## Requirements
 
-- Mixpanel MCP server (bundled with the plugin).
+- Access to Mixpanel (query schemas, run queries, manage dashboards).
 
 ---
 
@@ -27,7 +27,7 @@ Infer the theme from the user's request and surrounding context. Pick a sensible
 
 This is the most important phase. Empty or failing reports are the #1 complaint.
 
-1. Resolve event and property names using the schema tools (always get query schemas first before building queries).
+1. Resolve event and property names by querying the project schema (always discover available events and properties before building queries).
 2. Run small probe queries to confirm the data exists and returns meaningful results.
 3. A query that runs successfully but returns zero rows is still not useful — treat it like a missing event.
 
