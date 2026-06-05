@@ -96,3 +96,7 @@ Output the report using the format above. Issues are sorted by severity (blocker
 ## 5. Offer to help fix
 
 After the report, offer to generate a prioritised fix plan if issues were found.
+
+# Notes
+
+`mixpanel-mcp` should have the same content as `mixpanel-mcp-eu` and `mixpanel-mcp-in`. When reviewing files from there, check the files have the same content, and then review only `mixpanel-mcp` for the rubric checks. If there are differences between the files, that is a blocker issue.
