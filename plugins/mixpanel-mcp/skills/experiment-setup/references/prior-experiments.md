@@ -4,9 +4,9 @@ When a user proposes an experiment on a feature, **the first thing to do is look
 
 ## The lookup
 
-Use `search_prior_experiments` (or whatever the equivalent data tool is wired up in this agent) with keywords drawn from the feature name and surface area. Cast the net wide on the first call — single-keyword searches catch related experiments the user may have forgotten about.
+Search the project's prior experiments by keywords drawn from the feature name and surface area. Cast the net wide on the first call — single-keyword searches catch related experiments the user may have forgotten about.
 
-If no prior-experiments tool is available, tell the user explicitly that you couldn't check and proceed. Don't fabricate "no prior tests found" — that's worse than admitting the blind spot.
+If no prior-experiments lookup is available in the current environment, tell the user explicitly that you couldn't check and proceed. Don't fabricate "no prior tests found" — that's worse than admitting the blind spot.
 
 ## What to do with what you find
 
@@ -48,13 +48,13 @@ Look for **patterns**, not single data points. If three prior tests on the same 
 
 Concretely, when you have a prior result that's relevant, the setup workflow changes as follows:
 
-| Step                       | Without prior                              | With prior                                                                                                             |
-| -------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Step 1 — hypothesis        | Coach from scratch                         | Anchor on the prior's hypothesis; ask what's different                                                                 |
-| Step 2 — metric selection  | Suggest standard primaries/guardrails      | Use the prior's metric set as the default; modify only with reason                                                     |
-| Step 3 — sizing            | Pull baseline + variance from `Run-Query`  | Use the prior's observed baseline and variance                                                                         |
-| Step 4 — statistical model | Default to sequential / benjamini-hochberg | If the prior used a specific model and the team is comparing across tests, keep the same model for comparability       |
-| Pitfall check              | Run the standard catalogue                 | Cross-reference: did the prior have an SRM problem? A guardrail regression that should be set up as primary this time? |
+| Step                       | Without prior                                   | With prior                                                                                                             |
+| -------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Step 1 — hypothesis        | Coach from scratch                              | Anchor on the prior's hypothesis; ask what's different                                                                 |
+| Step 2 — metric selection  | Suggest standard primaries/guardrails           | Use the prior's metric set as the default; modify only with reason                                                     |
+| Step 3 — sizing            | Query baseline + variance over the prior window | Use the prior's observed baseline and variance                                                                         |
+| Step 4 — statistical model | Default to sequential / benjamini-hochberg      | If the prior used a specific model and the team is comparing across tests, keep the same model for comparability       |
+| Pitfall check              | Run the standard catalogue                      | Cross-reference: did the prior have an SRM problem? A guardrail regression that should be set up as primary this time? |
 
 ## When prior tests warn you away from testing at all
 

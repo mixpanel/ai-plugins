@@ -1,6 +1,6 @@
 # Pre-launch pitfalls
 
-This is the catalogue of the deterministic checks the agent runs before the user creates an experiment. **Detection logic lives in the `validate_experiment` engine tool** (the renamed `run_pre_launch_checks`); this document owns the prose — the _why_ behind each check — so the agent can explain the violation in human terms rather than just nagging.
+This is the catalogue of the deterministic checks the agent runs before the user creates an experiment. **Detection logic lives in the platform's pre-launch validation capability**; this document owns the prose — the _why_ behind each check — so the agent can explain the violation in human terms rather than just nagging.
 
 For the source-of-truth severities, thresholds, and message templates, see `ai/engine/tools/experiments/_shared/pitfall_prose.py` in `mixpanel/analytics`. When that file changes, this document changes too.
 
@@ -124,7 +124,7 @@ Each entry lists: kind → severity → trigger condition → why it matters →
 
 ## Detection vs prose
 
-The detection math lives in `validate_experiment` (the renamed `run_pre_launch_checks`). The prose lives here and in `pitfall_prose.py`. The two are connected by the pitfall `kind` field — the detection tool reports the kind, the agent renders the message.
+The detection math lives in the platform's pre-launch validation capability. The prose lives here and in `pitfall_prose.py`. The two are connected by the pitfall `kind` field — the validation step reports the kind, the agent renders the message.
 
 This separation lets product retune phrasing (this document, `pitfall_prose.py`) without touching the detection helpers, and vice versa. When you update a threshold (e.g., the 50% / 100% bounds on the underpowered checks), update the helper math, the `_shared/pitfall_prose.py` constant, and the recommendation in this document together — the agent will quote stale numbers if any of the three drifts.
 

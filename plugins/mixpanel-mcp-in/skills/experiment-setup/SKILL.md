@@ -13,7 +13,7 @@ This skill is one place. Everything about pre-launch — hypothesis framing, met
 ## Requirements
 
 - Access to Mixpanel (event schema, run queries, create experiments and feature flags).
-- Access to a "prior experiments" lookup (e.g. `search_prior_experiments`) when one is available — the skill works without it, but degrades gracefully and tells the user what it skipped.
+- Access to a prior-experiments lookup when one is available — the skill works without it, but degrades gracefully and tells the user what it skipped.
 
 ## When to use this skill
 
@@ -45,7 +45,7 @@ Read `references/routing-xp-vs-ff.md` if the user pushes back or the intent is a
 
 ## Before suggesting any setup: check for prior work
 
-When the user names a feature to test, **always look for prior experiments on that feature first** (call `search_prior_experiments` with keywords from the feature name when the tool is available). Surface anything you find:
+When the user names a feature to test, **always look for prior experiments on that feature first** (search the project's prior experiments by keyword drawn from the feature name when that lookup is available). Surface anything you find:
 
 - Same feature already tested → reference prior results before recommending a new test. Don't re-run a settled question.
 - Earlier iteration of the same hypothesis → use prior baseline rates and variance to inform the new MDE.

@@ -52,8 +52,8 @@ Underpowered experiments suffer from **winner's curse**: if you do reach signifi
 
 For each primary metric, before sizing, you need three numbers:
 
-1. **Baseline rate** — call `Run-Query` on the metric over the prior 2–4 weeks (the longer of: one full business cycle, or four weeks). Record `mean` and `variance`. Use the same event definition, segment filters, and unit-of-analysis you'll use in the experiment — a baseline computed differently from how the metric is configured in the experiment is worse than no baseline at all.
-2. **Daily traffic** — call `Run-Query` for the exposure event (or whatever event qualifies users for the experiment) over the same window, grouped by day. Average to get expected exposures per day per variant.
+1. **Baseline rate** — query the metric over the prior 2–4 weeks (the longer of: one full business cycle, or four weeks). Record `mean` and `variance`. Use the same event definition, segment filters, and unit-of-analysis you'll use in the experiment — a baseline computed differently from how the metric is configured in the experiment is worse than no baseline at all.
+2. **Daily traffic** — query the exposure event (or whatever event qualifies users for the experiment) over the same window, grouped by day. Average to get expected exposures per day per variant.
 3. **MDE the user wants** — ask explicitly. _"What's the smallest lift that would be worth shipping?"_ If they don't know, propose a 5–10% relative lift and confirm.
 
 From those three:
@@ -93,7 +93,7 @@ For a Bernoulli (conversion-rate) primary metric at 95% confidence, 80% power, t
 | 25%           | ~19k / variant    | ~4.8k / variant    | ~1.2k / variant    |
 | 50%           | ~6.4k / variant   | ~1.6k / variant    | ~400 / variant     |
 
-Use this for quick sanity-checking. Always confirm with `Run-Query` against actual baseline data — these are illustrative.
+Use this for quick sanity-checking. Always confirm with a query against actual baseline data — these are illustrative.
 
 ## Sample-size growth with variants
 
