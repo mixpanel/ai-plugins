@@ -2,7 +2,7 @@
 
 Open this when the user wants to use session replays to explain a quantitative experiment result — _"why is conversion down in treatment?"_, _"what are users actually doing in the treatment?"_, _"can replays explain the regression?"_. The goal is to turn a number into a behavior story.
 
-> **Tool boundary.** This skill provides the _interpretation_ guidance for replay analysis. The actual replay-fetching tool — pulling replay IDs for control vs treatment cohorts — lives on the platform side (a separate fetch tool exposed alongside `Get-Experiment`, when available). If the fetch tool isn't yet available, say so to the user and recommend the manual flow: pull replays via the experiment's "View replays" UI for each variant, then bring the IDs back to discuss.
+> **Scope boundary.** This skill provides the _interpretation_ guidance for replay analysis. Actually fetching replay IDs for control vs treatment cohorts is a separate platform capability. If replay fetching isn't available in the current environment, say so to the user and recommend the manual flow: pull replays via the experiment's "View replays" UI for each variant, then bring the IDs back to discuss.
 
 ---
 
@@ -86,7 +86,7 @@ Replay analysis is qualitative. Be honest about that.
 - ✅ _"In 4 of 5 treatment replays, users hesitated >5 seconds at the new modal then closed it without acting. In 5 of 5 control replays, users clicked through within 2 seconds. This is consistent with the conversion drop in `live_metrics`."_
 - ❌ _"Treatment is causing confusion."_ — too strong; n=5 is a hypothesis, not a verdict.
 
-Tie observations back to specific quantitative results from `Get-Experiment`. If the replay story contradicts the numbers, **trust the numbers first** and treat the replays as either a wrong cohort sample or a richer-than-expected behavior.
+Tie observations back to specific quantitative results from the experiment-details response. If the replay story contradicts the numbers, **trust the numbers first** and treat the replays as either a wrong cohort sample or a richer-than-expected behavior.
 
 ---
 

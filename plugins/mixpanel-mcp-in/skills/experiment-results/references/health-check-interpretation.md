@@ -44,9 +44,9 @@ Users were assigned to variants in proportions that disagree with the configured
 ### Investigation checklist
 
 1. Compare `live_exposures` ratio to `settings.srm.targetAllocations` — which variant is over/under-represented?
-2. If feature-flag-based: check whether a property filter on the flag was added or changed mid-experiment. Use `Get-Feature-Flag` to inspect rollout rules and history.
+2. If feature-flag-based: check whether a property filter on the flag was added or changed mid-experiment. Inspect the flag's rollout rules and history.
 3. For multi-variant tests, the platform's SRM threshold is Bonferroni-corrected — the effective per-variant threshold may be tighter than the headline. Trust the bucket flag, not raw p-value math.
-4. Verify SDK version and bucketing logic. `Run-Query` for `$experiment_started` events grouped by variant to confirm exposure events are flowing correctly.
+4. Verify SDK version and bucketing logic. Query `$experiment_started` events grouped by variant to confirm exposure events are flowing correctly.
 5. Check for bot/QA traffic — bots often skew toward control. If `settings.excludeQA` is unset or false, recommend enabling it.
 6. If exposures are very small (e.g. under ~1k total): SRM is unreliable on tiny samples. Wait for more data before acting.
 7. If still failing: stop the experiment, fix bucketing, restart with fresh allocation. **Do NOT just re-conclude with the broken data.**
@@ -68,7 +68,7 @@ The same statistical comparison run on the **pre-exposure** period revealed that
 
 1. Identify which metric × variant pair triggered the failure (after the platform's correction).
 2. Check whether bucketing was deterministic — non-deterministic assignment in the pre-period means users were assigned to different variants than they would have been in production.
-3. Look for cohort skew: did one variant disproportionately receive heavy users? `Run-Query` on the metric pre-experiment grouped by variant to confirm.
+3. Look for cohort skew: did one variant disproportionately receive heavy users? Query the metric pre-experiment grouped by variant to confirm.
 4. Check for a recent product change that went out before the experiment — pre-period bias can reflect non-experimental treatment that disproportionately affected one cohort.
 5. If isolated to a single metric × variant: consider dropping that metric from the analysis, or restart with new bucketing.
 
@@ -81,9 +81,9 @@ The same statistical comparison run on the **pre-exposure** period revealed that
 ### Investigation checklist
 
 1. Check `live_exposures` totals — which variant is undersampled?
-2. Inspect feature-flag rollout: `Get-Feature-Flag` → was rollout dialed back?
-3. `Run-Query` for the exposure event with a date breakdown to see if traffic dropped recently (seasonal? incident?).
-4. If the experiment is still ACTIVE: extend duration via `Update-Experiment` with `endAfterDays`.
+2. Inspect feature-flag rollout — was rollout dialed back?
+3. Query the exposure event with a date breakdown to see if traffic dropped recently (seasonal? incident?).
+4. If the experiment is still ACTIVE: extend duration via an experiment update with a new `endAfterDays`.
 5. If the experiment concluded too early: relaunch with longer planned duration. The setup-side skill covers the power-analysis math.
 
 If the user wants to talk about _why_ a primary metric is still inconclusive even when exposures look adequate, route to [why-no-statsig.md](why-no-statsig.md) — different question.
@@ -115,7 +115,7 @@ A frequentist test that ends before reaching its configured target has an **infl
 
 ### Investigation checklist
 
-1. Try `Get-Experiment` again — transient backend load may resolve. Wait ~30s between retries.
+1. Retry the experiment-details request — transient backend load may resolve. Wait ~30s between retries.
 2. If repeated failures: count metrics × variants × date range. Many metrics on a multi-variant experiment over a long window can exceed the query budget.
 3. Recommend reducing scope: drop unused secondary metrics, narrow the date range, or temporarily archive metrics that aren't part of the decision.
 4. If `results_cache` is recent (`$last_computed` within hours), surface those results with a "stale data" caveat and the timestamp. If the cache is days old or null, the user must resolve the backend issue before any meaningful interpretation.

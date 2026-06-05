@@ -1,6 +1,6 @@
 ---
 name: experiment-results
-description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read, interpret, or make a ship/iterate/kill/wait call on an experiment, asks why an experiment hasn't reached statistical significance, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts that `Get-Experiment` returns — never recomputes thresholds.
+description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read, interpret, or make a ship/iterate/kill/wait call on an experiment, asks why an experiment hasn't reached statistical significance, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds.
 license: Apache-2.0
 ---
 
@@ -10,8 +10,8 @@ You are helping a user read, interpret, or make a ship/iterate/kill/wait decisio
 
 ## Requirements
 
-- Access to Mixpanel via the MCP server (specifically the `Get-Experiment` tool — and, for ship/kill decisions, `Update-Experiment`).
-- This skill reads the verdicts that `Get-Experiment` already returns. **Never recompute thresholds** (SRM, significance, sufficient-exposures, etc.). If a field is missing, say so — do not synthesize a verdict from raw values.
+- Access to Mixpanel (read experiment details and metrics; update experiment lifecycle for ship/kill decisions).
+- This skill reads the verdicts the platform's experiment-details response already returns. **Never recompute thresholds** (SRM, significance, sufficient-exposures, etc.). If a field is missing, say so — do not synthesize a verdict from raw values.
 
 ## When to use this skill
 
@@ -24,13 +24,13 @@ Trigger when the user asks anything about reading an experiment's results or its
 - "What does this Retro A/A failure mean?"
 - "Can you compare the session replays for control vs treatment?"
 
-Do **not** trigger for experiment **setup** questions ("how should I size this?", "what metrics should I pick?") — those belong to the setup-side skill or tool.
+Do **not** trigger for experiment **setup** questions ("how should I size this?", "what metrics should I pick?") — those belong to the `experiment-setup` skill.
 
 ---
 
-## How to read `Get-Experiment` output
+## How to read experiment-details output
 
-Always call `Get-Experiment` with `compute_exposures=true, compute_metrics=true`. The response has two parallel data paths — live and cached. **Always prefer live, fall back to cache, surface errors.**
+Always request experiment details with `compute_exposures=true, compute_metrics=true`. The response has two parallel data paths — live and cached. **Always prefer live, fall back to cache, surface errors.**
 
 | Concept                      | Live (preferred)                  | Cached fallback                             |
 | ---------------------------- | --------------------------------- | ------------------------------------------- |
@@ -44,7 +44,7 @@ If `live_results_errors` is non-null, the live path failed. Use the cache, cavea
 
 If **both** live and cache are empty for a metric, say "no result was computed" and recommend a re-sync. **Never** silently treat as "no effect."
 
-See [references/get-experiment-fields.md](references/get-experiment-fields.md) for the full field map and which fields drive each step below.
+See [references/experiment-fields.md](references/experiment-fields.md) for the full field map and which fields drive each step below.
 
 ---
 
@@ -111,7 +111,7 @@ Read these fields. Treat the platform's verdict as authoritative — do not reap
 | Retro A/A (pre-exp bias) | `settings.preExperimentBias` enabled, then the analysis                                                | Platform flags a significant pre-period difference.                                                                                                            |
 | Minimum elapsed time     | `end_date - start_date`                                                                                | Less than ~3 days regardless of sample size — interpretation is unreliable.                                                                                    |
 | Ran for planned duration | `start_date`, `end_date`, `settings.endAfterDays`/`sampleSize`/`endCondition`, `settings.testingModel` | Frequentist: ended before reaching configured target = peeking. Sequential: early stop on significance is allowed.                                             |
-| Misconfiguration         | See [references/get-experiment-fields.md](references/get-experiment-fields.md) §Misconfig              | Any flagged misconfig invalidates analysis.                                                                                                                    |
+| Misconfiguration         | See [references/experiment-fields.md](references/experiment-fields.md) §Misconfig                      | Any flagged misconfig invalidates analysis.                                                                                                                    |
 
 If any of these fail, **stop**. Tell the user explicitly that results are not trustworthy. Open [references/health-check-interpretation.md](references/health-check-interpretation.md) for the per-failure root-cause checklists, recommended actions, and the Kohavi framing ("SRM is the #1 trustworthiness check; Twyman's Law: any unusually clean result is more likely a bug than a discovery").
 
@@ -163,13 +163,13 @@ A 5% lift on a 20% baseline metric serving 1M users/week is enormous. A 5% lift 
 
 **Twyman's Law check**: before celebrating any lift > ~30%, ask: did the treatment change who is _exposed_ to this metric, not just how they behave? See the changed-denominator notes in [references/per-metric-interpretation.md](references/per-metric-interpretation.md).
 
-If `value` or `sampleSize` is `null` (common when live computation timed out), call `Run-Query` on the metric scoped to the control variant over the experiment date range to fetch the baseline. Match the metric's aggregation — `unique` → conversion rate; `total` → per-exposure average (raw total ÷ exposures), not the raw total.
+If `value` or `sampleSize` is `null` (common when live computation timed out), run a query on the metric scoped to the control variant over the experiment date range to fetch the baseline. Match the metric's aggregation — `unique` → conversion rate; `total` → per-exposure average (raw total ÷ exposures), not the raw total.
 
 ### Step 5 — Verdict
 
 | Situation                                                              | Recommendation                                                                                                                                               |
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Trust ✓, primary polarity positive, guardrails ✓, magnitude meaningful | **SHIP.** `Update-Experiment(action="decide", success=true, variant=<winner>, message=<rationale>)`                                                          |
+| Trust ✓, primary polarity positive, guardrails ✓, magnitude meaningful | **SHIP.** Use the experiment's `decide` action with `success=true`, `variant=<winner>`, and a `message` rationale.                                           |
 | Trust ✓, primary polarity positive, guardrail polarity negative        | **ITERATE.** Investigate the regression; do not auto-ship.                                                                                                   |
 | Trust ✓, primary polarity neutral after target sample reached          | **KILL or ITERATE.** Use the inconclusive-results playbook in [references/why-no-statsig.md](references/why-no-statsig.md).                                  |
 | Trust ✓, target sample/duration not yet reached                        | **WAIT** (or extend, or restart with more power — see [references/why-no-statsig.md](references/why-no-statsig.md)).                                         |
@@ -200,7 +200,7 @@ Once the spine is clear, the user often asks one of these follow-ups. Open the r
 | "Which segments should I break this down on?"                                   | [references/segment-of-interest-selection.md](references/segment-of-interest-selection.md)       |
 | "What does this segment-by-segment result mean?" (when platform support exists) | [references/segment-breakdown-interpretation.md](references/segment-breakdown-interpretation.md) |
 | "Can session replays help explain this result?"                                 | [references/session-replay-analysis.md](references/session-replay-analysis.md)                   |
-| "Which `Get-Experiment` field has X?"                                           | [references/get-experiment-fields.md](references/get-experiment-fields.md)                       |
+| "Which field in the experiment-details response has X?"                         | [references/experiment-fields.md](references/experiment-fields.md)                               |
 
 ---
 
@@ -212,9 +212,9 @@ Default to this shape unless the user asks for something else:
 2. **Why**, walking through the decision tree steps that mattered (skip the steps that were clearly fine).
 3. **Per-metric breakdown** — winning primaries, losing primaries, guardrail status, with the polarity-corrected reading of each. Include the absolute-impact translation for any win.
 4. **Caveats / what we don't know** — non-default confidence level, missing baselines, segments not yet checked, etc.
-5. **Suggested next action** — the `Update-Experiment` call to make, or the deeper investigation to run.
+5. **Suggested next action** — the experiment-decide action to take, or the deeper investigation to run.
 
-If `Get-Experiment` is unavailable or returns errors, say so — do not invent a verdict.
+If experiment details are unavailable or return errors, say so — do not invent a verdict.
 
 ---
 

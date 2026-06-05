@@ -2,7 +2,7 @@
 
 Open this when the user has per-segment results in hand and wants to read them. The companion reference [segment-of-interest-selection.md](segment-of-interest-selection.md) covers how to pick the segments in the first place.
 
-> **Platform support status.** Reading segment-level experiment results in `Get-Experiment` depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment `Run-Query` calls against the experiment's metrics and exposures, then interpreting the resulting numbers with the same rules below. If `Get-Experiment` doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the `Run-Query` fallback — do not invent per-segment significance verdicts.
+> **Platform support status.** Reading segment-level experiment results depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment queries against the experiment's metrics and exposures, then interpreting the resulting numbers with the same rules below. If the experiment-details response doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.
 
 ---
 
@@ -80,7 +80,7 @@ This is the everyday case of mixed effects.
 ## What NOT to do
 
 - ❌ Slice by every dimension after the fact and report the most significant segment as the result — that's the canonical fishing expedition.
-- ❌ Apply overall multiple-testing correction logic to segment-level rows from a per-segment `Run-Query` fallback — they're not corrected unless the platform did it.
+- ❌ Apply overall multiple-testing correction logic to segment-level rows from a per-segment query fallback — they're not corrected unless the platform did it.
 - ❌ Confuse Simpson's paradox with a real reversal — check SRM per segment before claiming a true reversal.
 - ❌ Recommend ship-to-segment based on a segment that wasn't pre-committed in the hypothesis or doesn't have a clean mechanism.
 - ❌ Quote a per-segment lift number without the sample-size context (a 40% lift on 60 users isn't a number, it's a sentence).

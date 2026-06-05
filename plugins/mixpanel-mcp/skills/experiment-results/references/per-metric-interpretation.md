@@ -2,7 +2,7 @@
 
 Open this when the user wants you to translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single row of `summary` actually mean?"_
 
-**Consume, don't recompute.** Read `lift`, `liftConfidence`, `value`, `sampleSize`, and the bucket-derived `significance` ("YES_POSITIVE" / "YES_NEGATIVE" / "NO") from `Get-Experiment`. Then translate.
+**Consume, don't recompute.** Read `lift`, `liftConfidence`, `value`, `sampleSize`, and the bucket-derived `significance` ("YES_POSITIVE" / "YES_NEGATIVE" / "NO") from the experiment-details response. Then translate.
 
 ---
 
@@ -88,7 +88,7 @@ Statistical significance ≠ business impact. Always convert a win into absolute
 
 Common — happens whenever live computation timed out or `results_cache.metrics` was nulled. Don't silently skip practical significance; **a broken-data summary with only the lift number is exactly when users over-trust the percentage.**
 
-Call `Run-Query` on the metric, scoped to the control variant over the experiment's date range, to fetch the baseline. Match the metric's aggregation:
+Run a query on the metric, scoped to the control variant over the experiment's date range, to fetch the baseline. Match the metric's aggregation:
 
 - `unique` (Bernoulli) → conversion **rate** as the baseline.
 - `total` (Poisson / sum) → per-exposure **average** (raw total ÷ exposures), not the raw total. Multiplying lift by a raw total double-counts cohort size.
@@ -165,7 +165,7 @@ Check `settings.testingModel`:
 - `"frequentist"` — pre-defined sample size or duration. **Peeking inflates the false-positive rate.** If the user concluded before reaching the configured target, every per-metric significance verdict is suspect. Note: frequentist + `endCondition: "days"` is supported intentionally — do not flag the combination itself as a misconfiguration.
 - `"sequential"` — designed for continuous monitoring. Stopping early when significance is reached is safe and intended.
 
-Calling `Update-Experiment(action="conclude")` on a Frequentist experiment that hasn't reached its target is a peeking event. Flag it in the verdict.
+Concluding a Frequentist experiment before it reaches its target is a peeking event. Flag it in the verdict.
 
 ---
 

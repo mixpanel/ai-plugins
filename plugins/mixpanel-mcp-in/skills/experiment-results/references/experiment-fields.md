@@ -1,6 +1,6 @@
-# `Get-Experiment` Field Map
+# Experiment-Details Field Map
 
-Quick reference for which `Get-Experiment` response field drives each interpretation. Always call with `compute_exposures=true, compute_metrics=true`.
+Quick reference for which experiment-details response field drives each interpretation. Always request the details with `compute_exposures=true, compute_metrics=true`.
 
 This reference is **read-only domain knowledge** for the agent. It does NOT define thresholds — every "fail condition" listed below is a _characterization_ of how the platform itself already classifies the field, not a threshold this skill should re-apply.
 
@@ -122,16 +122,13 @@ For a kill, pass `success=false`.
 
 ## Lifecycle hand-off
 
+To ship/kill, update the experiment with the `decide` action and these fields:
+
 ```
-Update-Experiment(
-  experiment_id=<id>,
-  experiment={
-    "action": "decide",
-    "success": true | false,
-    "variant": "<winner_key>",      # required when success=true
-    "message": "<rationale: metrics evaluated, polarity, tradeoffs accepted>"
-  }
-)
+action     → "decide"
+success    → true | false
+variant    → "<winner_key>"      # required when success=true
+message    → "<rationale: metrics evaluated, polarity, tradeoffs accepted>"
 ```
 
 `message` is required on every `decide` call.
@@ -152,10 +149,10 @@ For _how_ to react to each of these, see [health-check-interpretation.md](health
 
 ---
 
-## When to reach for sibling tools
+## When to reach for sibling capabilities
 
-- **Setup quality questions** ("was this experiment powered correctly?", "what sample size did we need?") → defer to the setup-side skill / `Get-Experiment-Setup-Guidance`.
-- **Raw data for triggered or segmentation analysis** → `Run-Query` on the metric with appropriate filters.
-- **Acting on the recommendation** (ship, kill, extend) → `Update-Experiment` with the appropriate action.
-- **Feature-flag rollout history** for SRM root cause → `Get-Feature-Flag`.
-- **Session replays** for behavioral explanation of a quantitative result → the replay-fetch tool (see [session-replay-analysis.md](session-replay-analysis.md)).
+- **Setup quality questions** ("was this experiment powered correctly?", "what sample size did we need?") → defer to the `experiment-setup` skill.
+- **Raw data for triggered or segmentation analysis** → run a query on the metric with appropriate filters.
+- **Acting on the recommendation** (ship, kill, extend) → update the experiment with the appropriate action.
+- **Feature-flag rollout history** for SRM root cause → inspect the linked flag's state.
+- **Session replays** for behavioral explanation of a quantitative result → see [session-replay-analysis.md](session-replay-analysis.md).

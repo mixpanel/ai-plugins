@@ -35,7 +35,7 @@ Walk through these in order. The first one that explains the picture is usually 
 - **Frequentist** + target not reached → also too early; do NOT peek-and-call. Recommend **WAIT** to the configured end, or restart as sequential next time so peeking is safe.
 - Target _was_ reached and still no significance → not a sample-size problem; move to reasons 2–5.
 
-If exposures are falling short of plan because traffic dropped: surface that. `Run-Query` on the exposure event with a date breakdown shows whether something changed mid-experiment.
+If exposures are falling short of plan because traffic dropped: surface that. Querying the exposure event with a date breakdown shows whether something changed mid-experiment.
 
 ### 2. Observed effect is smaller than the MDE
 
@@ -71,8 +71,8 @@ Never change traffic allocation mid-Frequentist test — it invalidates the SRM 
 
 **What to look at**: the exposure tracking method (`$experiment_started` event volume), any audience filters on the backing feature flag, and `settings.excludeQA`.
 
-- A property filter or audience filter on the feature flag is excluding most users → exposures lag the user's mental "available traffic." `Get-Feature-Flag` reveals the rollout rules; `Run-Query` on `$experiment_started` confirms how many users actually got exposed.
-- The exposure event isn't firing where the user thinks it does (e.g. only on a deep-funnel page) → effective exposed cohort is much smaller than top-of-funnel traffic. Confirm with `Run-Query`.
+- A property filter or audience filter on the feature flag is excluding most users → exposures lag the user's mental "available traffic." Inspect the flag's rollout rules; query `$experiment_started` to confirm how many users actually got exposed.
+- The exposure event isn't firing where the user thinks it does (e.g. only on a deep-funnel page) → effective exposed cohort is much smaller than top-of-funnel traffic. Confirm with a query on the exposure event.
 - `settings.excludeQA` was off and you suspect internal traffic is dominating one variant → enable it on the next run (results then are cleaner but also smaller).
 
 **Triggered / dilution math** matters here too. If only a fraction of "exposed" users actually saw the change (e.g. they didn't reach the screen where the treatment differs), the population-level lift is diluted. See the triggered-analysis notes in [per-metric-interpretation.md](per-metric-interpretation.md).
@@ -93,7 +93,7 @@ Once you know which reason fits, the recommendation almost picks itself.
 | Exposure config is filtering           | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample.               |
 | Experiment finished, well-powered      | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters.       |
 
-When recommending EXTEND on an active experiment, the call is `Update-Experiment` with an increased `endAfterDays` (or `sampleSize`, depending on `endCondition`). Don't fabricate the target number — derive it from the platform's existing config, or send the user to the setup-side skill for the power math.
+When recommending EXTEND on an active experiment, the action is an experiment update with an increased `endAfterDays` (or `sampleSize`, depending on `endCondition`). Don't fabricate the target number — derive it from the platform's existing config, or send the user to the `experiment-setup` skill for the power math.
 
 ---
 
@@ -110,6 +110,6 @@ When recommending EXTEND on an active experiment, the call is `Update-Experiment
 ## Output shape
 
 1. **The reason** (one of the five above), in one sentence.
-2. **The evidence from `Get-Experiment`** — which fields told you (e.g. "exposures only at 4.2k of the 10k target," "observed lift 0.8% vs planned MDE 5%," etc.).
-3. **Recommendation** from the table above, with the specific `Update-Experiment` call or follow-up action.
+2. **The evidence from the experiment-details response** — which fields told you (e.g. "exposures only at 4.2k of the 10k target," "observed lift 0.8% vs planned MDE 5%," etc.).
+3. **Recommendation** from the table above, with the specific experiment update or follow-up action.
 4. **What to NOT do**, briefly — the wrong-way temptation specific to this experiment.
