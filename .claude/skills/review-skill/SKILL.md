@@ -60,7 +60,7 @@ The report must include, in order:
 1. **Header** — skill name, overall score %
 2. **Files reviewed** — each file with line count
 3. **Dimension scores** — each dimension with score %, visual bar, and weight
-4. **Issues** — sorted by severity (blockers first), each with: check ID, file/location, what was found, how to fix
+4. **Issues** — sorted by severity (blockers first), each with: check name, file/location, what was found, how to fix
 5. **Summary** — issue counts by severity
 
 ---
