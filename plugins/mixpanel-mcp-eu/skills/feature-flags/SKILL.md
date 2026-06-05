@@ -40,82 +40,27 @@ Mixpanel has **three** flag-shaped products. Pick the right one before doing any
 | Serve different **configuration** values to different users (copy variations, theme keys, payload strings, or structured JSON-object payloads) — no measurement         | Create a flag        | `"dynamic_config"`                       |
 | Compare variants and **measure** which performs better — hypothesis, primary metric, statistical significance, control vs treatment, traffic split aimed at measurement | Create an experiment | (auto-creates an experiment-backed flag) |
 
-**Three rules that prevent the most common mistakes:**
+Three rules that prevent the most common mistakes:
 
 1. **Experiment-backed flags must be created via the experiment creation path.** Direct flag creation rejects `flagType: "experiment"`. Creating a flag directly after creating an experiment produces an unlinked duplicate orphan.
 2. **"A/B test" or "split traffic to measure X"** is always an experiment, even if the user says "feature flag." Route to experiment creation (and the `experiment-setup` skill).
-3. **"Roll this out to 10% of users"** without any mention of measurement is a Feature Gate with `rolloutPercentage = 0.10`. Route to flag creation.
+3. **"Roll this out to 10% of users"** without measurement is a Feature Gate with `rolloutPercentage = 0.10`. Route to flag creation.
 
-If the request is ambiguous (e.g. _"create a feature flag for the new checkout flow"_), ask **one** short clarifying question before you pick:
+If ambiguous (e.g. _"create a feature flag for the new checkout flow"_), ask **one** clarifying question: "Do you want a Feature Gate (on/off toggle), a Dynamic Config (different configuration values per user), or an Experiment (compare variants and measure a metric)?" One disambiguation, then proceed.
 
-> "Do you want a Feature Gate (on/off toggle), a Dynamic Config (different configuration values per user), or an Experiment (compare variants and measure a metric)?"
-
-One disambiguation, then proceed. See [references/routing-and-setup.md](references/routing-and-setup.md) for variant shape, naming/keying conventions, and the control-on-OFF rule for Feature Gates.
+Variant shape, naming/keying conventions, the disabled-by-default rule, and the control-on-OFF rule for Feature Gates are in [references/routing-and-setup.md](references/routing-and-setup.md).
 
 ---
 
 ## Spine 2: Lifecycle — the 5-step rollout/cleanup decision tree
 
-Run these in order. Each step's output is the next step's input — don't skip.
+Run in order. Each step's output is the next step's input.
 
-### Step 1 — Enable the flag (it ships disabled)
-
-**Every newly created flag starts with `status: "disabled"`.** While disabled, the SDK serves the control variant to everyone regardless of `rolloutPercentage`. Two consequences:
-
-1. **Engineers can ship the SDK code first**, before you flip the switch — the flag is safe-by-default.
-2. **You cannot ramp a disabled flag.** If the user reports "I set rolloutPercentage to 50% but no one sees the new behavior," the flag is almost certainly still `disabled`. Check `status` first.
-
-To enable, update the flag's status to `"enabled"`.
-
-Never auto-enable as part of creation, and never roll enable + first-rollout-bump into the same turn without telling the user what you're doing. If the user says "ship it," confirm: are they enabling the flag (status flip) or ramping an already-enabled flag (rollout bump)? Wrong answer = unintended user impact.
-
-### Step 2 — Ramp the rollout percentage incrementally
-
-Default rollout for a newly-enabled flag is **1.0 (100%)**. That's almost never what you want for a real launch. Standard staged-rollout pattern:
-
-| Stage  | `rolloutPercentage` | Wait before next stage |
-| ------ | ------------------- | ---------------------- |
-| Canary | `0.01` (1%)         | 24 hours minimum       |
-| Early  | `0.10` (10%)        | 24–48 hours            |
-| Mid    | `0.50` (50%)        | 24–72 hours            |
-| Full   | `1.00` (100%)       | —                      |
-
-Bump the rollout by updating the flag's `ruleset.rolloutPercentage`. The update merges into the current ruleset — variants and other ruleset fields are preserved. You don't need to re-send variants to change rollout.
-
-Higher-stakes flags (billing, auth, payments) deserve a slower cadence; pure server-side changes with monitoring can go faster. See [references/staged-rollout.md](references/staged-rollout.md) for both variants and the rationale behind the logarithmic ramp.
-
-### Step 3 — Watch for the kill-switch trigger
-
-A staged rollout exists so you can **kill fast** when something goes wrong. The kill switch is `status: "disabled"`, **not** `rolloutPercentage: 0`.
-
-Why disable instead of zeroing the percentage?
-
-1. **Disable is instant and unambiguous.** Zeroing the rollout requires the SDK to re-evaluate the percentage, and depending on cache state, some users may briefly continue seeing the previous variant.
-2. **Disable preserves the rollout configuration** so you can re-enable to the same percentage later without re-deciding what stage you were at.
-
-Trigger conditions and what does **not** justify a kill are covered in [references/staged-rollout.md](references/staged-rollout.md#kill-switch-triggers).
-
-### Step 4 — Decide: full rollout, hold, or roll back
-
-After mid-stage rollout (50%), the user has three honest choices. Reflect those back rather than defaulting to "ship it."
-
-- **Ship to 100%** when guardrail metrics are flat or improved, behavior is consistent across cohorts, and enough time has passed (24–72 hours at 50%) to surface low-base-rate bugs.
-- **Hold at current percentage** when the signal is real but smaller than expected, a specific cohort needs investigation, or an adjacent change is also rolling out.
-- **Roll back (disable) and iterate** when a guardrail regressed (any size, any direction the user cares about), a cohort regressed even if averages look OK (Simpson's paradox is real), or the team hypothesis was falsified.
-
-Don't conflate "no clear win" with "should ship anyway." A flag that doesn't help is also a flag that costs maintenance.
-
-### Step 5 — Archive or convert to permanent
-
-Every flag has a terminal state. Pick one explicitly:
-
-- **Permanent operational flag** (kill switch for a critical subsystem, geo-gate, plan-tier toggle): leave enabled with `rolloutPercentage: 1.0` indefinitely. Document why in the description.
-- **Shipped feature, flag retired**: archive the flag and delete the flag-reading code in the same engineering cycle.
-- **Reverted feature, flag retired**: archive the flag and delete the code.
-
-Archive requires `disabled` first — the API rejects `archived` on an `enabled` flag. Disable, then archive (two updates).
-
-Archived flags are read-only. To bring an archived flag back into use, set `status` to `"restored"` — see [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) for the full state machine, archive precondition, and how status + metadata edits compose (or don't) in a single update.
+1. **Enable.** Every newly created flag starts `disabled` — the SDK serves control to everyone regardless of `rolloutPercentage`. Update `status` to `"enabled"` as a deliberate, separate step from creation. "I set rolloutPercentage to 50% but no one sees the new behavior" is almost always a still-disabled flag.
+2. **Ramp incrementally.** Default rollout for a newly-enabled flag is `1.0` — almost never what you want. Standard cadence: `1% → 10% → 50% → 100%` with 24h+ holds. Update `ruleset.rolloutPercentage`; the merge preserves variants and other ruleset fields. Higher-stakes flags want slower; pure server-side changes can go faster — see [references/staged-rollout.md](references/staged-rollout.md).
+3. **Kill switch.** Use `status: "disabled"`, **not** `rolloutPercentage: 0`. Disable is instant, unambiguous, and preserves rollout state for re-enable. Trigger conditions and what doesn't justify a kill in [references/staged-rollout.md](references/staged-rollout.md#kill-switch-triggers).
+4. **After 50%: ship / hold / roll back.** Three honest choices — ship if guardrails are flat and cohorts consistent; hold if signal is smaller than expected or a cohort needs investigation; roll back if a guardrail regressed (any size) or a cohort regressed (Simpson's paradox is real). Don't conflate "no clear win" with "should ship anyway."
+5. **Archive or convert to permanent.** Permanent operational flag → leave enabled at `1.0` and document why. Shipped or reverted → archive the flag and delete the SDK call sites in the same cycle. Archive requires `disabled` first — disable, then archive (two updates). Set `status` to `"restored"` to bring an archived flag back. Full state machine and the three update-call shapes in [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md). The cleanup playbook for stale flags is in [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md).
 
 **Archive ≠ kill switch.** Archive is for flags whose feature is no longer iterating. Kill switch is `status: disabled` while you debug. Archiving a live flag is destructive — the SDK starts serving control to everyone and rollout state is lost.
 
@@ -123,13 +68,9 @@ Archived flags are read-only. To bring an archived flag back into use, set `stat
 
 ## Spine 3: Before any setup — check for prior work
 
-When a user asks to set up a flag for a feature, **always list the project's existing flags first** with a partial-name or partial-key match seeded from the feature name. Surface anything you find:
+When a user asks to set up a flag for a feature, **always list the project's existing flags first** with a partial-name or partial-key match seeded from the feature name. Surface anything you find: a duplicate-feature flag (update the existing one instead), an earlier flag from a shipped experiment (usually safe to archive), or a key collision (the system auto-suffixes, but the user usually wants the clean key — ask whether to retire the old one).
 
-- **Same feature already gated?** Ask whether to update the existing flag instead of creating a duplicate. Two flags controlling the same code path is a debugging nightmare.
-- **Earlier flag from a shipped experiment?** Often safe to archive. Don't create a new flag whose key collides.
-- **Flag with the same intended key?** Keys must be unique within a project. The system auto-suffixes to avoid collisions, but the user almost always wants the clean key — ask whether to retire the old one.
-
-Skipping this check leads to flag debt: orphaned flags, ambiguous evaluation, and codepaths gated by stale or duplicate flags. See [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md) for the full cleanup playbook.
+Skipping this check leads to flag debt: orphaned flags, ambiguous evaluation, and codepaths gated by stale or duplicate flags. Full cleanup playbook in [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md).
 
 ---
 
@@ -143,19 +84,3 @@ Skipping this check leads to flag debt: orphaned flags, ambiguous evaluation, an
 | "How do I call this from the SDK?" / "Why are exposures zero?" / "Sticky bucketing?" | [references/sdk-and-exposure.md](references/sdk-and-exposure.md)                       |
 | "What does status='restored' do?" / "Why did my archive call drop my rename?"        | [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) |
 | "Why can't I edit this flag's variants?" / "Why did my flag config get overwritten?" | [references/experiment-linked-flags.md](references/experiment-linked-flags.md)         |
-
----
-
-## Common pitfalls (one-line reminders)
-
-- ⛔ Picking the wrong product — routing an A/B test to flag creation, or routing a kill switch to experiment creation.
-- ⛔ Creating a flag directly after creating an experiment — the experiment already created the backing flag; a second creation produces an unlinked orphan.
-- ⛔ Setting `rolloutPercentage` while `status: disabled` and expecting users to see the variant — disabled overrides rollout.
-- ⛔ Going straight from creation to 100% rollout — defeats the safety of staged rollout.
-- ⛔ Using `rolloutPercentage: 0` as a kill switch instead of `status: "disabled"` — slower, ambiguous, loses rollout state.
-- ⛔ Manually mutating an experiment-linked flag (`experiment_id` set) — the next experiment transition will overwrite your edits. Update the experiment instead.
-- ⛔ Combining `status: "archived"` (or `"restored"`) with `name`/`description`/`ruleset` in one update — archive/restore short-circuit and silently drop the other edits. Rename first, then archive.
-- ⛔ Archiving a flag that real users are actively being bucketed by — instantly serves control to everyone, destroys rollout state.
-- ⛔ Asking the user for a `key` they didn't mention — the auto-derived key is almost always correct.
-- ⛔ Picking a flag name tied to a calendar quarter or project codename — the flag will outlive that context.
-- ⛔ Updating the ruleset on a flag with multiple rollout groups — the single-rollout update path can silently collapse multi-rollout flags. Edit those in the UI.
