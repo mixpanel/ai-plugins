@@ -11,6 +11,12 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 | [`manage-lexicon`](plugins/mixpanel-mcp/skills/manage-lexicon/) | Audits, scores, enriches, and cleans up Lexicon metadata (events and properties) for a Mixpanel project. Supports scoring health, bulk-filling descriptions/tags, resetting metadata, triaging data quality issues, and managing tags. |
 | [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
 
+### Internal skills
+
+| Skill | Description |
+|---|---|
+| [`review-skill`](.claude/skills/review-skill/) | Reviews a skill against a weighted quality rubric (8 dimensions, 27 checks) and produces a score with actionable issues. Run `/review-skill <skill-name>` before requesting a code review. |
+
 ## Getting Started
 
 ### Claude Code
@@ -81,6 +87,7 @@ CI will fail if the skills are out of sync.
 4. **Test the plugin end-to-end** before submission — confirm it triggers on the expected prompts and produces the output you expect.
 5. **Include examples in the PR description** showing prompts the plugin handles and what it returns.
 6. **Run `make sync-skills`** to ensure `mixpanel-mcp-eu` and `mixpanel-mcp-in` are up to date.
+7. **Run `/review-skill <skill-name>`** and address any blocker or major issues before requesting review.
 
 ## License
 
