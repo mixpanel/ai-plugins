@@ -1,6 +1,6 @@
 ---
 name: experiment-results
-description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read, interpret, or make a ship/iterate/kill/wait call on an experiment, asks why an experiment hasn't reached statistical significance, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds.
+description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read, interpret, or make a ship/iterate/kill/wait call on an experiment, asks why an experiment hasn't reached statistical significance, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds. Do NOT use for experiment setup questions (sizing, metric selection, hypothesis framing, advanced-feature config) — those belong to the `experiment-setup` skill.
 license: Apache-2.0
 ---
 
