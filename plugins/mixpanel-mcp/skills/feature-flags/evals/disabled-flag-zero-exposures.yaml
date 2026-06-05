@@ -1,0 +1,42 @@
+name: disabled-flag-zero-exposures
+failure_mode: |
+  User reports that they set rolloutPercentage to 50% but no one sees the new
+  behavior, and asks the skill to debug the SDK or serving_method. The skill
+  must NOT chase the SDK first — it must check status, find that the flag is
+  still disabled, and explain that disabled overrides rollout.
+
+trigger_phrase: |
+  I bumped rolloutPercentage to 0.5 on the new_checkout_button flag but no
+  users are seeing the new variant. I'm seeing zero $feature_flag_called
+  events. Is something wrong with our SDK setup or serving_method?
+
+preconditions:
+  flag_state:
+    flag_key: "new_checkout_button"
+    status: "disabled"
+    ruleset:
+      rolloutPercentage: 0.5
+    serving_method: "remote_or_local"
+    experiment_id: null
+  user_context: |
+    User has jumped past the diagnostic order and reached for SDK / serving_method
+    as candidate causes. They have not checked status.
+
+expected_behavior:
+  must_do:
+    - "Call Get-Feature-Flag(flag_id=...) first to read current state."
+    - "Identify status: disabled as the cause within the first response. Explain that disabled overrides rolloutPercentage — the SDK serves the control variant to everyone regardless of the rollout knob."
+    - "Walk the diagnostic checklist in order from references/sdk-and-exposure.md: status (the hit), then tracking entry point, then SDK init, then cohort/property bucket."
+    - "Explicitly rule out serving_method as the cause and explain why: serving_method controls how flag definitions are fetched, not whether $feature_flag_called fires."
+    - "Recommend Update-Feature-Flag(flag_id=..., status='enabled') as the single fix, and remind that this is a deliberate user-initiated step (don't bundle with another rollout change without confirming)."
+
+  must_not_do:
+    - "Recommend SDK debugging steps (re-init, key typo check, library upgrade) before checking status."
+    - "Blame serving_method, getFeatureFlagWithoutTracking, or cache behavior without first confirming status."
+    - "Suggest setting rolloutPercentage to 1.0 as a 'workaround' — rollout is not the lever; status is."
+    - "Auto-enable the flag in the same turn without surfacing the explanation to the user first."
+
+  references_consulted:
+    - "SKILL.md (Lifecycle Step 1 — disabled overrides rollout)"
+    - "references/sdk-and-exposure.md (diagnostic checklist + serving_method clarification)"
+    - "references/lifecycle-and-state-machine.md (status-only flip path for the fix call)"
