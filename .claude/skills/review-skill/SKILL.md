@@ -10,7 +10,7 @@ license: Apache-2.0
 
 # Skill Review
 
-Reviews a skill's quality against a rubric derived from the Agent Skills specification, team review standards, and community best practices. Produces a percentage score, letter grade, and a prioritised list of issues to fix.
+Reviews a skill's quality against a rubric derived from the Agent Skills specification, team review standards, and community best practices. Produces a percentage score and a prioritised list of issues to fix.
 
 This is a read-only, single-skill review. Do not modify the skill being reviewed.
 
@@ -37,13 +37,13 @@ The rubric evaluates 8 weighted dimensions. Read `references/rubric.md` for the 
 
 Each check is scored **PASS** (1.0), **WARN** (0.5), **FAIL** (0.0), or **N/A** (excluded). Some checks count double (marked in the rubric). See `references/rubric.md` for the full scoring formula and blocker overrides.
 
-| Grade | Score | Meaning |
-|-------|-------|---------|
-| A | 90-100% | Ready for merge |
-| B | 75-89% | Minor issues — address before merge |
-| C | 60-74% | Significant issues — needs rework |
-| D | 40-59% | Major structural problems |
-| F | 0-39% | Fundamental redesign needed |
+| Score | Meaning |
+|-------|---------|
+| 90-100% | Ready for merge |
+| 75-89% | Minor issues — address before merge |
+| 60-74% | Significant issues — needs rework |
+| 40-59% | Major structural problems |
+| 0-39% | Fundamental redesign needed |
 
 ## Issue severities
 
@@ -57,7 +57,7 @@ Each check is scored **PASS** (1.0), **WARN** (0.5), **FAIL** (0.0), or **N/A** 
 ## Output format
 
 The report must include, in order:
-1. **Header** — skill name, overall score %, letter grade
+1. **Header** — skill name, overall score %
 2. **Files reviewed** — each file with line count
 3. **Dimension scores** — each dimension with score %, visual bar, and weight
 4. **Issues** — sorted by severity (blockers first), each with: check ID, file/location, what was found, how to fix
@@ -87,8 +87,7 @@ For each dimension, evaluate every check:
 
 1. For each dimension: compute the weighted average of applicable checks (excluding N/A).
 2. Compute the overall score: weighted sum of dimension scores using the weights in the dimension table.
-3. Determine the letter grade from the score.
-4. Apply blocker overrides if applicable.
+3. Apply blocker overrides if applicable.
 
 ## 4. Present the report
 
