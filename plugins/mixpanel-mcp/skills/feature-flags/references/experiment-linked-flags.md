@@ -1,12 +1,12 @@
 # Experiment-linked flags
 
-When a flag has an associated `experiment_id`, the recommended lifecycle path is the experiment, not direct `Update-Feature-Flag` calls. The API will not block direct flag edits — but the experiment owns the canonical state and the next experiment transition will overwrite anything you set manually.
+When a flag has an associated `experiment_id`, the recommended lifecycle path is the experiment, not direct flag updates. The API will not block direct flag edits — but the experiment owns the canonical state and the next experiment transition will overwrite anything you set manually.
 
 ## The policy boundary
 
-`experiment_id` set on a flag is a **policy boundary, not a server-side block**. `Update-Feature-Flag` succeeds against an experiment-linked flag — but the next experiment transition (`launch` / `conclude` / `decide`) overwrites your manual edits.
+`experiment_id` set on a flag is a **policy boundary, not a server-side block**. Flag updates succeed against an experiment-linked flag — but the next experiment transition (`launch` / `conclude` / `decide`) overwrites your manual edits.
 
-Treat `Update-Experiment` as the only safe lifecycle path for these flags; route all status, ruleset, and variant changes through it. The check is on you, not the API.
+Treat the experiment as the only safe lifecycle path for these flags; route all status, ruleset, and variant changes through experiment updates instead. The check is on you, not the API.
 
 ## How experiment transitions overwrite the flag
 
@@ -23,9 +23,9 @@ The table is the **contract the experiment will eventually re-impose**, even if 
 
 ### 1. Don't enable an experiment-linked flag manually
 
-Use `Update-Experiment(action="launch")` instead. The API allows the manual enable, but the experiment will still think it's DRAFT and the next transition will reconcile state — typically by flipping the flag back.
+Use the experiment's `launch` action instead. The API allows the manual enable, but the experiment will still think it's DRAFT and the next transition will reconcile state — typically by flipping the flag back.
 
-The symptom users hit: "I enabled the flag but the dashboard shows the experiment as not started." That's the canonical-state divergence; route through `Update-Experiment` to fix.
+The symptom users hit: "I enabled the flag but the dashboard shows the experiment as not started." That's the canonical-state divergence; route through the experiment update to fix.
 
 ### 2. Don't mutate the ruleset of an experiment-linked flag
 
@@ -37,14 +37,14 @@ This is a hard limitation — modifying variants invalidates the exposure data a
 
 ## Stopping new exposures while preserving bucketing
 
-If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's `Update-Experiment(action="conclude")`, not a flag-level operation. `status: "disabled"` on the flag serves control to everyone (including users who'd already been bucketed), which is the opposite of what you want for preserving the exposure cohort.
+If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's the experiment's `conclude` action, not a flag-level operation. `status: "disabled"` on the flag serves control to everyone (including users who'd already been bucketed), which is the opposite of what you want for preserving the exposure cohort.
 
 ## How to spot an experiment-linked flag
 
-Call `Get-Feature-Flag` first. If `experiment_id` is non-null:
+Read the flag's current state first. If `experiment_id` is non-null:
 
 - The flag is governed by an experiment lifecycle.
-- Status, ruleset, and variant changes should route through `Update-Experiment` against `experiment_id`.
+- Status, ruleset, and variant changes should route through the linked experiment's actions, not direct flag updates.
 - For experiment-side concerns (interpretation, ship/kill decisions, setup guidance), defer to the `experiment-results` and `experiment-setup` skills.
 
 If `experiment_id` is null, the flag is standalone and the lifecycle covered in `SKILL.md` and the other references applies directly.

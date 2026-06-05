@@ -1,6 +1,6 @@
 # Routing and setup
 
-Pick the right flag-shaped tool, then configure it. Getting the routing wrong is unrecoverable without deleting the flag, so this is the highest-leverage decision in feature-flag work.
+Pick the right flag-shaped product, then configure it. Getting the routing wrong is unrecoverable without deleting the flag, so this is the highest-leverage decision in feature-flag work.
 
 ## Picking the flag type
 
@@ -8,9 +8,9 @@ Pick the right flag-shaped tool, then configure it. Getting the routing wrong is
 
 - **Feature Gate (`flagType: "feature_gate"`)**: on/off toggle with two boolean-valued variants. Kill switches, gradual rollouts, geo gates, internal-only enables. The control variant is **value-based** — whichever variant has `value: false` is treated as control.
 - **Dynamic Config (`flagType: "dynamic_config"`)**: serves a payload (string or JSON object) per user without measurement. Copy variations, theme keys, configuration objects. Control is **positional** — the first variant in the list. Booleans and bare numbers are rejected; numbers belong inside a JSON object (e.g. `{"ttl": 3600}`).
-- **Experiment (via `Create-Experiment`)**: variant comparison with statistical machinery — primary metric, SRM checks, significance verdict. Backing flag is auto-created and linked. `Create-Feature-Flag` rejects `flagType: "experiment"` precisely to prevent the degenerate "experiment flag without an experiment to drive it" path.
+- **Experiment** (created via the experiment-creation path): variant comparison with statistical machinery — primary metric, SRM checks, significance verdict. Backing flag is auto-created and linked. Direct flag creation rejects `flagType: "experiment"` precisely to prevent the degenerate "experiment flag without an experiment to drive it" path.
 
-The product boundary between Dynamic Config and Experiment is about **measurement, not payload shape**. If the user wants to pick a winner with statistical significance, route to `Create-Experiment` regardless of how simple the variants look.
+The product boundary between Dynamic Config and Experiment is about **measurement, not payload shape**. If the user wants to pick a winner with statistical significance, route to experiment creation regardless of how simple the variants look.
 
 ## Required and optional inputs by flag type
 
@@ -20,7 +20,7 @@ The product boundary between Dynamic Config and Experiment is about **measuremen
 | ------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `name`        | yes          | Human-readable display name.                                                                                                                            |
 | `flagType`    | yes          | `"feature_gate"`.                                                                                                                                       |
-| `variants`    | **optional** | Omit and the tool auto-generates the canonical `On`/`Off` pair (control = `Off`). Only pass `variants` if the user wants custom keys.                   |
+| `variants`    | **optional** | Omit and the system auto-generates the canonical `On`/`Off` pair (control = `Off`). Only pass `variants` if the user wants custom keys.                 |
 | `key`         | optional     | Auto-derived from `name` with a short random suffix when omitted (collision-safe).                                                                      |
 | `description` | optional     | Short text. Add automatically when the user gave you a hypothesis-shaped reason for the flag — it's the only context post-launch maintainers will have. |
 
@@ -68,7 +68,7 @@ The Feature Gate convention is **value-based**, not positional: whichever varian
 - The FE renders the OFF variant on the safe side of the toggle UI.
 - The rule is enforced server-side — passing custom variants with `value: false` not on the control variant triggers a misconfiguration the FE will surface.
 
-Two-variant Feature Gates are the norm. The tool will accept more, but you're almost always better served by a Dynamic Config or an Experiment if you need three or more behaviors.
+Two-variant Feature Gates are the norm. The system will accept more, but you're almost always better served by a Dynamic Config or an Experiment if you need three or more behaviors.
 
 ### Dynamic Config: control = the first variant (positional)
 
@@ -98,7 +98,7 @@ The random suffix exists because flag keys are project-scoped and humans pick th
 
 ### Flag keys are immutable after creation
 
-A user pattern to watch for: they ask for a flag, see the auto-key, then ask to "rename" it. **Flag keys are immutable.** The display `name` is editable via `Update-Feature-Flag`; the `key` is not. Tell the user this before they invest in a wrong key.
+A user pattern to watch for: they ask for a flag, see the auto-key, then ask to "rename" it. **Flag keys are immutable.** The display `name` is editable; the `key` is not. Tell the user this before they invest in a wrong key.
 
 ## Initial state — disabled by default
 
@@ -106,26 +106,26 @@ A user pattern to watch for: they ask for a flag, see the auto-key, then ask to 
 
 Do NOT pass `status: "enabled"` on creation as a shortcut. The right sequence is:
 
-1. `Create-Feature-Flag` (status defaults to `disabled`)
-2. Engineer ships SDK code that reads the flag (safe — flag returns control)
-3. User explicitly calls `Update-Feature-Flag` with `status: "enabled"` once they're ready to ramp
+1. Create the flag (status defaults to `disabled`).
+2. Engineer ships SDK code that reads the flag (safe — flag returns control).
+3. User explicitly updates `status` to `"enabled"` once they're ready to ramp.
 
 For everything that happens after enable — staged rollout, kill switch, archival — see the lifecycle spine in `SKILL.md` and [staged-rollout.md](staged-rollout.md).
 
 ## Cohort targeting and advanced rollout (UI-only)
 
-`Create-Feature-Flag` covers the common cases: a single rollout percentage applied uniformly to all targeted users. It does **not** cover:
+The flag-creation path covers the common cases: a single rollout percentage applied uniformly to all targeted users. It does **not** cover:
 
 - Cohort-based targeting (e.g. "only users in the `enterprise_paying` cohort")
 - Multiple rollout rules (e.g. "100% in EU, 10% in US")
 - User-property targeting (e.g. "users where `plan_tier == 'pro'`")
 - Sticky-by-distinct-id-only (vs other identity properties)
 
-For any of those, create the flag first via `Create-Feature-Flag`, then direct the user to the Mixpanel UI to configure advanced rollout — the URL is in the response from `Get-Feature-Flag`. Don't try to express advanced rollout via the MCP tool; the schema doesn't accept it.
+For any of those, create the flag first, then direct the user to the Mixpanel UI to configure advanced rollout — the URL is in the flag-details response. Don't try to express advanced rollout programmatically; the schema doesn't accept it.
 
 ## Setup field reference
 
-Configure these on `Create-Feature-Flag` via the `flag` parameter payload.
+Configure these on the flag-creation payload.
 
 ### Required
 

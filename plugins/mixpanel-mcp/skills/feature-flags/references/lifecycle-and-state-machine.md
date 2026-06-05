@@ -1,10 +1,10 @@
 # Lifecycle and state machine
 
-The three observable states `Get-Feature-Flag` will ever return are `disabled`, `enabled`, and `archived`. `restored` is a write-only verb — never a state you'll see when reading the flag back.
+The three observable states a flag will ever expose are `disabled`, `enabled`, and `archived`. `restored` is a write-only verb — never a state you'll see when reading the flag back.
 
 ## Status state machine
 
-Transitions are sent as the `status` value on `Update-Feature-Flag`:
+Transitions are sent as the `status` value on a flag update:
 
 ```
    ┌──────────┐    "enabled"    ┌─────────┐
@@ -26,85 +26,62 @@ Transitions are sent as the `status` value on `Update-Feature-Flag`:
 
 ## Archive precondition
 
-The flag must be `disabled` before you can archive it. Calling `Update-Feature-Flag(status="archived")` on an `enabled` flag returns `FAILED_PRECONDITION: Cannot archive an enabled flag`. Disable first, then archive — two calls:
-
-```
-Update-Feature-Flag(flag_id=<id>, status="disabled")
-Update-Feature-Flag(flag_id=<id>, status="archived")
-```
+The flag must be `disabled` before you can archive it. Setting `status="archived"` on an `enabled` flag returns `FAILED_PRECONDITION: Cannot archive an enabled flag`. Disable first, then archive — two updates: one to set `status="disabled"`, then one to set `status="archived"`.
 
 This is intentional: archiving is a terminal cleanup action, and disabling first forces a moment of "are you sure traffic is off?" before the flag becomes read-only.
 
 ## `restored` is a write-only verb
 
-`restored` only appears as an input to `Update-Feature-Flag`; `Get-Feature-Flag.status` will never be `restored`. It exists for "I archived this by mistake" recovery, not as a normal lifecycle state.
+`restored` only appears as a status-update input; the flag's read state will never be `restored`. It exists for "I archived this by mistake" recovery, not as a normal lifecycle state.
 
 A restored flag lands back in `disabled`. It does **not** restore variants if you mutated them while archived (variants are immutable post-archive anyway).
 
-## `Update-Feature-Flag` call shapes — three short-circuit paths
+## Flag-update call shapes — three short-circuit paths
 
-`Update-Feature-Flag` routes through one of three paths depending on which fields you send. Picking the right call shape per intent prevents silent drops and unintended overwrites.
+A flag update routes through one of three paths depending on which fields you send. Picking the right call shape per intent prevents silent drops and unintended overwrites.
 
 ### 1. Archive or restore — short-circuit, drops everything else
 
-```
-Update-Feature-Flag(flag_id=<id>, status="archived")
-Update-Feature-Flag(flag_id=<id>, status="restored")
-```
+A status update setting `status="archived"` or `status="restored"` routes straight to the dedicated archive/restore endpoint. **Any `name` / `description` / `ruleset` you pass alongside is silently dropped** — the short-circuit returns before the merge logic runs.
 
-Routes straight to the dedicated archive/restore endpoint. **Any `name` / `description` / `ruleset` you pass alongside is silently dropped** — the short-circuit returns before the merge logic runs.
+If you want to archive AND rename, do it as separate updates (rename first, then disable, then archive):
 
-If you want to archive AND rename, do it as two calls (rename first, then archive):
-
-```
-Update-Feature-Flag(flag_id=<id>, name="new_name")
-Update-Feature-Flag(flag_id=<id>, status="disabled")
-Update-Feature-Flag(flag_id=<id>, status="archived")
-```
+1. Update the flag's `name` (and/or `description`).
+2. Update `status` to `"disabled"`.
+3. Update `status` to `"archived"`.
 
 ### 2. Status-only flip — safe ruleset-preserving path
 
-```
-Update-Feature-Flag(flag_id=<id>, status="enabled")
-Update-Feature-Flag(flag_id=<id>, status="disabled")
-```
-
-Status-only (no other fields) routes through the `set_flag_status` path, which avoids re-sending the ruleset and so can't accidentally clobber it on a status-only flip.
+A status update with `status="enabled"` or `status="disabled"` **and no other fields** routes through a status-only path that avoids re-sending the ruleset, so it can't accidentally clobber it on a status-only flip.
 
 This is the right shape for "enable the flag" and "kill the flag" — the common kill-switch case.
 
 ### 3. Generic merge — for everything else
 
-```
-Update-Feature-Flag(flag_id=<id>, status="enabled", description="rolling to 100%")
-Update-Feature-Flag(flag_id=<id>, ruleset={"rolloutPercentage": 0.10})
-Update-Feature-Flag(flag_id=<id>, name="new_name", description="...")
-```
-
-Falls through to the generic merge path, which is fully supported. The status change (if any) and the metadata edit are applied together, and unspecified fields are preserved by re-fetching the current flag and merging.
+Any other shape — `status="enabled"` or `status="disabled"` combined with `name`/`description`/`ruleset`, or any update that touches metadata/ruleset with no status change — falls through to the generic merge path, which is fully supported. The status change (if any) and the metadata edit are applied together, and unspecified fields are preserved by re-fetching the current flag and merging.
 
 ### Summary table
 
-| Call shape                                                          | Path              | What happens                                            |
-| ------------------------------------------------------------------- | ----------------- | ------------------------------------------------------- |
-| `status="archived"` (alone or with others)                          | archive endpoint  | Archives. **Other fields silently dropped.**            |
-| `status="restored"` (alone or with others)                          | restore endpoint  | Restores to `disabled`. **Other fields dropped.**       |
-| `status="enabled"` or `"disabled"` alone                            | `set_flag_status` | Status flip only; ruleset preserved.                    |
-| `status="enabled"` or `"disabled"` + `name`/`description`/`ruleset` | generic merge     | Status + metadata applied together; merge with current. |
-| `name`/`description`/`ruleset` (no status)                          | generic merge     | Metadata/ruleset merged with current flag.              |
+| Call shape                                                          | Path             | What happens                                            |
+| ------------------------------------------------------------------- | ---------------- | ------------------------------------------------------- |
+| `status="archived"` (alone or with others)                          | archive endpoint | Archives. **Other fields silently dropped.**            |
+| `status="restored"` (alone or with others)                          | restore endpoint | Restores to `disabled`. **Other fields dropped.**       |
+| `status="enabled"` or `"disabled"` alone                            | status-only      | Status flip only; ruleset preserved.                    |
+| `status="enabled"` or `"disabled"` + `name`/`description`/`ruleset` | generic merge    | Status + metadata applied together; merge with current. |
+| `name`/`description`/`ruleset` (no status)                          | generic merge    | Metadata/ruleset merged with current flag.              |
 
 ## Multi-rollout-group flags (UI-only)
 
-`Update-Feature-Flag(ruleset=...)` supports flags with a **single** rollout group only. UI-created flags can have multiple rollout groups (e.g. cohort gates, geo splits, property targeting), and the MCP merge path collapses `ruleset.rollout` to a single-element list — silently destroying rollouts 2..N.
+The flag-update ruleset path supports flags with a **single** rollout group only. UI-created flags can have multiple rollout groups (e.g. cohort gates, geo splits, property targeting), and the single-rollout merge path collapses `ruleset.rollout` to a single-element list — silently destroying rollouts 2..N.
 
-Before proposing a `ruleset` update on a flag the model didn't create, **inspect `len(ruleset.rollout)` from `Get-Feature-Flag`**:
+Before proposing a `ruleset` update on a flag the model didn't create, **inspect `len(ruleset.rollout)` on the flag**:
 
-- `len(ruleset.rollout) == 1` → safe to update via `Update-Feature-Flag(ruleset=...)`.
-- `len(ruleset.rollout) > 1` → the MCP refuses with an actionable error pointing to the UI URL. Edit those flags in the Mixpanel UI; the MCP can't safely express the multi-rollout shape.
+- `len(ruleset.rollout) == 1` → safe to update the ruleset.
+- `len(ruleset.rollout) > 1` → the update path refuses with an actionable error pointing to the UI URL. Edit those flags in the Mixpanel UI; the single-rollout path can't safely express the multi-rollout shape.
 
-Status-only flips (`Update-Feature-Flag(status="enabled"|"disabled"|"archived"|"restored")` with no other fields) are still safe on multi-rollout flags — those paths don't re-send the ruleset, so no rollout groups are lost.
+Status-only flips (`status="enabled"|"disabled"|"archived"|"restored"` with no other fields) are still safe on multi-rollout flags — those paths don't re-send the ruleset, so no rollout groups are lost.
 
-## `Update-Feature-Flag` field reference
+## Flag-update field reference
 
 ```
 flag_id                      → Required: UUID of the flag

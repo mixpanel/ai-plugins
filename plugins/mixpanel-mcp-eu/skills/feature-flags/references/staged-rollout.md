@@ -17,13 +17,7 @@ The pattern is **logarithmic, not linear**. Doubling at each stage exposes the f
 | Mid    | `0.50` (50%)        | Sustained KPI signal, cohort-level differences         | 24–72 hours            |
 | Full   | `1.00` (100%)       | Final guardrail check, support volume                  | —                      |
 
-To bump:
-
-```
-Update-Feature-Flag(flag_id=<id>, ruleset={"rolloutPercentage": 0.10})
-```
-
-The tool merges into the current ruleset — variants and other ruleset fields are preserved. You don't need to re-send variants to change rollout.
+Bump the rollout by updating the flag's `ruleset.rolloutPercentage`. The update merges into the current ruleset — variants and other ruleset fields are preserved. You don't need to re-send variants to change rollout.
 
 ## Slower cadence (high-stakes flags)
 
@@ -41,11 +35,7 @@ Use for non-user-facing changes (infra routing, internal tools, log format chang
 
 ## Kill-switch triggers
 
-A staged rollout exists so you can **kill fast** when something goes wrong. The kill switch is `status: "disabled"`, not `rolloutPercentage: 0`.
-
-```
-Update-Feature-Flag(flag_id=<id>, status="disabled")
-```
+A staged rollout exists so you can **kill fast** when something goes wrong. The kill switch is `status: "disabled"`, not `rolloutPercentage: 0`. Update the flag's status to `"disabled"`.
 
 ### Trigger conditions that justify a kill
 
@@ -72,7 +62,7 @@ Two reasons, both compounding:
 
 ### The one exception
 
-If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's a different problem and the right tool is the experiment-side `Update-Experiment(action="conclude")`, not a flag-level operation. This only applies to experiment-linked flags; see [experiment-linked-flags.md](experiment-linked-flags.md).
+If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's a different problem and the right path is the experiment-side `conclude` action, not a flag-level operation. This only applies to experiment-linked flags; see [experiment-linked-flags.md](experiment-linked-flags.md).
 
 ## After mid-stage rollout — three honest choices
 

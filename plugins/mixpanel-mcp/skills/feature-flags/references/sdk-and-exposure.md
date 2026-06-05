@@ -51,7 +51,7 @@ A 50% rollout that shows a 60/40 split in `$feature_flag_called` is either:
 
 Work the checklist in order, most-likely cause first:
 
-1. **Is `status: enabled`?** Most common cause of zero exposures by a wide margin. A flag at `disabled` serves the control variant to everyone regardless of `rolloutPercentage`, and no `$feature_flag_called` events fire for users who would have been in the rollout. Check `Get-Feature-Flag` first.
+1. **Is `status: enabled`?** Most common cause of zero exposures by a wide margin. A flag at `disabled` serves the control variant to everyone regardless of `rolloutPercentage`, and no `$feature_flag_called` events fire for users who would have been in the rollout. Read the flag's current state first.
 2. **Does the SDK code path actually call the tracking entry point?** `mixpanel.getFeatureFlag('<key>')` etc. Calls to the no-track variants (`getFeatureFlagWithoutTracking`) intentionally suppress `$feature_flag_called`. Compare the key string exactly — typos are silent failures.
 3. **Is the SDK initialized in the client?** Check for SDK init events. If the SDK never initializes (token missing, network blocked, error during boot), no flag events will ever fire.
 4. **Are users in the targeted cohort/property bucket?** Check the `context` field of the flag and any cohort-based targeting configured in the UI. If the rollout targets `enterprise_paying` and no users are in that cohort yet, exposures will be zero.

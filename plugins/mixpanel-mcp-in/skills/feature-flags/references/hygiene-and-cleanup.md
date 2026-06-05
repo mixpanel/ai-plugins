@@ -10,9 +10,9 @@ Most flag debt is in the third category. This reference covers how to find it, h
 
 ## Before any new flag — check for prior work
 
-When a user asks to set up a flag for a feature, **always call `List-Feature-Flags` first** with `name=` (matches display name, partial) or `key=` (matches flag key, partial) seeded from the feature name. Surface anything you find:
+When a user asks to set up a flag for a feature, **always list the project's existing flags first** with a partial display-name or key match seeded from the feature name. Surface anything you find:
 
-- **Same feature already gated?** Ask whether they want to update the existing flag (`Update-Feature-Flag`) instead of creating a duplicate. Two flags controlling the same code path is a debugging nightmare.
+- **Same feature already gated?** Ask whether they want to update the existing flag instead of creating a duplicate. Two flags controlling the same code path is a debugging nightmare.
 - **Earlier flag from a now-shipped experiment?** Often safe to archive. Don't create a new flag whose key collides.
 - **Flag with the same intended key?** Keys must be unique within a project. The system auto-suffixes to avoid collisions, but the user almost always wants the clean key — ask whether to retire the old one.
 
@@ -20,10 +20,10 @@ Skipping this check leads to flag debt: orphaned flags, ambiguous evaluation, an
 
 ## Cleanup workflow
 
-```
-List-Feature-Flags(status="enabled")   # candidates for archive review
-List-Feature-Flags(status="disabled")  # candidates for archive (likely abandoned)
-```
+Start with two cuts:
+
+- List flags with `status="enabled"` — candidates for archive review.
+- List flags with `status="disabled"` — candidates for archive (likely abandoned).
 
 For each disabled flag, ask: **is the SDK code that reads this flag still in the codebase?**
 
@@ -45,12 +45,7 @@ Sequence:
 
 1. Confirm with the team that the feature is permanent and the flag is no longer load-bearing.
 2. Delete the SDK call sites in the application code.
-3. Once the deploy has rolled out and no production code reads the flag, archive:
-
-```
-Update-Feature-Flag(flag_id=<id>, status="disabled")
-Update-Feature-Flag(flag_id=<id>, status="archived")
-```
+3. Once the deploy has rolled out and no production code reads the flag, archive: disable first, then archive (two flag updates).
 
 The flag must be `disabled` before `archived` — the API rejects archiving an `enabled` flag with `FAILED_PRECONDITION: Cannot archive an enabled flag`. See [lifecycle-and-state-machine.md](lifecycle-and-state-machine.md#archive-precondition) for the full state machine.
 
@@ -67,7 +62,7 @@ Letting a flag drift in `enabled, 100%` indefinitely without documentation is th
 ## Archive vs kill switch — they are different operations
 
 - **Kill switch** (`status: "disabled"` on an actively-rolling flag) → instant, reversible, preserves rollout state. Use during debugging or when a regression appears. The flag is still readable, still listable, still investigatable.
-- **Archive** (`status: "archived"` after disabling) → terminal cleanup. The flag is read-only, hidden from default `List-Feature-Flags` (unless `include_archived=True`), and the SDK stops evaluating it.
+- **Archive** (`status: "archived"` after disabling) → terminal cleanup. The flag is read-only, hidden from default flag listings (unless archived flags are explicitly requested), and the SDK stops evaluating it.
 
 Archiving a flag that real users are actively being bucketed by is a **destructive operation**: the SDK starts serving control to everyone, and the rollout state is lost. If the user describes a live flag they want to "turn off," confirm whether they mean kill (disable) or end (archive). The default for ambiguous "turn it off" requests is disable, not archive.
 
@@ -88,4 +83,4 @@ The `description` field is the only context a post-launch maintainer will have w
 1. **Why the flag exists.** A one-line hypothesis or operational rationale. "Gates the redesigned checkout button while we collect baseline metrics" beats no description.
 2. **Whether it's permanent or temporary.** A flag at 100% rollout with description "permanent kill switch for legacy auth" reads very differently from the same flag with no description (which reads as "probably stale, should investigate").
 
-The MCP doesn't enforce ownership metadata, but the description is the cheapest available proxy. Use it.
+Mixpanel doesn't enforce ownership metadata on flags, but the description is the cheapest available proxy. Use it.
