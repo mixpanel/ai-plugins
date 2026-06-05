@@ -35,7 +35,7 @@ The rubric evaluates 8 weighted dimensions. Read `references/rubric.md` for the 
 
 ## Scoring
 
-Each check is scored **PASS** (1.0), **WARN** (0.5), **FAIL** (0.0), or **N/A** (excluded). Some checks count double (marked in the rubric). See `references/rubric.md` for the full scoring formula and blocker overrides.
+Each check is scored **PASS** (1.0), **WARN** (0.5), **FAIL** (0.0), or **N/A** (excluded). All checks have equal weight within their dimension. See `references/rubric.md` for the full scoring formula and blocker overrides.
 
 | Score | Meaning |
 |-------|---------|
