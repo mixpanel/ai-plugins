@@ -147,7 +147,6 @@ variants                     → Required for dynamic_config; optional for featu
 key                          → Auto-slugified from name with random suffix if omitted
 description                  → Short text; recommended for dynamic_config
 status                       → "disabled" (default; do not override on creation)
-servingMethod                → "remote_or_local" (default) | "remote_only"
 context                      → "distinct_id" (default)
 rolloutPercentage            → 1.0 (100% of targeted traffic; cohort/property
                                 targeting configured in UI)
