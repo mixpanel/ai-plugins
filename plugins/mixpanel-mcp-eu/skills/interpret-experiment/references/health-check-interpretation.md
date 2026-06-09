@@ -2,8 +2,6 @@
 
 Turn the platform's already-computed health verdict into a plain-language explanation, an ordered list of likely causes, and a recommended next action.
 
-**Never recompute thresholds.** Read the verdict fields described below; if a field is absent, say so — do not synthesize a verdict from raw numbers.
-
 ---
 
 ## Kohavi framing — always cite when a health check fails

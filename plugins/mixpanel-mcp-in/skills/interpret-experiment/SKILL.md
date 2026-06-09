@@ -46,7 +46,7 @@ Given `lift` and the metric's `direction` ("up" or "down", defaults to "up"):
 - `direction == "up"` → **positive** if `lift > 0`, else **negative**.
 - `direction == "down"` → **positive** if `lift < 0`, else **negative**.
 
-A row in `summary.positive` with `direction: "down"` is a **regression**, not a win. Always filter out the control row first (use `settings.controlKey`).
+A row in `summary.positive` with `direction: "down"` is a **regression**, not a win. Always filter out the control row first — the platform marks which variant is control.
 
 The platform auto-applies multiple-testing correction when the experiment is configured for Bonferroni or Benjamini-Hochberg — **don't re-correct**.
 
@@ -74,7 +74,7 @@ Top-down: what to do, in order.
 
 ## 1. Fetch the experiment
 
-If the user hasn't named a specific experiment, ask which one before fetching. Don't guess from context — interpreting the wrong experiment burns more time than the clarifying question costs.
+If the user hasn't named a specific experiment, ask which one before fetching. Don't guess from context — interpreting the wrong experiment burns more time than the clarifying question costs. Accept the experiment by name or by ID; try ID match first, then case-insensitive name match.
 
 Request the experiment details with exposure and metric data included. The agent's tool layer maps that intent to the right parameters; don't hand-write API arguments.
 

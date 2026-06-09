@@ -110,6 +110,6 @@ When recommending EXTEND on an active experiment, the action is to update the ex
 ## Output shape
 
 1. **The reason** (one of the five above), in one sentence.
-2. **The evidence from the experiment-details response** — which fields told you (e.g. "exposures only at 4.2k of the 10k target," "observed lift 0.8% vs planned MDE 5%," etc.).
+2. **The evidence** — concrete numbers from the experiment (e.g. "exposures only at 4.2k of the 10k target," "observed lift 0.8% vs planned MDE 5%").
 3. **Recommendation** from the table above, with the specific experiment update or follow-up action.
 4. **What to NOT do**, briefly — the wrong-way temptation specific to this experiment.

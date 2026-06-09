@@ -2,8 +2,6 @@
 
 Translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single row of `summary` actually mean?"_
 
-**Consume, don't recompute.** Read `lift`, `liftConfidence`, `value`, `sampleSize`, and the bucket-derived `significance` ("YES_POSITIVE" / "YES_NEGATIVE" / "NO") from the experiment-details response. Then translate.
-
 ---
 
 ## The mental model
@@ -126,7 +124,7 @@ Different metric types behave differently; cite the relevant nuance in your verd
 
 | Tier          | How it influences the verdict                                                                                                                                                                                 |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Primary**   | **Decisional.** The platform auto-applies correction when `multipleTestingCorrection` is `"bonferroni"` or `"benjamini-hochberg"` (across primaries × variants).                                              |
+| **Primary**   | **Decisional.** The platform auto-applies correction when the experiment is configured for Bonferroni or Benjamini-Hochberg (across primaries × variants).                                                    |
 | **Guardrail** | **Vetoes** a ship if polarity is negative with meaningful magnitude.                                                                                                                                          |
 | **Secondary** | **Exploratory only.** NOT Bonferroni-corrected. **Never base a ship decision on secondary metrics**, even if the hypothesis text references them. Treat any "significance" here as a hypothesis to test next. |
 
