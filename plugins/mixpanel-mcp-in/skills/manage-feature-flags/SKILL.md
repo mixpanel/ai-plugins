@@ -64,6 +64,8 @@ Do **not** trigger for experiment results interpretation ("should we ship this e
 
 Run in order. Each step's output is the next step's input. Skip the steps that don't apply to the user's request (e.g. a "kill the flag" turn only needs steps 1, 6, and 8).
 
+**Identifying flags the user mentions.** Users refer to flags by display name (`"the checkout flag"`), not by UUID. When the user names a flag, search by key first (exact match), then by case-insensitive name. If more than one matches, list them with name + key and ask which one. Never ask the user for a UUID.
+
 ### 1. Route the request
 
 Before doing anything, decide which flag-shaped product the user actually wants:
@@ -111,7 +113,7 @@ A newly created flag is off until you enable it. Enabling does not start the rol
 
 ### 5. Ramp
 
-A newly-enabled flag starts at 0% rollout — you'll always need to bump it manually. Standard cadence is `1% → 10% → 50% → 100%` with 24h+ holds between stages. Higher-stakes flags want a slower cadence with denser steps; lower-stakes flags can move faster only if monitoring will catch a regression in minutes, not hours.
+A newly-enabled flag starts at 0% rollout — you'll always need to bump it manually. A recommended cadence that works for most flags is `1% → 10% → 50% → 100%` with at least 24h between stages — calibrate to product risk and the monitoring you actually have. Higher-stakes flags want a slower cadence with denser steps; lower-stakes flags can move faster only if monitoring will catch a regression in minutes, not hours.
 
 Cadence variants and the rationale for each are in [staged-rollout.md](references/staged-rollout.md).
 

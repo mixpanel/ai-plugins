@@ -63,13 +63,12 @@ Two practical rules:
 1. **Don't ask the user for a key unless they mentioned one.** The system derives a slugified key from the name and appends a short random suffix to avoid collisions. The auto-key is almost always fine.
 2. **Names should describe the gated behavior, not the experiment hypothesis.** `new_checkout_button_visible` will outlive `q2_checkout_redesign_test`. Push back gently if the user proposes a name tied to a calendar quarter, project codename, or person.
 
-### Auto-key generation — what the user gets
+### Auto-key generation — two sharp edges
 
-The auto-key generator slugifies the name (ASCII alphanumerics only, lowercased, with `-` or `_` as separator depending on the name) and appends a short random suffix for collision safety. A few sharp edges worth knowing:
+The auto-key generator slugifies the name and appends a short random suffix for collision safety. Two surprises worth surfacing:
 
 - **Non-ASCII characters are stripped.** A name like `café-naïve` produces a key like `caf-na-ve-<suffix>`. If the user cares about the key form, propose an ASCII version of the name up front.
-- **Names with no alphanumeric characters** (e.g. `!!!`) fall back to the literal string `flag` plus the suffix.
-- **The random suffix is always appended**, even if there's no collision. If the user wants a clean key (e.g. exactly `new_checkout_v2`), they need to pass it explicitly — but a collision will then cause the create to fail rather than silently suffix.
+- **The random suffix is always appended**, even with no collision. If the user wants a clean key (e.g. exactly `new_checkout_v2`), they need to pass it explicitly — but a collision will then cause the create to fail rather than silently suffix.
 
 ### Flag keys are immutable after creation
 

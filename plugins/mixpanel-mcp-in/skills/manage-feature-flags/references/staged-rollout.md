@@ -1,14 +1,10 @@
 # Staged rollout and the kill switch
 
-The lifecycle spine in `SKILL.md` covers the standard `1% → 10% → 50% → 100%` cadence. This reference covers the real-world cadence variants, why the cadence is logarithmic, and the precise rules for when to kill.
-
-## Why incremental rollout
-
-A 1% rollout exposes ~1% of users to whatever bug ships with the change. Going straight to 100% means a regression hits everyone at once. Staged rollout converts a potential incident into a bounded learning opportunity. The standard cadence is calibrated to surface problems fast (high blast-radius signals like crashes appear within hours) while bounding their cost.
+The lifecycle spine in `SKILL.md` covers a recommended `1% → 10% → 50% → 100%` cadence. Mixpanel doesn't impose this — it's a default that works for most teams; calibrate to product risk and the monitoring you actually have. This reference covers the cadence variants, why the cadence is logarithmic, and the rules for when to kill.
 
 The pattern is **logarithmic, not linear**. Doubling at each stage exposes the failure mode you'd hit at 100% within the first few stages, while keeping the blast radius bounded if it does fail.
 
-## Standard cadence (default)
+## Recommended cadence (default for most flags)
 
 | Stage  | Rollout | Watch for                                              | Wait before next stage |
 | ------ | ------- | ------------------------------------------------------ | ---------------------- |

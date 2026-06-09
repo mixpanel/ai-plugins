@@ -1,13 +1,6 @@
 # Flag hygiene and cleanup
 
-A healthy project has:
-
-- A small number of long-lived **operational** flags (kill switches, geo-gates, plan tiers).
-- A small number of short-lived **feature-gate** flags (gating a feature behind a staged rollout).
-- A small number of in-flight **experimental** flags (active rollouts).
-- **Zero** finished flags whose code has been deleted but whose entity lingers in the project.
-
-Most flag debt is in the last category. This reference covers how to find it, how to triage it, and the discipline that prevents it from accumulating.
+Most flag debt is the same shape: a feature shipped or got reverted, and its flag is still sitting in the project. This reference covers how to find those flags, how to triage them, and the discipline that prevents them from accumulating.
 
 ## Before any new flag — check for prior work
 
