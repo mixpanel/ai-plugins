@@ -39,63 +39,33 @@ If the team genuinely wants to make that trade, they can disable the guardrail b
 
 ## The catalogue
 
-Each entry: severity → trigger condition → why it matters → what to recommend.
-
 ### Insufficient duration for the configured MDE — blocker
 
-**Trigger.** Expected exposures over the planned window are less than 50% of the per-arm sample size required to detect the configured MDE at the baseline rate.
-
-**Why it matters.** The experiment cannot reach statistical power for this MDE no matter how clean the rest of the config is. If launched, the most likely outcome is "inconclusive" — and a non-trivial fraction of those inconclusive results will be due to noise crossing the significance threshold rather than a real effect (the winner's-curse problem).
-
-**Recommendation.** Extend planned duration to cover the required sample, OR relax the MDE (only ship if the lift is bigger), OR pick a higher-volume primary metric, OR enable CUPED if pre-exposure data is available (which can cut required sample by 30–70%).
+**Expected exposures over the planned window cover less than 50% of the required per-arm sample.** The experiment cannot reach statistical power for this MDE no matter how clean the rest of the config is. The most likely outcome is "inconclusive," and a non-trivial fraction of those inconclusive results will be noise crossing the significance threshold rather than a real effect (the winner's-curse problem). Extend planned duration to cover the required sample, OR relax the MDE (only ship if the lift is bigger), OR pick a higher-volume primary metric, OR enable CUPED if pre-exposure data is available (cuts required sample 30–70%).
 
 ### Cohort too small — blocker
 
-**Trigger.** Eligible cohort size is smaller than the number of arms × the per-arm target sample size. The cohort cannot supply enough eligible users.
-
-**Why it matters.** Same root cause as the duration blocker, different lever. Even with infinite time, the experiment will run out of eligible users before each arm reaches the per-arm target.
-
-**Recommendation.** Either expand the cohort to comfortably exceed `num_arms × target_sample_size` eligible users (relax filters, broaden segment, extend eligibility window), or lower the per-arm target sample size to what the cohort can actually supply (and accept the larger achievable MDE that comes with it).
+**Eligible cohort size is smaller than (number of arms × per-arm target).** Same root cause as the duration blocker, different lever. Even with infinite time, the experiment will run out of eligible users. Either expand the cohort to comfortably exceed (number of arms × per-arm target) eligible users (relax filters, broaden segment, extend eligibility window), or lower the per-arm target to what the cohort can supply (and accept the larger achievable MDE).
 
 ### Pre-experiment bias likely — warning
 
-**Trigger.** Retro A/A is enabled, at least one continuous-ish metric (continuous, retention, or funnel) is configured, AND CUPED is off.
-
-**Why it matters.** Pre-experiment bias is likely on metrics with seasonality or power-user skew. Without CUPED to absorb the baseline difference, post-experiment lifts will inherit it — the team will see "treatment up 2%" when the real treatment effect is 0% and the baseline difference is +2%.
-
-**Recommendation.** Enable CUPED with a 2–4 week pre-exposure window. CUPED specifically handles this case: it regresses out the pre-exposure baseline difference so the post-exposure lift is the actual treatment effect.
+**Retro A/A is enabled, at least one continuous-ish metric (continuous, retention, or funnel) is configured, AND CUPED is off.** Pre-experiment bias is likely on metrics with seasonality or power-user skew. Without CUPED to absorb the baseline difference, post-experiment lifts inherit it — the team sees "treatment up 2%" when the real treatment effect is 0% and the baseline difference is +2%. Enable CUPED with a 2–4 week pre-exposure window; it specifically regresses out the pre-exposure baseline difference.
 
 ### High variance, no Winsorization — warning
 
-**Trigger.** At least one continuous-ish metric is configured AND Winsorization is off.
-
-**Why it matters.** Outliers will inflate variance and widen confidence intervals. A handful of power users can dominate the per-arm mean, swinging the headline based on which arm those users got assigned to.
-
-**Recommendation.** Enable Winsorization at the platform default percentile (typically 95). Push back if the user sets a percentile below ~80 (that's more than 20% of values capped — almost always a misconfiguration).
+**At least one continuous-ish metric is configured AND Winsorization is off.** Outliers will inflate variance and widen confidence intervals; a handful of power users can dominate the per-arm mean. Enable Winsorization at the platform default percentile (typically 95). Push back if the user sets a percentile below ~80 — more than 20% of values capped is almost always a misconfiguration.
 
 ### Multiple primaries, no correction — warning
 
-**Trigger.** ≥2 primary metrics configured AND multiple-testing correction is off.
-
-**Why it matters.** Family-wise false-positive rate compounds with each additional primary. At 3 primaries the FPR is ~14.3%; at 5 it's ~22.6% — more than one in five "wins" is noise.
-
-**Recommendation.** Enable multiple-testing correction. Default to Benjamini-Hochberg (more powerful with correlated metrics); use Bonferroni for strict family-wise error control.
+**≥2 primary metrics configured AND multiple-testing correction is off.** Family-wise false-positive rate compounds with each additional primary: at 3 primaries ~14.3%, at 5 ~22.6% — more than one in five "wins" is noise. Enable multiple-testing correction. Default to Benjamini-Hochberg (more powerful with correlated metrics); use Bonferroni for strict family-wise error control.
 
 ### Marginally underpowered duration — warning
 
-**Trigger.** Expected exposures are between 50% and 100% of the per-arm sample size required for the configured MDE.
-
-**Why it matters.** Marginally underpowered. The experiment might reach significance on a true effect; it might not. Either way, the lift estimate at conclusion will be wider than expected.
-
-**Recommendation.** Extend duration to reach 100%+ of the required sample, or accept the higher Type-II error rate (more chance of missing a real effect). Less urgent than the insufficient-duration blocker.
+**Expected exposures cover 50–100% of the required per-arm sample.** The experiment might reach significance on a true effect; it might not. Either way, the lift estimate at conclusion will be wider than expected. Extend duration to reach 100%+ of the required sample, or accept the higher Type-II error rate. Less urgent than the insufficient-duration blocker.
 
 ### Missing guardrails — warning
 
-**Trigger.** Zero guardrail metrics configured.
-
-**Why it matters.** Without guardrails, there's no >5% hard-gate to block a ship on a regression to user experience, revenue, or performance. The team is implicitly trusting that the primary metric captures every relevant impact — which is rarely true.
-
-**Recommendation.** Add at least one guardrail covering the most likely failure mode of the change. Standard choices:
+**Zero guardrail metrics configured.** Without guardrails, there's no >5% hard-gate to block a ship on a regression. The team is implicitly trusting that the primary captures every relevant impact — rarely true. Add at least one guardrail covering the most likely failure mode of the change:
 
 - UI change → page-load time or error rate.
 - Monetisation / pricing → cancel rate or refund rate.
@@ -104,19 +74,11 @@ Each entry: severity → trigger condition → why it matters → what to recomm
 
 ### Hypothesis ↔ metric mismatch — warning
 
-**Trigger.** The hypothesis text mentions one of the canonical metric nouns (conversion, retention, revenue, signup, engagement, click, purchase) but no primary metric's name appears to measure that outcome.
-
-**Why it matters.** Soft signal — the heuristic is coarse, but it catches the common case where the user wrote "X will increase conversion" and then set the primary to "session count" or vice versa. If the user's hypothesis is about conversion, the primary should be a conversion metric.
-
-**Recommendation.** Phrase as a question, not a verdict: _"Your hypothesis mentions `<noun>`, but no primary metric name suggests it measures that. Should `<configured primary>` be replaced or supplemented with a metric that more directly tests the hypothesis?"_
+**The hypothesis mentions a canonical metric noun (conversion, retention, revenue, signup, engagement, click, purchase) but no primary's name appears to measure that outcome.** Soft signal — the heuristic is coarse, but it catches the common case where the user wrote "X will increase conversion" and then set the primary to "session count." Phrase as a question, not a verdict: _"Your hypothesis mentions `<noun>`, but no primary metric name suggests it measures that. Should `<configured primary>` be replaced or supplemented with a metric that more directly tests the hypothesis?"_
 
 ### Primary lacks a leading indicator — warning
 
-**Trigger.** Primary metrics include a retention-type metric (lagging by construction) AND no leading-indicator secondary (conversion or funnel type) is configured.
-
-**Why it matters.** A retention primary is valid but reads slowly — there may not be enough signal to interpret results before the experiment concludes. Without a leading-indicator secondary, the agent has no early-read evidence to reason from.
-
-**Recommendation.** Add a leading-indicator secondary metric (a conversion or funnel metric measured within the experiment runtime). The retention primary stays as the ship decision; the secondary just gives early visibility.
+**Primaries include a retention-type metric AND no leading-indicator secondary (conversion or funnel type) is configured.** A retention primary is valid but reads slowly — there may not be enough signal to interpret results before the experiment concludes. Add a leading-indicator secondary measured within the experiment runtime; the retention primary stays as the ship decision, the secondary just gives early visibility.
 
 ---
 
@@ -128,4 +90,4 @@ The detection math lives in the platform's pre-launch validation capability. The
 
 - **Cross-test contamination** — when the same users are eligible for multiple concurrent experiments on the same surface. Hard to detect statically; usually surfaces as anomalous variance at interpretation time.
 - **Novelty effect detection** — early days of the experiment show inflated treatment effect, then settle. Not a pre-launch check; lives in the post-launch interpretation skill.
-- **Seasonality misalignment** — running a 2-week experiment that doesn't align to weekly cycles. Today this is detected indirectly via the duration check; a future explicit `seasonality_misaligned` pitfall is a reasonable add.
+- **Seasonality misalignment** — running a 2-week experiment that doesn't align to weekly cycles. Today this is detected indirectly via the duration check; a future explicit seasonality-alignment check is a reasonable add.

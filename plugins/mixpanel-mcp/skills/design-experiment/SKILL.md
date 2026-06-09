@@ -1,6 +1,6 @@
 ---
 name: design-experiment
-description: "Coach an experimenter through designing a Mixpanel experiment before launch — hypothesis framing, metric roles, statistical model, sizing, advanced features (CUPED / Winsorization / multiple-testing correction), and pitfall avoidance. Use when the user wants to set up, design, configure, plan, or sanity-check a new A/B test, feature-flag experiment, or growth experiment. Also trigger on phrasings like 'help me set up an experiment', 'design an A/B test', 'should this be sequential or fixed', 'what MDE can I detect', 'how long should this run', 'is my experiment configured correctly', 'pre-launch checklist', 'should I use CUPED / Winsorization / Bonferroni', 'is this an experiment or just a feature flag', or when the user names a specific feature they want to test. Do NOT use for post-launch results analysis ('how did experiment X do?', 'should we ship?', 'why is Sample Ratio Mismatch failing?') — that belongs to the `interpret-experiment` skill. Do NOT use for plain feature-flag rollouts with no measurement criterion — that belongs to the `feature-flags` skill."
+description: "Coach an experimenter through designing a Mixpanel experiment before launch — hypothesis framing, metric roles, statistical model, sizing, advanced statistical features (variance reduction via CUPED, outlier capping via Winsorization, false-positive correction via Bonferroni / Benjamini-Hochberg), and pitfall avoidance. Use when the user wants to set up, design, configure, plan, or sanity-check a new A/B test, feature-flag experiment, or growth experiment. Also trigger on phrasings like 'help me set up an experiment', 'design an A/B test', 'should this be sequential or fixed-horizon', 'what minimum detectable effect can I get', 'how long should this run', 'is my experiment configured correctly', 'pre-launch checklist', 'should I use variance reduction or outlier capping', 'is this an experiment or just a feature flag', or when the user names a specific feature they want to test. Do NOT use for post-launch results analysis ('how did experiment X do?', 'should we ship?', 'why is Sample Ratio Mismatch failing?') — that belongs to the `interpret-experiment` skill. Do NOT use for plain feature-flag rollouts with no measurement criterion — that belongs to the `feature-flags` skill."
 license: Apache-2.0
 ---
 
@@ -84,7 +84,7 @@ If the user is vague, hold them to five commitments: the change, the primary met
 The hypothesis names a specific outcome. The primary metric must measure that outcome — same population, same denominator, same timeframe.
 
 - **Primaries** (1–3 max) come from the hypothesis's outcome clause. Each additional primary inflates the family-wise false-positive rate.
-- **Guardrails** (strongly recommended) cover the most likely failure mode of the change (perf for UI changes, retention for monetisation changes, error rate for new client code).
+- **Guardrails** (strongly recommended) cover the most likely failure mode of the change — see the guardrails-by-domain table in [references/metric-selection.md](references/metric-selection.md).
 - **Secondaries** are diagnostic only.
 
 Every primary and guardrail needs an explicit `direction`. Watch for the **lagging-indicator trap** (30-day retention as primary on a 2-week experiment) and the **changed-denominator trap** (metric defined only over treatment-exposed users — lift is artificially infinite). Full sanity checklist and standard guardrails-by-domain table in [references/metric-selection.md](references/metric-selection.md).
@@ -99,15 +99,14 @@ Sample-size floor: keep per-variant target above the platform's reliability floo
 
 ## 5. Pick testing model + end condition
 
-**Default to Sequential** for most users. Peeking is the most common Mixpanel customer mistake; Sequential makes early-look safe. Override to Frequentist when hunting for a very small lift on a well-sized experiment, or when the team has tooling that requires t-test familiarity.
+Four choices, each with a default that's right for most users:
 
-**End condition.** Sample-based when daily traffic is variable; date-based when the primary metric has strong weekly seasonality (pin to multiples of the seasonal cycle). Frequentist + date-based is supported intentionally — don't flag it as a misconfiguration.
+- **Testing model** — default Sequential (peeking is safe by design); Frequentist only for small-lift hunts on well-sized tests.
+- **End condition** — sample-based for variable traffic; date-based for strong weekly seasonality.
+- **Confidence level** — default 0.95 (verify in product); 0.99 for irreversible high-stakes ships; 0.90 only when speed beats rigour.
+- **Multiple-testing correction** — enable when there are ≥2 primaries OR ≥2 non-control variants; default Benjamini-Hochberg, Bonferroni for strict family-wise control.
 
-**Confidence level.** Default 0.95 (verify in product). Bump to 0.99 only for irreversible high-stakes ships; drop to 0.90 only for exploratory low-stakes tests, and tell the user explicitly that one in ten "wins" will be noise.
-
-**Multiple-testing correction.** Enable when there are ≥2 primaries OR ≥2 non-control variants. Default Benjamini-Hochberg (more powerful with correlated metrics); use Bonferroni for strict family-wise control (regulatory, etc.). Without correction, family-wise FPR climbs fast — 5 primaries × 3 variants → ~54%.
-
-Full decision tree and worked numbers in [references/statistical-model.md](references/statistical-model.md).
+Decision tree, the peeking-trap explanation, worked compounding-FPR numbers, and the four valid model × end-condition combinations are in [references/statistical-model.md](references/statistical-model.md).
 
 ## 6. Decide on advanced features
 
@@ -140,10 +139,12 @@ Creating the experiment is the irreversible step. Present a compact summary and 
 • *Achievable MDE on current traffic:* <X>% relative
 
 *Pitfall check:*
-✅ Underpowered duration — adequate
-✅ Cohort size — adequate
-⚠️ <pitfall name> — <short explanation>
+✅ Insufficient duration — adequate
+✅ Cohort too small — adequate
+⚠️ Missing guardrails — no guardrail metrics configured; >5% hard-gate cannot protect this ship
 ```
+
+Use the exact catalogue labels from [references/pitfalls.md](references/pitfalls.md) so the agent's pitfall messages stay consistent across sessions.
 
 After creating, link the new experiment back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
 

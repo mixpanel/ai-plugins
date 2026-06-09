@@ -75,6 +75,8 @@ Enable when there are ≥2 primary metrics OR ≥2 non-control variants. Without
 |         5 |                    2 |                               ~40.1% |
 |         5 |                    3 |                               ~53.7% |
 
+Derived from the standard `1 − (1 − α)^k` compounding for `k = primaries × non-control variants` independent tests at per-test α = 0.05.
+
 The takeaway: by the time you're testing 5 primaries on a 3-arm experiment, more than half of the "wins" are noise.
 
 Two methods are available:
