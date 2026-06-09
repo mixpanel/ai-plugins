@@ -100,10 +100,23 @@ For each dimension, evaluate every check:
 2. Compute the overall score: weighted sum of dimension scores using the weights in the dimension table.
 3. Apply score caps if applicable (see `references/rubric.md`).
 
-## 4. Present the report
+## 4. Review reference files
 
-Output the report using the format above. Issues are listed in dimension order.
+If the skill has files in `references/`, start a separate agent for each reference file. Classify each file and pick the right reviewer:
 
-## 5. Offer to help fix
+- **Skill** — the file prescribes a behaviour or a set of instructions for the agent to follow (execution steps, decision logic, workflows). Run `/review-skill` on it.
+- **Documentation** — the file provides context, reference material, or domain knowledge to be read and understood, not executed (rubrics, guides, templates, data files). Run `/review-document` on it.
+
+Collect the per-file scores and issues from each agent.
+
+Merge the reference-file findings into the main report: append a "Reference file reviews" section after the main issues, listing each file's score and issues. If any reference file scores below 70%, note it as a Major finding under Dimension 3 (Structure & Readability) — poor reference files degrade the skill.
+
+Skip this step if the skill has no reference files.
+
+## 5. Present the report
+
+Output the report using the format above. Issues are listed in dimension order, followed by the reference-file review results (if any).
+
+## 6. Offer to help fix
 
 After the report, offer to generate a prioritised fix plan if issues were found.
