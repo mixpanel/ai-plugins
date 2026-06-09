@@ -1,6 +1,6 @@
 ---
 name: interpret-experiment
-description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read, interpret, or make a ship/iterate/kill/wait call on an experiment, asks why an experiment hasn't reached statistical significance, asks what an SRM or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds. Do NOT use for experiment setup questions (sizing, metric selection, hypothesis framing, advanced-feature config) — those belong to the `experiment-setup` skill.
+description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read results, decide whether to ship / iterate / kill / keep waiting, asks why an experiment isn't showing a clear winner yet, asks what a Sample Ratio Mismatch (SRM) or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds. Do NOT use for experiment setup questions (sizing, metric selection, hypothesis framing, advanced-feature config) — those belong to the `experiment-setup` skill.
 license: Apache-2.0
 ---
 
@@ -48,7 +48,7 @@ Given `lift` and the metric's `direction` ("up" or "down", defaults to "up"):
 
 A row in `summary.positive` with `direction: "down"` is a **regression**, not a win. Always filter out the control row first (use `settings.controlKey`).
 
-The platform auto-applies multiple-testing correction when `settings.multipleTestingCorrection` is `"bonferroni"` or `"benjamini-hochberg"` — **don't re-correct**.
+The platform auto-applies multiple-testing correction when the experiment is configured for Bonferroni or Benjamini-Hochberg — **don't re-correct**.
 
 ## Data-source fallback
 
@@ -73,6 +73,8 @@ For multi-variant tests, special variant constants (`__no_variant_shipped__`, `_
 Top-down: what to do, in order.
 
 ## 1. Fetch the experiment
+
+If the user hasn't named a specific experiment, ask which one before fetching. Don't guess from context — interpreting the wrong experiment burns more time than the clarifying question costs.
 
 Request the experiment details with exposure and metric data included. The agent's tool layer maps that intent to the right parameters; don't hand-write API arguments.
 

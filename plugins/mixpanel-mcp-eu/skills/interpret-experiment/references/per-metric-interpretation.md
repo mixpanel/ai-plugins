@@ -30,7 +30,7 @@ Apply the polarity recipe from the spine — see the **Components** section of `
 
 ## Reading the p-value in this platform
 
-Mixpanel runs a frequentist comparison at the configured `settings.confidenceLevel` — typically 0.95 (verify in product if results look off). If it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
+Mixpanel runs a frequentist comparison at the experiment's configured confidence level — typically 0.95 (verify in product if results look off). If it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
 
 The platform-specific trap worth flagging: `liftConfidence` on a result row is the **confidence level used** (e.g. `0.95`), **not the CI width**. Easy to misread.
 
@@ -70,16 +70,16 @@ Pick the phrase that matches the four-question pattern. These are the words to u
 
 Statistical significance ≠ business impact. Always convert a win into absolute terms before declaring it meaningful:
 
-1. Baseline from the control variant: `live_metrics[metricId][controlKey].value` (or the `summary.no` row where `variant == controlKey`).
+1. Baseline from the control variant's metric value (the experiment-details response carries it on the per-variant row).
 2. Lift from the winning row.
-3. Absolute lift: `baseline_value × lift`. Examples:
+3. Absolute lift: `baseline × lift`. Examples:
    - `baseline = 0.02`, `lift = 0.04` → `+0.0008` → **+0.08 percentage points** of conversion rate.
    - `baseline = 12.4 events/user/week`, `lift = -0.05` → `-0.62 events/user/week`.
 4. Project to population per period: ask the user for traffic estimates if not in context. "A 5% lift on a 20% baseline metric serving 1M users/week" sounds very different from "a 5% lift on a 0.1% baseline metric serving 1k users/week."
 
-### Fallback when `value` / `sampleSize` are null
+### Fallback when the baseline value or sample size is missing
 
-Common — happens whenever live computation timed out or `results_cache.metrics` was nulled. Don't silently skip practical significance; **a broken-data summary with only the lift number is exactly when users over-trust the percentage.**
+Common — happens whenever live computation timed out or the cached results were nulled. Don't silently skip practical significance; **a broken-data summary with only the lift number is exactly when users over-trust the percentage.**
 
 Run a query on the metric, scoped to the control variant over the experiment's date range, to fetch the baseline. Match the metric's aggregation:
 
@@ -117,8 +117,8 @@ Different metric types behave differently; cite the relevant nuance in your verd
 
 ## Variance-reduction & outlier settings that change interpretation
 
-- **CUPED** (`settings.cuped.enabled == true`): mean is unchanged; variance reduced 30–70%; CIs narrower; power higher. Note: CUPED requires users to exist before the experiment — new-user-only experiments cannot use CUPED; if it's enabled there, it had no effect (mention as informational, not as a misconfiguration to fix).
-- **Winsorization** (`settings.winsorization.enabled == true`): extreme values capped at the configured percentiles, pooled across variants. Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A `percentile` much lower than the default 95 is a misconfiguration — see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
+- **CUPED enabled**: mean is unchanged; variance reduced 30–70%; CIs narrower; power higher. Note: CUPED requires users to exist before the experiment — new-user-only experiments cannot use CUPED; if it's enabled there, it had no effect (mention as informational, not as a misconfiguration to fix).
+- **Winsorization enabled**: extreme values capped at the configured percentile, pooled across variants. Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A percentile much lower than the platform default (typically 95) is a misconfiguration — see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
 
 ---
 
@@ -130,7 +130,7 @@ Different metric types behave differently; cite the relevant nuance in your verd
 | **Guardrail** | **Vetoes** a ship if polarity is negative with meaningful magnitude.                                                                                                                                          |
 | **Secondary** | **Exploratory only.** NOT Bonferroni-corrected. **Never base a ship decision on secondary metrics**, even if the hypothesis text references them. Treat any "significance" here as a hypothesis to test next. |
 
-If `settings.multipleTestingCorrection` is `"off"` AND there are 2+ primaries × 1+ non-control variants: don't auto-discount a single significant primary, but look at the aggregate. If most primaries point the same direction, there's likely a real effect. If only one or two of many are significant, it's inconclusive until correction is enabled.
+If multiple-testing correction is off AND there are 2+ primaries × 1+ non-control variants: don't auto-discount a single significant primary, but look at the aggregate. If most primaries point the same direction, there's likely a real effect. If only one or two of many are significant, it's inconclusive until correction is enabled.
 
 ---
 
@@ -153,7 +153,7 @@ For the full "why hasn't this hit statsig yet" walk-through, see [why-no-statsig
 
 ## Frequentist vs Sequential — what affects per-metric reading
 
-Check `settings.testingModel`:
+Check the experiment's testing model:
 
 - `"frequentist"` — pre-defined sample size or duration. **Peeking inflates the false-positive rate.** If the user concluded before reaching the configured target, every per-metric significance verdict is suspect. Note: frequentist + `endCondition: "days"` is supported intentionally — do not flag the combination itself as a misconfiguration.
 - `"sequential"` — designed for continuous monitoring. Stopping early when significance is reached is safe and intended.

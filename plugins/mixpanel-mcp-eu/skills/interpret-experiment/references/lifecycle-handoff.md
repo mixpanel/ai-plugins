@@ -36,4 +36,4 @@ A multi-variant test where only one treatment is significantly different from co
 
 ## After concluding
 
-The decision record (`results_cache.message`, `results_cache.variant`, and `status` transitioning to `concluded` / `success` / `fail`) becomes the durable artifact. If a follow-up question comes in about why this experiment was shipped, that record is the answer.
+The decision record — the rationale message, the shipped variant, and the experiment's terminal status — becomes the durable artifact. If a follow-up question comes in about why this experiment was shipped, that record is the answer.

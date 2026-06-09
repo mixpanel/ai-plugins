@@ -17,9 +17,9 @@ Before answering "why no statsig?", run the **trustworthiness gate**. If anythin
 
 Also check:
 
-- `lift is None` on the primary → no measurement, not "no effect."
-- The primary is in `metrics[]` but missing from `live_metrics` and `results_cache.metrics` → "no measurement."
-- `live_results_errors` is non-null → results are stale or partial; resolve before drawing power conclusions.
+- The primary's lift is missing or null → no measurement, not "no effect."
+- The primary is listed on the experiment but has no computed result (live or cached) → "no measurement," not "no effect."
+- The live results carry an error block → results are stale or partial; resolve the backend issue before drawing power conclusions.
 
 ---
 
@@ -29,7 +29,7 @@ Walk through these in order. The first one that explains the picture is usually 
 
 ### 1. Not enough sample yet (not enough exposures)
 
-**What to look at**: `live_exposures` per variant vs `settings.sampleSize`; or `end_date - start_date` vs `start_date + settings.endAfterDays`; plus `settings.testingModel`.
+**What to check**: per-variant exposure counts against the configured end target (sample size or duration, whichever the experiment was configured with), and which testing model the experiment is using.
 
 - **Sequential** + target not reached → genuinely too early. Recommend **WAIT**.
 - **Frequentist** + target not reached → also too early; do NOT peek-and-call. Recommend **WAIT** to the configured end, or restart as sequential next time so peeking is safe.
@@ -39,7 +39,7 @@ If exposures are falling short of plan because traffic dropped: surface that. Qu
 
 ### 2. Observed effect is smaller than the MDE
 
-**What to look at**: the lift on the primary in `live_metrics[primary][treatment].lift`, plus the MDE the user planned for (typically captured in the experiment's `description` or recovered via the setup-side skill's power math).
+**What to check**: the lift on the primary metric, plus the MDE the user planned for (typically captured in the experiment's hypothesis/description, or recovered via the setup-side skill's power math).
 
 - Observed lift ≈ planned MDE → experiment is correctly sized for the effect; if not significant yet, see reason 1.
 - Observed lift **much smaller** than planned MDE → the effect (if any) is below what this experiment was sized to detect. Two real options:
@@ -49,9 +49,9 @@ If exposures are falling short of plan because traffic dropped: surface that. Qu
 
 ### 3. Variance is too high (metric is too noisy)
 
-**What to look at**: distribution type of the metric, plus `settings.cuped.enabled` and `settings.winsorization.enabled`.
+**What to check**: the metric's distribution type, plus whether CUPED and Winsorization are enabled.
 
-- **Gaussian** metric (revenue, time-on-page) with no winsorization → whales inflate variance, widen CIs, and crush power. Recommend enabling Winsorization (default percentile 95) on the next run.
+- **Gaussian** metric (revenue, time-on-page) with no Winsorization → whales inflate variance, widen CIs, and crush power. Recommend enabling Winsorization on the next run.
 - **Poisson** metric (event counts per user) → one heavy user can swing results. Same Winsorization recommendation; also consider switching to a rate metric if the hypothesis is about behavior, not volume.
 - **Bernoulli** metric near 0% or 100% → variance shrinks at the extremes, but so does the absolute scale of detectable effects. Lifts near 50% rates are easiest; lifts near 0%/100% need much more sample.
 - **CUPED not enabled** AND the metric correlates with pre-exposure behavior AND users existed before the experiment → enabling CUPED on a re-run typically cuts required sample 30–70%.
@@ -59,7 +59,7 @@ If exposures are falling short of plan because traffic dropped: surface that. Qu
 
 ### 4. Traffic split is starving the variant
 
-**What to look at**: `settings.srm.targetAllocations` and `live_exposures` per variant.
+**What to check**: the configured traffic split against the actual per-variant exposure counts.
 
 - Even split (50/50) when one variant is the bottleneck → balanced is optimal for power, so this is usually not the issue.
 - Skewed split (e.g. 90/10) → the smaller variant is undersampled; power is bottlenecked by the small side. If the skew was for risk reasons, that's a deliberate trade-off; flag that the smaller variant will reach significance much later.
@@ -69,11 +69,11 @@ Never change traffic allocation mid-Frequentist test — it invalidates the SRM 
 
 ### 5. Exposure config is filtering more users than the user expects
 
-**What to look at**: the exposure tracking method (`$experiment_started` event volume), any audience filters on the backing feature flag, and `settings.excludeQA`.
+**What to check**: exposure event volume, any audience filters on the backing feature flag, and whether QA traffic is being excluded.
 
-- A property filter or audience filter on the feature flag is excluding most users → exposures lag the user's mental "available traffic." Inspect the flag's rollout rules; query `$experiment_started` to confirm how many users actually got exposed.
+- A property filter or audience filter on the feature flag is excluding most users → exposures lag the user's mental "available traffic." Inspect the flag's rollout rules; query the exposure event to confirm how many users actually got exposed.
 - The exposure event isn't firing where the user thinks it does (e.g. only on a deep-funnel page) → effective exposed cohort is much smaller than top-of-funnel traffic. Confirm with a query on the exposure event.
-- `settings.excludeQA` was off and you suspect internal traffic is dominating one variant → enable it on the next run (results then are cleaner but also smaller).
+- QA traffic isn't being excluded and you suspect internal traffic is dominating one variant → enable the QA exclusion on the next run (results then are cleaner but also smaller).
 
 **Triggered / dilution math** matters here too. If only a fraction of "exposed" users actually saw the change (e.g. they didn't reach the screen where the treatment differs), the population-level lift is diluted. See the triggered-analysis notes in [per-metric-interpretation.md](per-metric-interpretation.md).
 
@@ -93,7 +93,7 @@ Once you know which reason fits, the recommendation almost picks itself.
 | Exposure config is filtering           | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample.               |
 | Experiment finished, well-powered      | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters.       |
 
-When recommending EXTEND on an active experiment, the action is an experiment update with an increased `endAfterDays` (or `sampleSize`, depending on `endCondition`). Don't fabricate the target number — derive it from the platform's existing config, or send the user to the `experiment-setup` skill for the power math.
+When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or send the user to the `experiment-setup` skill for the power math.
 
 ---
 

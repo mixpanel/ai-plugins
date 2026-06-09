@@ -83,7 +83,7 @@ If treatment users _arrive_ at a screen more often but _complete_ at a lower per
 
 Replay analysis is qualitative. Be honest about that.
 
-- ✅ _"In 4 of 5 treatment replays, users hesitated >5 seconds at the new modal then closed it without acting. In 5 of 5 control replays, users clicked through within 2 seconds. This is consistent with the conversion drop in `live_metrics`."_
+- ✅ _"In 4 of 5 treatment replays, users hesitated >5 seconds at the new modal then closed it without acting. In 5 of 5 control replays, users clicked through within 2 seconds. This is consistent with the conversion drop in the experiment's results."_
 - ❌ _"Treatment is causing confusion."_ — too strong; n=5 is a hypothesis, not a verdict.
 
 Tie observations back to specific quantitative results from the experiment-details response. If the replay story contradicts the numbers, **trust the numbers first** and treat the replays as either a wrong cohort sample or a richer-than-expected behavior.
