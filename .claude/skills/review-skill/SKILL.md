@@ -82,37 +82,35 @@ Follow these steps in order.
 
 ## 1. Locate and read the skill
 
-Accept the skill by name (search `plugins/*/skills/`, `.claude/skills/`, and `skills/`) or by path. Read every file in the skill directory tree — do not sample. Record the file list and line counts. Flag unexpected meta-documentation files (README.md, CHANGELOG.md).
+Accept the skill by name (search `plugins/*/skills/`, `.claude/skills/`, and `skills/`) or by path. If the skill directory or its SKILL.md cannot be found, report the search paths tried and stop. Read every file in the skill directory tree — do not sample. Record the file list and line counts. Flag unexpected meta-documentation files (README.md, CHANGELOG.md).
 
-## 2. Load rubric and evaluate
+## 2. Evaluate and report
 
-Read `references/rubric.md` for the full check definitions.
+Start a new agent to run the evaluation. Give it the skill files from step 1, the Scoring discipline, and `references/rubric.md`. The agent:
 
-For each dimension, evaluate every check:
-1. Determine if the check applies (mark N/A only when the check genuinely cannot apply — e.g., mutation checks for a read-only skill, multi-file checks for a single-file skill). Do not mark N/A to avoid a hard judgement.
-2. Score the check: PASS, WARN, or FAIL, following the Scoring discipline.
-3. Record a brief justification quoting the file and text where the issue was found.
-4. If the check is not PASS, record it as an issue — a Major if the rubric tags the check Major, otherwise an untagged finding.
+1. Reads `references/rubric.md` for the full check definitions.
+2. For each dimension, evaluates every check:
+   - Determines if the check applies (mark N/A only when it genuinely cannot apply — e.g., mutation checks for a read-only skill). Do not mark N/A to avoid a hard judgement.
+   - Scores the check: PASS, WARN, or FAIL, following the Scoring discipline.
+   - Records a justification quoting the file and text where the issue was found.
+   - If the check is not PASS, records it as an issue — Major if the rubric tags it Major, otherwise untagged.
+3. Computes scores:
+   - For each dimension: weighted average of applicable checks (excluding N/A).
+   - Overall score: weighted sum of dimension scores using the dimension weights.
+   - Applies score caps if applicable (see `references/rubric.md`).
+4. Returns the formatted report using the output format above, issues in dimension order.
 
-## 3. Compute scores
+Present the agent's report to the user.
 
-1. For each dimension: compute the weighted average of applicable checks (excluding N/A).
-2. Compute the overall score: weighted sum of dimension scores using the weights in the dimension table.
-3. Apply score caps if applicable (see `references/rubric.md`).
+## 3. Offer to review reference files
 
-## 4. Present the report
-
-Output the report using the format above. Issues are listed in dimension order.
-
-## 5. Offer to review reference files
-
-If the skill has files in `references/`, ask the user whether they also want each reference file reviewed. If the user agrees, start a separate agent for each reference file. Classify each file and pick the right reviewer:
+If the skill has files in `references/`, ask the user whether they also want each reference file reviewed. If the user agrees, start a separate agent for each reference file. The agent runs the full review and returns the final report. Classify each file and pick the right reviewer:
 
 - **Skill** — the file prescribes a behaviour or a set of instructions for the agent to follow (execution steps, decision logic, workflows). Run `/review-skill` on it.
 - **Documentation** — the file provides context, reference material, or domain knowledge to be read and understood, not executed (rubrics, guides, templates, data files). Run `/review-document` on it.
 
-Present each reference-file review as it completes.
+Present each agent's report to the user as it completes.
 
-## 6. Offer to help fix
+## 4. Offer to help fix
 
 After all reviews are done, offer to generate a prioritised fix plan if issues were found.
