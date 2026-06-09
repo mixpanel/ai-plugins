@@ -1,5 +1,5 @@
 ---
-name: mixpanel-mcu-in
+name: manage-boards
 description: >
   Full lifecycle dashboard management for Mixpanel — create, template, clone, clean up,
   inventory, and update dashboards across projects and teams. ALWAYS use when a user asks
