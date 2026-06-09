@@ -2,8 +2,6 @@
 
 Read per-segment results once you have them. The companion reference [segment-of-interest-selection.md](segment-of-interest-selection.md) covers how to pick the segments in the first place.
 
-> **Platform support status.** Reading segment-level experiment results depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment queries against the experiment's metrics and exposures, then interpreting the resulting numbers with the same rules below. If the experiment-details response doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.
-
 ---
 
 ## The mental model
@@ -93,3 +91,9 @@ This is the everyday case of mixed effects.
 2. **Per-segment table** — segment, exposed-per-variant, polarity-corrected verdict (win / loss / no effect / underpowered).
 3. **What the segment view changes about the overall verdict** — usually one of: nothing, narrow to subset, iterate due to one cohort, or "investigate Simpson's."
 4. **Caveats** — which segments are below the sample floor, which weren't pre-committed (and so are hypothesis-generating).
+
+---
+
+## Platform support status
+
+Reading segment-level experiment results depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment queries against the experiment's metrics and exposures, then interpreting the resulting numbers with the rules above. If the experiment-details response doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.
