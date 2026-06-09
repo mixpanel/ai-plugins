@@ -35,7 +35,6 @@ From the layout, derive and cache:
 
 Compute `days_since` from the chosen recency timestamp (today minus that date). Then classify. **Staleness and structure are independent axes** — evaluate both and a board may carry a structural flag *and* a stale flag.
 
-> **Use the bundled helper for staleness and duplicate math.** Run `scripts/dashboard_utils.py` rather than re-deriving title normalization or recency arithmetic by hand each run — it is the single source of truth for `days_since(...)`, `normalize_title(...)`, and `is_probable_duplicate(...)`. This keeps results deterministic across runs.
 
 **Structural flags** (from layout):
 
@@ -44,7 +43,7 @@ Compute `days_since` from the chosen recency timestamp (today minus that date). 
 | **Empty** | 0 report cells AND 0 text cells (or only a single default text card) | 🟡 Empty |
 | **Text-only** | 0 report cells but has text cards | 🟡 Text-only |
 | **Sparse** | 1-2 report cells only | 🔵 Sparse |
-| **Potential duplicate** | `is_probable_duplicate()` returns true vs. another board — i.e. normalized-title similarity ≥ 0.80 (difflib ratio) **or** one normalized title is contained in the other | 🟠 Possible dup |
+| **Potential duplicate** | Normalized-title similarity ≥ 0.80 vs. another board, **or** one normalized title is contained in the other (see **Duplicate detection** below) | 🟠 Possible dup |
 | **Healthy** | 3+ report cells | ✅ Active |
 
 **Recency flag** (from `days_since`, only if a timestamp was found):
@@ -55,14 +54,14 @@ Compute `days_since` from the chosen recency timestamp (today minus that date). 
 | **Aging** | 60 ≤ `days_since` < 90 | 🟤 Aging ([N]d) |
 | **Recent** | `days_since` < 60 | (no flag) |
 
-> Default threshold is 90 days. If the user names a different window ("anything untouched for 6 months", "stale = 30 days"), use theirs. State the threshold in the report header.
+> Use the default threshold from the classification table above unless the user names a different window ("anything untouched for 6 months", "stale = 30 days"), in which case use theirs. State the threshold in the report header.
 
 **Cleanup priority** — order the action list by: 🔴 Stale **and** (Empty/Text-only/Sparse) first → 🔴 Stale + Active → 🟠 duplicates → 🟡 structural-only. The worst offenders are old *and* thin.
 
-**Duplicate detection** — delegated to `scripts/dashboard_utils.py`:
-- `normalize_title()` lowercases and strips trailing "(Copy)", "(N)", trailing dates, and surrounding whitespace.
-- `is_probable_duplicate(a, b)` returns true when the difflib similarity ratio of the two normalized titles is ≥ 0.80, **or** one normalized title is a substring of the other (e.g. "KPI Dashboard" vs "KPI Dashboard v2").
-- Run it pairwise across the board list; flag both members of any matching pair.
+**Duplicate detection** — apply these rules inline:
+- **Normalize each title:** lowercase it, then strip any trailing "(Copy)", "(N)", trailing dates, and surrounding whitespace.
+- **Compare every pair** of normalized titles. Flag the pair as a possible duplicate when either their similarity ratio is ≥ 0.80 (e.g. a `difflib.SequenceMatcher` ratio or an equivalent character-overlap measure), **or** one normalized title is a substring of the other (e.g. "KPI Dashboard" vs "KPI Dashboard v2").
+- Run the comparison pairwise across the full board list; flag both members of any matching pair.
 
 ### Phase 4 — Report
 
