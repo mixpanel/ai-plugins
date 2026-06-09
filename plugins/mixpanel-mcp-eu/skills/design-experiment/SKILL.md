@@ -1,6 +1,6 @@
 ---
 name: design-experiment
-description: "Coach an experimenter through designing a Mixpanel experiment before launch — hypothesis framing, metric roles, statistical model, sizing, advanced statistical features (variance reduction via CUPED, outlier capping via Winsorization, false-positive correction via Bonferroni / Benjamini-Hochberg), and pitfall avoidance. Use when the user wants to set up, design, configure, plan, or sanity-check a new A/B test, feature-flag experiment, or growth experiment. Also trigger on phrasings like 'help me set up an experiment', 'design an A/B test', 'should this be sequential or fixed-horizon', 'what minimum detectable effect can I get', 'how long should this run', 'is my experiment configured correctly', 'pre-launch checklist', 'should I use variance reduction or outlier capping', 'is this an experiment or just a feature flag', or when the user names a specific feature they want to test. Do NOT use for post-launch results analysis ('how did experiment X do?', 'should we ship?', 'why is Sample Ratio Mismatch failing?') — that belongs to the `interpret-experiment` skill. Do NOT use for plain feature-flag rollouts with no measurement criterion — that belongs to the `feature-flags` skill."
+description: "Coach an experimenter through designing a Mixpanel experiment before launch — hypothesis framing, metric roles, statistical model, sizing, advanced statistical features (variance reduction via CUPED, outlier capping via Winsorization, false-positive correction via Bonferroni / Benjamini-Hochberg), and pitfall avoidance. Use when the user wants to set up, design, configure, plan, or sanity-check a new A/B test, feature-flag experiment, or growth experiment. Also trigger on phrasings like 'help me set up an experiment', 'design an A/B test', 'should this be sequential or fixed-horizon', 'what minimum detectable effect can I get', 'how long should this run', 'is my experiment configured correctly', 'pre-launch checklist', 'should I use variance reduction or outlier capping', 'is this an experiment or just a feature flag', or when the user names a specific feature they want to test. Do NOT use for post-launch results analysis ('how did experiment X do?', 'should we ship?', 'why is Sample Ratio Mismatch failing?') — that belongs to the `interpret-experiment` skill. Do NOT use for plain feature-flag rollouts with no measurement criterion — that belongs to the `manage-feature-flags` skill."
 license: Apache-2.0
 ---
 
@@ -67,7 +67,7 @@ Top-down: what to do, in order.
 
 ## 1. Route and check for prior work
 
-**Route Experiment vs Feature Flag first.** Wants causal evidence (lift, ship/no-ship from data) → experiment. Wants progressive rollout, kill switch, or per-segment gating with no measurement criterion → feature flag (route to the `feature-flags` skill). If ambiguous, ask once: _"Are you measuring whether this change moves a metric (experiment), or rolling it out gradually with no measurement criterion (feature flag)?"_ Deeper disambiguation in [references/routing-xp-vs-ff.md](references/routing-xp-vs-ff.md).
+**Route Experiment vs Feature Flag first.** Wants causal evidence (lift, ship/no-ship from data) → experiment. Wants progressive rollout, kill switch, or per-segment gating with no measurement criterion → feature flag (route to the `manage-feature-flags` skill). If ambiguous, ask once: _"Are you measuring whether this change moves a metric (experiment), or rolling it out gradually with no measurement criterion (feature flag)?"_ Deeper disambiguation in [references/routing-xp-vs-ff.md](references/routing-xp-vs-ff.md).
 
 **Check for prior experiments on the same feature.** Search the project by keywords drawn from the feature name. If a prior-experiments lookup isn't available, say so explicitly — don't fabricate "no priors found." Surface anything you find: a same-feature ship suggests "don't re-run, iterate on a new hypothesis"; a prior kill is a strong prior the user has to argue past; an earlier iteration gives you reliable baseline and variance numbers that sharpen the new MDE. Fold-in playbook in [references/prior-experiments.md](references/prior-experiments.md).
 
@@ -179,5 +179,5 @@ If the user hasn't named a specific feature or surface, ask before fetching base
 ## Related skills
 
 - `interpret-experiment` — post-launch analysis. Use after the experiment ships.
-- `feature-flags` — pure rollout / kill-switch / gating without measurement.
+- `manage-feature-flags` — pure rollout / kill-switch / gating without measurement.
 - `create-dashboard` — live monitoring of primary + guardrail metrics during the experiment.

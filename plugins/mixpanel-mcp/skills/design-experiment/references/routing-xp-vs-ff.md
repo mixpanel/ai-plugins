@@ -65,7 +65,7 @@ Continue with the four-step setup workflow in the main `SKILL.md`. The output of
 
 ### If feature flag
 
-This skill stops. Hand off to the `feature-flags` skill:
+This skill stops. Hand off to the `manage-feature-flags` skill:
 
 - They configure variants, targeting, and rollout percentages directly.
 - No hypothesis, no MDE, no stopping rule needed.
