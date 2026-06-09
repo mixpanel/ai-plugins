@@ -16,15 +16,9 @@ license: Apache-2.0
 
 # Documentation Review
 
-Reviews a documentation set against a rubric and produces a percentage score plus a prioritised list of issues to fix.
+Reviews a documentation set against a rubric and produces a percentage score plus a prioritised list of issues to fix. This is a read-only review — report, then offer a fix plan.
 
-The first duty of docs is to be *true*: a confident, well-written page that misdescribes the code is worse than no page. So accuracy against the actual code is weighted highest and is **verified, not assumed** — every concrete claim is checked against the source.
-
-This is a read-only review. Do not modify the docs being reviewed; report, then offer a fix plan.
-
-The bar is high. Docs that merely "read well" are not good enough — they must be accurate, current, concise, and navigable. Score conservatively (see Scoring discipline).
-
-Conciseness is a first-order concern, not a nicety: keep only what is specific to this project, and cut what the reader already knows. Every paragraph that restates the obvious competes with the one that carries the load.
+The first duty of docs is to be *true*: accuracy against the actual code is weighted highest and **verified, not assumed**. Beyond accuracy, docs must be current, concise, and navigable — every paragraph that restates the obvious competes with the one that carries the load. Score conservatively (see Scoring discipline).
 
 ---
 
@@ -59,14 +53,9 @@ Each check is scored **PASS** (1.0), **WARN** (0.5), **FAIL** (0.0), or **N/A** 
 | 50-69% | Major gaps or inaccuracy |
 | 0-49% | Largely stale or misleading — rewrite |
 
-## Scoring discipline
+## Reviewer stance
 
-The score must reflect a demanding reviewer, not a generous one. **Adopt the stance of a seasoned editor or investigative journalist:** assume the author is beside you and will push back, so go after the single weakest claim, not the average. Nothing earns praise by default; the doc earns each PASS. Apply these to every check:
-
-- **Burden of proof is on the doc.** Score PASS only when the doc clearly meets the check. For accuracy, that means you read the code and confirmed the claim — the absence of a known problem is not proof of correctness.
-- **When uncertain between two ratings, pick the lower one.** Ambiguous → WARN; partially met → FAIL unless the gap is trivial.
-- **One real defect FAILs its check.** A single wrong path, stale symbol, or "no longer / now / replaces" changelog phrase fails its check — do not average it away because the surrounding prose is good.
-- **Quote the evidence.** Every non-PASS rating must cite the doc file and exact text; for an accuracy failure, also cite the code file/symbol that contradicts it. A rating with no concrete evidence is invalid — re-score it.
+The review must reflect a demanding reviewer, not a generous one. **Adopt the stance of a seasoned editor or investigative journalist:** assume the author is beside you and will push back, so go after the single weakest claim, not the average. Nothing earns praise by default; the doc earns each PASS.
 
 ## Issues
 
@@ -93,7 +82,14 @@ Accept the docs by path, glob, or name. If none is given, confirm the target wit
 
 ## 2. Read the docs and the code they describe
 
-Read every in-scope file in full — do not sample. Then, for each concrete claim a doc makes (a path, a symbol, a behaviour, a default value, a command), locate the corresponding code or asset and confirm it still exists and behaves as described; accuracy cannot be judged from the prose alone. If a referenced symbol, path, or behaviour cannot be located in the code, that is itself the finding (a stale reference or an unverifiable claim) — never score such a claim PASS. If the repo documents its own doc conventions (for example a CLAUDE.md "Conventions" section), read them — Dimension 7 scores against them.
+Read every in-scope file in full — do not sample. Then verify every concrete claim against the code:
+
+1. **Named paths and symbols** — search the codebase for each file path, class, function, and config key the doc names. Confirm it exists and is spelled correctly.
+2. **Behavioural claims** — read the relevant function or class to confirm the described behaviour matches what the code does.
+3. **Values and defaults** — check that any stated number, default, or config value matches the current source or asset.
+4. **Unverifiable claims** — if a claim cannot be located in the code after a reasonable search, flag it as unverifiable rather than scoring PASS.
+
+Accuracy cannot be judged from the prose alone. If the repo documents its own doc conventions (for example a CLAUDE.md "Conventions" section), read them — Dimension 7 scores against them.
 
 ## 3. Load rubric and evaluate
 

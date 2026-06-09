@@ -86,21 +86,21 @@ Accept the skill by name (search `plugins/*/skills/`, `.claude/skills/`, and `sk
 
 ## 2. Evaluate and report
 
-Start a new agent to run the evaluation. Give it the skill files from step 1, the Scoring discipline, and `references/rubric.md`. The agent:
-
-1. Reads `references/rubric.md` for the full check definitions.
-2. For each dimension, evaluates every check:
+1. Launch a new general-purpose agent with:
+   - The full content of every skill file read in step 1
+   - The Scoring discipline section from this skill
+   - The full content of `references/rubric.md`
+2. The agent evaluates every check in the rubric:
    - Determines if the check applies (mark N/A only when it genuinely cannot apply — e.g., mutation checks for a read-only skill). Do not mark N/A to avoid a hard judgement.
    - Scores the check: PASS, WARN, or FAIL, following the Scoring discipline.
    - Records a justification quoting the file and text where the issue was found.
    - If the check is not PASS, records it as an issue — Major if the rubric tags it Major, otherwise untagged.
-3. Computes scores:
+3. The agent computes scores:
    - For each dimension: weighted average of applicable checks (excluding N/A).
    - Overall score: weighted sum of dimension scores using the dimension weights.
    - Applies score caps if applicable (see `references/rubric.md`).
-4. Returns the formatted report using the output format above, issues in dimension order.
-
-Present the agent's report to the user.
+4. The agent returns the formatted report using the output format above, issues in dimension order.
+5. Present the agent's report to the user.
 
 ## 3. Offer to review reference files
 

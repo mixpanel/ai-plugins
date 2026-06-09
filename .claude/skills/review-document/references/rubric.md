@@ -2,6 +2,7 @@
 
 ## Contents
 
+- Scoring Rules
 - Dimension 1 — Accuracy & Currency (20%)
 - Dimension 2 — Structure & Readability (15%)
 - Dimension 3 — Conciseness & DRY (15%)
@@ -12,7 +13,12 @@
 - Dimension 8 — Examples, Links & Commands (10%)
 - Scoring Formula
 
-Apply the **Scoring discipline** from SKILL.md to every check: the burden of proof is on the doc, ties go to the lower rating, and every non-PASS rating must quote concrete evidence (the doc text, plus the contradicting code for accuracy failures). WARN is for genuine partial compliance only — never a way to soften a FAIL.
+## Scoring rules
+
+Apply these rules to every check:
+
+- **When uncertain between two ratings, pick the lower one.**.
+- **Quote the evidence.** Every non-PASS rating must cite the doc file and exact text; for an accuracy failure, also cite the code file/symbol that contradicts it. A rating with no concrete evidence is invalid — re-score it.
 
 ## Dimension 1 — Accuracy & Currency (20%)
 

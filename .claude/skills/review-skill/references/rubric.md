@@ -152,7 +152,7 @@ Any reference file over 100 lines opens with a `## Contents` block listing its s
 - **FAIL:** A 250-line reference file with no contents block — a partial read misses half of it.
 - **N/A:** No reference file exceeds 100 lines.
 
-### References are one level deep — Major
+### References are one level deep
 
 Every companion file links directly from SKILL.md; no reference points onward to a further file the reader must chase, since nested files get read only partially.
 
