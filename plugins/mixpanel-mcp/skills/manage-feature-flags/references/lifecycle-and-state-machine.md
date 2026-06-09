@@ -1,5 +1,7 @@
 # Lifecycle and state machine
 
+This is the flag state machine plus the rules for which update calls preserve which fields. Read it before any update that touches `status` or `ruleset` — picking the wrong call shape silently drops fields.
+
 The three observable states a flag will ever expose are **disabled**, **enabled**, and **archived**. **Restored** is a write-only verb — never a state you'll see when reading the flag back.
 
 ## State machine

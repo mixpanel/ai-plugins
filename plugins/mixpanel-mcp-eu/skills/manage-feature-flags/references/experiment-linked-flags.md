@@ -1,5 +1,7 @@
 # Experiment-linked flags
 
+This is the playbook for flags governed by an experiment — how to spot one, which edits the experiment will overwrite, and when to hand off to `interpret-experiment` or `design-experiment`.
+
 When a flag is linked to an experiment, the recommended lifecycle path is the experiment, not direct flag updates. The API will not block direct flag edits — but the experiment owns the canonical state, and the next experiment transition will overwrite anything you set manually.
 
 ## The policy boundary
