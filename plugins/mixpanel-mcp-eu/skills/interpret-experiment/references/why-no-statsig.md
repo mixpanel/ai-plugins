@@ -2,7 +2,7 @@
 
 Help the user decide between **wait**, **extend**, **boost power**, **narrow the hypothesis**, or **accept the null** — _without_ recomputing the platform's verdicts.
 
-The actual stop / extend math (sample size, power, MDE) is owned by the `experiment-setup` skill — point the user there for the formulas. This reference explains _which_ lever to pull, not how to recompute one.
+The actual stop / extend math (sample size, power, MDE) is owned by the `design-experiment` skill — point the user there for the formulas. This reference explains _which_ lever to pull, not how to recompute one.
 
 ---
 
@@ -93,7 +93,7 @@ Once you know which reason fits, the recommendation almost picks itself.
 | Exposure config is filtering           | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample.               |
 | Experiment finished, well-powered      | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters.       |
 
-When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or send the user to the `experiment-setup` skill for the power math.
+When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or send the user to the `design-experiment` skill for the power math.
 
 ---
 

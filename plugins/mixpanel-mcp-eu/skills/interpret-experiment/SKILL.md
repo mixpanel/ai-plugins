@@ -1,6 +1,6 @@
 ---
 name: interpret-experiment
-description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read results, decide whether to ship / iterate / kill / keep waiting, asks why an experiment isn't showing a clear winner yet, asks what a Sample Ratio Mismatch (SRM) or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds. Do NOT use for experiment setup questions (sizing, metric selection, hypothesis framing, advanced-feature config) — those belong to the `experiment-setup` skill.
+description: Interprets a Mixpanel experiment's results and health checks. Use when the user asks to read results, decide whether to ship / iterate / kill / keep waiting, asks why an experiment isn't showing a clear winner yet, asks what a Sample Ratio Mismatch (SRM) or pre-experiment-bias verdict means, or wants to break results down by segment. Consumes the already-computed verdicts the platform returns — never recomputes thresholds. Do NOT use for experiment setup questions (sizing, metric selection, hypothesis framing, advanced-feature config) — those belong to the `design-experiment` skill.
 license: Apache-2.0
 ---
 
