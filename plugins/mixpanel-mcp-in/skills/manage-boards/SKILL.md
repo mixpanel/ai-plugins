@@ -12,17 +12,17 @@ description: >
   when dashboards are mentioned with "governance", "cleanup", "template", "onboarding",
   or "standardize". Do NOT use for A/B experiments (use `manage-experiments`), feature-flag
   rollouts (use `manage-flags`), or Lexicon/event-and-property metadata cleanup (use
-  `manage-lexicon`). Requires the Mixpanel IN connector (mcp-in.mixpanel.com).
-compatibility: "Requires the Mixpanel MCP (IN) connector (https://mcp-in.mixpanel.com/mcp) — the IN region. No other connectors required."
+  `manage-lexicon`). Requires Mixpanel MCP.
+compatibility: "Requires Mixpanel MCP (mcp.mixpanel.com or regional variants). No other connectors required."
 ---
 
-# Manage Boards (IN)
+# Manage Boards
 
 > **Loading model:** Progressive. Only this file on entry. Command files read on-demand after routing. Do not pre-load.
 
 Top-level router: validate project → route command → handle return.
 
-This skill uses the **Mixpanel MCP (IN)** connector only — the **IN** region (`https://mcp-in.mixpanel.com/mcp`). Always route every MCP call through this regional connector; never fall back to another region's Mixpanel connector. No other connectors are required or referenced.
+This skill uses the **Mixpanel MCP only**. No other connectors are required or referenced.
 
 ---
 
