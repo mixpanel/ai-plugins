@@ -4,17 +4,18 @@ Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](http
 
 ## Skills
 
-| Skill | Description |
-|---|---|
-| [`create-dashboard`](plugins/mixpanel-mcp/skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
-| [`deep-research`](plugins/mixpanel-mcp/skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks *why* a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
-| [`manage-lexicon`](plugins/mixpanel-mcp/skills/manage-lexicon/) | Audits, scores, enriches, and cleans up Lexicon metadata (events and properties) for a Mixpanel project. Supports scoring health, bulk-filling descriptions/tags, resetting metadata, triaging data quality issues, and managing tags. |
-| [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes. |
+| Skill                                                                             | Description                                                                                                                                                                                                                                                                                                  |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`create-dashboard`](plugins/mixpanel-mcp/skills/create-dashboard/)               | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout.                                                                                                                                                                                                            |
+| [`deep-research`](plugins/mixpanel-mcp/skills/deep-research/)                     | Conducts a structured metric investigation in Mixpanel. Use when a user asks _why_ a metric changed, what's driving a trend, or requests a deep dive or root cause analysis.                                                                                                                                 |
+| [`manage-experiment`](plugins/mixpanel-mcp/skills/manage-experiment/)             | Coaches an agent through any phase of a Mixpanel experiment — designing before launch (hypothesis, metrics, sizing, statistical model, advanced features, pre-launch checks) and interpreting after launch (read results, ship / iterate / kill / wait, health checks, segment breakdowns, session replays). |
+| [`manage-lexicon`](plugins/mixpanel-mcp/skills/manage-lexicon/)                   | Audits, scores, enriches, and cleans up Lexicon metadata (events and properties) for a Mixpanel project. Supports scoring health, bulk-filling descriptions/tags, resetting metadata, triaging data quality issues, and managing tags.                                                                       |
+| [`tracking-implementation`](plugins/mixpanel-mcp/skills/tracking-implementation/) | Guides an agent through Mixpanel analytics implementation. Supports Quick Start, Full Implementation, Add Tracking, and Audit modes.                                                                                                                                                                         |
 
 ### Internal skills
 
-| Skill | Description |
-|---|---|
+| Skill                                          | Description                                                                                                                                                                                |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`review-skill`](.claude/skills/review-skill/) | Reviews a skill against a weighted quality rubric (8 dimensions, 27 checks) and produces a score with actionable issues. Run `/review-skill <skill-name>` before requesting a code review. |
 
 ## Getting Started
@@ -30,20 +31,22 @@ claude plugin marketplace add mixpanel/ai-plugins
 2. Install the plugin for your region:
 
 **US**
+
 ```bash
 claude plugin install mixpanel-mcp
 ```
 
 **EU**
+
 ```bash
 claude plugin install mixpanel-mcp-eu
 ```
 
 **India**
+
 ```bash
 claude plugin install mixpanel-mcp-in
 ```
-
 
 ### Cursor
 
