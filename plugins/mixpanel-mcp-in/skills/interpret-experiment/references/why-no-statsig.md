@@ -1,8 +1,8 @@
 # Why Hasn't This Reached Statistical Significance Yet?
 
-Open this when the user asks why a primary metric is still inconclusive — _"why isn't this stat-sig yet?"_, _"should I wait or stop?"_, _"is this just underpowered?"_. The goal is to help the user decide between **wait**, **extend**, **boost power**, **narrow the hypothesis**, or **accept the null**, _without_ recomputing the platform's verdicts.
+Help the user decide between **wait**, **extend**, **boost power**, **narrow the hypothesis**, or **accept the null** — _without_ recomputing the platform's verdicts.
 
-The actual stop / extend math (sample size, power, MDE) is owned by the **setup-side skill** — point the user there for the formulas. This skill explains _which_ lever to pull, not how to recompute one.
+The actual stop / extend math (sample size, power, MDE) is owned by the `experiment-setup` skill — point the user there for the formulas. This reference explains _which_ lever to pull, not how to recompute one.
 
 ---
 

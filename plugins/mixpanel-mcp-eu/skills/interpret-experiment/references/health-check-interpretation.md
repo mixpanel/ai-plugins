@@ -1,8 +1,8 @@
 # Health-Check Interpretation
 
-Open this when Step 1 of the Decision Tree flags a failure (SRM, Retro A/A, insufficient exposures, peeking, broken-data, < 3-day window, or any misconfiguration). The goal is to turn the platform's already-computed verdict into a plain-language explanation, an ordered list of likely causes, and a recommended next action.
+Turn the platform's already-computed health verdict into a plain-language explanation, an ordered list of likely causes, and a recommended next action.
 
-**This skill never recomputes thresholds.** Read the verdict fields described below; if a field is absent, say so — do not synthesize a verdict from raw numbers.
+**Never recompute thresholds.** Read the verdict fields described below; if a field is absent, say so — do not synthesize a verdict from raw numbers.
 
 ---
 
@@ -134,17 +134,65 @@ If `endCondition: "sample_size"` with a tiny target (e.g. 10k) was reached in ho
 
 ---
 
-## 7. Misconfigurations to flag during Step 1
+## 7. Misconfigurations
 
-These don't always invalidate results, but they change how to _read_ them. Surface them as warnings.
+These don't always invalidate results, but they change how to _read_ them. Surface them as warnings during the trustworthiness gate.
 
-- `settings.multipleTestingCorrection in {"off", null}` AND there are 2+ primary metrics across 1+ non-control variants → without correction, any single significant primary may be a false positive. **Don't assume the result is broken** — look at all primary results in aggregate. If most or all primaries point the same direction (all positive or all negative), there is likely a real effect. If only one or two of many are significant, the result is **inconclusive due to false-positive risk**, and the user can enable correction (Benjamini-Hochberg or Bonferroni) and re-analyze. Family-wise error rate scales multiplicatively with metric count (e.g. 15 primaries × 1 variant at α=0.05 → ~54% expected family-wise false positive rate).
-- `settings.winsorization.enabled == true` AND `settings.winsorization.percentile` very low (e.g. < ~80) or unusually high (e.g. > ~99) → extreme outlier capping. The platform's default is 95; a percentile near 50 caps almost all data and likely indicates misconfiguration.
-- `settings.srm == null` OR `settings.srm.enabled == false` → the SRM check didn't run. **SRM is often deliberately disabled** (e.g. when feature-flag rollouts intentionally split traffic unevenly), so do not try to compute it yourself or treat the absence as a bug. Only flag if results otherwise look suspicious (Twyman-sized lifts, implausible exposure ratios) — then suggest the user re-enable SRM and re-analyze.
-- `settings.cuped.enabled == true` AND the experiment cohort is "new users only" → CUPED requires pre-exposure data, which new-user experiments lack, so CUPED simply has no effect. **This does NOT invalidate results** — variance reduction just didn't happen. Mention it as informational.
-- `settings.confidenceLevel != 0.95` → call out explicitly. `0.9` (α = 0.10) inflates false positives; `0.99` (α = 0.01) is conservative. Combine with metric count for a sense of family-wise error rate.
-- `metrics[]` contains entries with `name == ""` → likely a broken or placeholder metric reference. Flag and skip during analysis.
-- A primary metric appears in `metrics[]` but is **missing from `live_metrics` AND `results_cache.metrics`** → no result was computed for that primary. Surface prominently — this is "no measurement," not "no effect." Recommend the user re-sync results.
+### Multiple-testing correction off with several primaries
+
+**Condition**: `settings.multipleTestingCorrection` is `"off"` or `null` AND there are 2+ primary metrics across 1+ non-control variants.
+
+**Interpretation**: any single significant primary may be a false positive. Family-wise error rate scales multiplicatively with metric count (e.g. 15 primaries × 1 variant at α=0.05 → ~54% expected family-wise false positive rate).
+
+**Action**: look at all primary results in aggregate. If most point the same direction, there is likely a real effect. If only one or two of many are significant, the result is **inconclusive due to false-positive risk** — the user can enable Benjamini-Hochberg or Bonferroni and re-analyze.
+
+### Extreme winsorization percentile
+
+**Condition**: `settings.winsorization.enabled == true` AND `settings.winsorization.percentile` is very low (e.g. < ~80) or unusually high (e.g. > ~99).
+
+**Interpretation**: outlier capping is far from the platform's default of 95. A percentile near 50 caps almost all data and almost certainly indicates a misconfiguration.
+
+**Action**: ask the user to confirm the percentile was intentional; recommend resetting to 95 unless they have a specific reason.
+
+### SRM check disabled
+
+**Condition**: `settings.srm == null` OR `settings.srm.enabled == false`.
+
+**Interpretation**: the SRM check didn't run. **Often deliberate** — e.g. when a feature-flag rollout intentionally splits traffic unevenly. Do not compute SRM yourself, and do not treat the absence as a bug.
+
+**Action**: only flag if results otherwise look suspicious (Twyman-sized lifts, implausible exposure ratios). When you do flag, recommend re-enabling SRM and re-analyzing.
+
+### CUPED on new-users-only cohort
+
+**Condition**: `settings.cuped.enabled == true` AND the experiment cohort is "new users only".
+
+**Interpretation**: CUPED requires pre-exposure data, which new-user experiments lack — so CUPED simply had no effect. **This does NOT invalidate results.** Variance reduction just didn't happen.
+
+**Action**: mention as informational; no remediation needed for this experiment. For future experiments on the same surface, consider extending the cohort to include returning users so CUPED can apply.
+
+### Non-default confidence level
+
+**Condition**: `settings.confidenceLevel != 0.95`.
+
+**Interpretation**: `0.9` (α = 0.10) inflates false positives; `0.99` (α = 0.01) is conservative.
+
+**Action**: call out explicitly in the verdict. Combine with metric count to estimate the family-wise error rate.
+
+### Broken or placeholder metric entries
+
+**Condition**: `metrics[]` contains entries with `name == ""`.
+
+**Interpretation**: likely a broken or placeholder metric reference.
+
+**Action**: flag and skip during analysis.
+
+### Primary metric with no computed result
+
+**Condition**: a primary metric appears in `metrics[]` but is **missing from both** `live_metrics` and `results_cache.metrics`.
+
+**Interpretation**: no result was computed for that primary. **This is "no measurement," not "no effect."**
+
+**Action**: surface prominently; recommend the user re-sync results before drawing any conclusion that depends on this primary.
 
 ---
 

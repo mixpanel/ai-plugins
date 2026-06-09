@@ -1,6 +1,6 @@
 # Segment-Breakdown Interpretation
 
-Open this when the user has per-segment results in hand and wants to read them. The companion reference [segment-of-interest-selection.md](segment-of-interest-selection.md) covers how to pick the segments in the first place.
+Read per-segment results once you have them. The companion reference [segment-of-interest-selection.md](segment-of-interest-selection.md) covers how to pick the segments in the first place.
 
 > **Platform support status.** Reading segment-level experiment results depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment queries against the experiment's metrics and exposures, then interpreting the resulting numbers with the same rules below. If the experiment-details response doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.
 
@@ -49,7 +49,7 @@ Each segment value needs its own meaningful per-variant sample for the per-segme
 | Every segment shows treatment winning, but the overall metric shows control winning (or vice versa) | **Simpson's paradox.** The variant mix differs across segments. Run per-segment SRM checks — this often signals a bucketing bug rather than a real effect. |
 | Two opposite-direction effects in different segments that roughly cancel overall                    | **Mixed effects.** The headline says "no effect" but real winners and losers are hiding. The product question is whether the gains outweigh the losses.    |
 
-When you spot Simpson's paradox, route the user to [health-check-interpretation.md](health-check-interpretation.md) §SRM — it's usually the cause, not a real reversal.
+When you spot Simpson's paradox, route the user to the **SRM** section of [health-check-interpretation.md](health-check-interpretation.md) — bucketing is usually the cause, not a real reversal.
 
 ---
 

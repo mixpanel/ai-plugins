@@ -1,6 +1,6 @@
 # Session-Replay Analysis Guidance
 
-Open this when the user wants to use session replays to explain a quantitative experiment result — _"why is conversion down in treatment?"_, _"what are users actually doing in the treatment?"_, _"can replays explain the regression?"_. The goal is to turn a number into a behavior story.
+Turn a quantitative experiment result into a behavior story using session replays.
 
 > **Scope boundary.** This skill provides the _interpretation_ guidance for replay analysis. Actually fetching replay IDs for control vs treatment cohorts is a separate platform capability. If replay fetching isn't available in the current environment, say so to the user and recommend the manual flow: pull replays via the experiment's "View replays" UI for each variant, then bring the IDs back to discuss.
 

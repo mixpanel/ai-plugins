@@ -1,6 +1,6 @@
 # Segment-of-Interest Selection
 
-Open this when the user wants to break results down by user segments — _"slice this by platform"_, _"which segments should I look at?"_, _"are new users responding differently?"_. The goal is to pick 3–5 segments that are **likely to reveal a real effect difference**, before slicing every available dimension and ending up p-hacking.
+Pick 3–5 segments **likely to reveal a real effect difference** before slicing every available dimension and ending up p-hacking.
 
 The companion reference [segment-breakdown-interpretation.md](segment-breakdown-interpretation.md) covers how to _read_ the per-segment results once you have them.
 

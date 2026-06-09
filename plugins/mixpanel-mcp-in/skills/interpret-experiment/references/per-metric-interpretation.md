@@ -1,6 +1,6 @@
 # Per-Metric Interpretation
 
-Open this when the user wants you to translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single row of `summary` actually mean?"_
+Translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single row of `summary` actually mean?"_
 
 **Consume, don't recompute.** Read `lift`, `liftConfidence`, `value`, `sampleSize`, and the bucket-derived `significance` ("YES_POSITIVE" / "YES_NEGATIVE" / "NO") from the experiment-details response. Then translate.
 
@@ -19,28 +19,22 @@ A "win" requires **yes to (2)** AND **yes to (3)** AND **yes to (4)**. Skip any 
 
 ---
 
-## Polarity recipe (repeat from the spine — critical)
+## Polarity recipe
 
-`metric.direction` is `"up"` or `"down"` (defaults to `"up"`).
+Apply the polarity recipe from the spine — see the **Components** section of `SKILL.md`. Treat the bucket name in `summary.positive` / `summary.negative` as sign-of-lift only; the business verdict comes from combining it with `metric.direction`. Examples worth remembering:
 
-- `lift is None` or `lift == 0` → **neutral** (treat as no measurement / no effect respectively).
-- `direction == "up"` → **positive** if `lift > 0`, else **negative**.
-- `direction == "down"` → **positive** if `lift < 0`, else **negative**.
-
-A metric in `summary.positive` with `direction: "down"` is a **regression**. A metric in `summary.negative` with `direction: "down"` is a **win**. A `-1% interstitials_shown` lift in `summary.negative` with `direction: "down"` is plausibly a **win** (less interruption).
+- A row in `summary.positive` with `direction: "down"` is a **regression**.
+- A row in `summary.negative` with `direction: "down"` is a **win** (e.g. a `-1% interstitials_shown` lift means less interruption).
 
 ---
 
-## Reading the p-value correctly
+## Reading the p-value in this platform
 
-The p-value is the probability of observing a difference at least as extreme as the one measured, **assuming the null hypothesis (no real difference) is true**. It is NOT:
+Mixpanel uses Welch's t-test (z-test for large samples) at α = 0.05 / 95% confidence by default. The confidence level is set on `settings.confidenceLevel`; if it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
 
-- ❌ The probability that the treatment works.
-- ❌ The probability the result will replicate.
-- ❌ A measure of effect size — a tiny lift can be highly significant on a huge sample.
-- ❌ Proof of "no effect" when above threshold (see "Inconclusive results").
+The platform-specific trap worth flagging: `liftConfidence` on a result row is the **confidence level used** (e.g. `0.95`), **not the CI width**. Easy to misread.
 
-Mixpanel uses Welch's t-test (z-test for large samples). Default α = 0.05 at 95% confidence. The confidence level is set on `settings.confidenceLevel`. If it differs from 0.95, call it out in the verdict (`0.9` inflates false positives; `0.99` is conservative).
+For the general meaning of a p-value (the probability under the null), trust the model's baseline knowledge — don't invent thresholds in either direction.
 
 ---
 
@@ -50,7 +44,6 @@ Mixpanel uses Welch's t-test (z-test for large samples). Default α = 0.05 at 95
 lift = (treatment_mean - control_mean) / control_mean
 ```
 
-- `liftConfidence` is the **confidence level used** (e.g. 0.95). It is NOT the confidence-interval width.
 - **Total / sum metrics use exposure rebalancing.** If treatment has more exposed users than control, the raw sum will mechanically be higher. The platform computes lift per-exposure already; **don't manually divide raw totals when explaining results** — the `lift` field is correct.
 - If `lift is None` in a row, **the calculation failed for that variant.** Surface the failure; do not interpret as "no effect."
 
@@ -125,7 +118,7 @@ Different metric types behave differently; cite the relevant nuance in your verd
 ## Variance-reduction & outlier settings that change interpretation
 
 - **CUPED** (`settings.cuped.enabled == true`): mean is unchanged; variance reduced 30–70%; CIs narrower; power higher. Note: CUPED requires users to exist before the experiment — new-user-only experiments cannot use CUPED; if it's enabled there, it had no effect (mention as informational, not as a misconfiguration to fix).
-- **Winsorization** (`settings.winsorization.enabled == true`): extreme values capped at the configured percentiles, pooled across variants. Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A `percentile` much lower than the default 95 is a misconfiguration (see `health-check-interpretation.md` §Misconfig).
+- **Winsorization** (`settings.winsorization.enabled == true`): extreme values capped at the configured percentiles, pooled across variants. Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A `percentile` much lower than the default 95 is a misconfiguration — see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
 
 ---
 
