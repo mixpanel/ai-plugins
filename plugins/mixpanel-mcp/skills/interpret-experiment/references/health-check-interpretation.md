@@ -140,45 +140,31 @@ These don't always invalidate results, but they change how to _read_ them. Surfa
 
 ### Multiple-testing correction off with several primaries
 
-**When**: multiple-testing correction is off AND there are 2+ primary metrics across 1+ non-control variants.
-
-Any single significant primary may be a false positive. Family-wise error rate scales multiplicatively with metric count (e.g. 15 primaries × 1 variant at α=0.05 → ~54% expected family-wise false positive rate). Look at all primary results in aggregate: if most point the same direction, there is likely a real effect; if only one or two of many are significant, the result is **inconclusive due to false-positive risk** — recommend the user enable Benjamini-Hochberg or Bonferroni and re-analyze.
+**Correction off AND 2+ primaries × 1+ non-control variants.** Any single significant primary may be a false positive — family-wise error rate scales multiplicatively (e.g. 15 primaries × 1 variant at α=0.05 → ~54% expected family-wise false positive rate). Look at primaries in aggregate: if most point the same direction, the effect is likely real; if only one or two of many are significant, recommend enabling Benjamini-Hochberg or Bonferroni and re-analyzing.
 
 ### Extreme winsorization percentile
 
-**When**: Winsorization is enabled with a percentile far from the platform's default (typically 95).
-
-Outlier capping is far from the platform default. A percentile near 50 caps almost all data and almost certainly indicates a misconfiguration. Ask the user to confirm the percentile was intentional; recommend resetting to the default unless they have a specific reason.
+**Winsorization enabled with a percentile far from the platform default (typically 95).** A percentile near 50 caps almost all data — almost certainly a misconfiguration. Confirm with the user; recommend resetting to the default unless they have a specific reason.
 
 ### SRM check disabled
 
-**When**: the experiment's SRM check is off.
-
-**Often deliberate** — e.g. when a feature-flag rollout intentionally splits traffic unevenly. Do not compute SRM yourself, and do not treat the absence as a bug. Only flag if results otherwise look suspicious (Twyman-sized lifts, implausible exposure ratios); when you do flag, recommend re-enabling SRM and re-analyzing.
+**SRM check is off.** Often deliberate — e.g. when a feature-flag rollout intentionally splits traffic unevenly. Do not compute SRM yourself or treat the absence as a bug. Only flag if results otherwise look suspicious (Twyman-sized lifts, implausible exposure ratios) and then recommend re-enabling SRM and re-analyzing.
 
 ### CUPED on new-users-only cohort
 
-**When**: CUPED is enabled AND the experiment cohort is "new users only".
-
-CUPED requires pre-exposure data, which new-user experiments lack — so CUPED simply had no effect. **This does NOT invalidate results.** Variance reduction just didn't happen. Mention as informational; for future experiments on the same surface, consider extending the cohort to include returning users so CUPED can apply.
+**CUPED enabled AND the cohort is "new users only".** CUPED needs pre-exposure data, so it had no effect here — but **results are still valid**, variance reduction just didn't happen. Mention as informational. For future experiments on this surface, suggest extending the cohort to include returning users so CUPED can apply.
 
 ### Non-default confidence level
 
-**When**: the experiment is configured for a confidence level other than the platform default (typically 0.95).
-
-`0.9` (α = 0.10) inflates false positives; `0.99` (α = 0.01) is conservative. Call out explicitly in the verdict and combine with metric count to estimate the family-wise error rate.
+**Confidence level differs from the platform default (typically 0.95).** `0.9` (α = 0.10) inflates false positives; `0.99` (α = 0.01) is conservative. Call out in the verdict and combine with metric count to estimate the family-wise error rate.
 
 ### Broken or placeholder metric entries
 
-**When**: the experiment includes metric entries with empty names.
-
-Likely a broken or placeholder metric reference. Flag and skip during analysis.
+**Metric entries with empty names.** Likely broken or placeholder references. Flag and skip during analysis.
 
 ### Primary metric with no computed result
 
-**When**: a metric is listed as primary on the experiment but has no result (neither live nor cached).
-
-No result was computed for that primary. **This is "no measurement," not "no effect."** Surface prominently; recommend the user re-sync results before drawing any conclusion that depends on this primary.
+**A metric is listed as primary but has no result (live or cached).** This is **"no measurement," not "no effect."** Surface prominently; recommend re-syncing results before any conclusion that depends on this primary.
 
 ---
 

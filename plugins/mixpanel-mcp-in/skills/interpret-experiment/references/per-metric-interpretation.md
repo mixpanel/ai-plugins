@@ -134,31 +134,19 @@ If multiple-testing correction is off AND there are 2+ primaries × 1+ non-contr
 
 ---
 
-## "Significance = NO" does NOT mean "no effect"
+## When a primary metric is inconclusive
 
-A row in `summary.no` means the experiment didn't have enough signal to distinguish the effect from noise at the chosen confidence level. **Important when the user is about to call something a null result.**
+A "not significant" verdict means the experiment didn't have enough signal to distinguish the effect from noise at the chosen confidence level — **not that there is no effect.** Important when the user is about to call something a null result.
 
-Options to suggest when a primary metric lands in `summary.no`:
-
-1. **Extend duration** (if the experiment is still ACTIVE).
-2. **Increase traffic allocation** (if there's headroom — never mid-Frequentist-test, which invalidates SRM).
-3. **Use Sequential testing model** for the next experiment if continuous monitoring fits.
-4. **Enable CUPED** if the metric correlates with pre-exposure behavior.
-5. **Narrow the hypothesis** — test a stronger version, or scope to a more responsive segment.
-6. **Accept the null** — if the experiment was well-powered for the MDE that matters, "no effect" is a real finding.
-
-For the full "why hasn't this hit statsig yet" walk-through, see [why-no-statsig.md](why-no-statsig.md).
+For the full walk-through on what to do about it (wait, extend, boost power, narrow, accept null), see [why-no-statsig.md](why-no-statsig.md).
 
 ---
 
 ## Frequentist vs Sequential — what affects per-metric reading
 
-Check the experiment's testing model:
+Concluding a Frequentist experiment before it reaches its configured target is a peeking event — per-metric significance verdicts become unreliable. Sequential experiments are designed for continuous monitoring and don't have this problem.
 
-- `"frequentist"` — pre-defined sample size or duration. **Peeking inflates the false-positive rate.** If the user concluded before reaching the configured target, every per-metric significance verdict is suspect. Note: frequentist + `endCondition: "days"` is supported intentionally — do not flag the combination itself as a misconfiguration.
-- `"sequential"` — designed for continuous monitoring. Stopping early when significance is reached is safe and intended.
-
-Concluding a Frequentist experiment before it reaches its target is a peeking event. Flag it in the verdict.
+For the full diagnosis when peeking is suspected, see the **Frequentist peeking** section of [health-check-interpretation.md](health-check-interpretation.md).
 
 ---
 
