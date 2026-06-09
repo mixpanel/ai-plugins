@@ -12,8 +12,11 @@ description: >
   this". Also trigger when the user pastes a Mixpanel chart or report
   URL and asks anything about it. Lean by default — surfaces what the
   report shows and flags notable patterns, but does not chase root
-  causes. Do NOT trigger for building new charts, reviewing entire
-  dashboards, or full root-cause diagnostic workflows. Requires Mixpanel MCP.
+  causes. This skill = interpret WHAT a report shows; mxp-metric-diagnosis
+  = investigate WHY a metric moved. Do NOT trigger for building new charts,
+  reviewing entire dashboards, or full root-cause diagnostic workflows. Do NOT
+  trigger for root-cause diagnosis, anomaly investigation, or metric drift —
+  use mxp-metric-diagnosis for those. Requires Mixpanel MCP.
 compatibility: "Requires Mixpanel MCP. Works for any project the user has access to."
 ---
 
@@ -72,11 +75,20 @@ If `Search-Entities` returns nothing useful, escalate to Mode C:
 
 ### Mode C — Customer wants to analyze a report that doesn't exist yet
 
-The report has to be built before it can be analyzed. Build the chart
-first (or ask the customer to point you at the configuration they want),
-then come back to Step 2 and analyze the result. Once the chart is
-built you'll have a `query_id` and a rendered widget; this skill picks
-up from there.
+The report has to be built before it can be analyzed. This skill builds
+it inline — it does not hand off to another skill. Do it in three calls:
+
+1. Call `Get-Query-Schema` to learn the valid shape for the query type
+   (insights, funnel, retention, flows) the customer is describing.
+2. Construct the query from the customer's description and call
+   `Run-Query` to execute it. This returns the result data and gives you
+   the configuration metadata you need for analysis.
+3. Optionally call `Display-Query` to render the chart so the customer
+   can see it alongside the summary.
+
+Once `Run-Query` returns, you already have the data and config — skip
+ahead to Step 3 and read the shape (Step 2 is only for pulling data on
+an existing report).
 
 If the customer asks for both in one turn ("build me a DAU chart and
 tell me what it shows"), do them as one workflow: build → analyze →
@@ -111,6 +123,9 @@ What to look for depends on chart type. Read the matching reference:
 - Funnels → `references/read-funnels.md`
 - Retention → `references/read-retention.md`
 - Flows → `references/read-flows.md`
+
+Only load the reference file that matches the chart type — do not load
+all four.
 
 The references hold the **specific patterns** to look for in each
 chart type. The high-level rules across all types:
