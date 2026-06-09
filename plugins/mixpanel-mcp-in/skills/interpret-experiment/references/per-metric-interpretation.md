@@ -30,7 +30,7 @@ Apply the polarity recipe from the spine — see the **Components** section of `
 
 ## Reading the p-value in this platform
 
-Mixpanel uses Welch's t-test (z-test for large samples) at α = 0.05 / 95% confidence by default. The confidence level is set on `settings.confidenceLevel`; if it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
+Mixpanel runs a frequentist comparison at the configured `settings.confidenceLevel` — typically 0.95 (verify in product if results look off). If it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
 
 The platform-specific trap worth flagging: `liftConfidence` on a result row is the **confidence level used** (e.g. `0.95`), **not the CI width**. Easy to misread.
 

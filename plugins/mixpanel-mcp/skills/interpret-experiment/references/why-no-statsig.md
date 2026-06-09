@@ -13,7 +13,7 @@ Inconclusive can mean two very different things:
 1. **The experiment is genuinely too small to detect the effect** — this is what the rest of this document is about.
 2. **The result isn't trustworthy at all** — SRM failing, broken data, peeked frequentist, etc. — and "inconclusive" is the wrong frame entirely.
 
-Before answering "why no statsig?", run the trustworthiness gate (Step 1 of the Decision Tree). If anything fails, route to [health-check-interpretation.md](health-check-interpretation.md) — fixing the bucketing or the data is a prerequisite to talking about power.
+Before answering "why no statsig?", run the **trustworthiness gate**. If anything fails, route to [health-check-interpretation.md](health-check-interpretation.md) — fixing the bucketing or the data is a prerequisite to talking about power.
 
 Also check:
 
@@ -63,7 +63,7 @@ If exposures are falling short of plan because traffic dropped: surface that. Qu
 
 - Even split (50/50) when one variant is the bottleneck → balanced is optimal for power, so this is usually not the issue.
 - Skewed split (e.g. 90/10) → the smaller variant is undersampled; power is bottlenecked by the small side. If the skew was for risk reasons, that's a deliberate trade-off; flag that the smaller variant will reach significance much later.
-- Multi-variant test (3+ arms) → each treatment-vs-control comparison gets a fraction of total traffic. Each non-control variant needs its own ~350+ sample for the per-comparison stats to be reliable. Adding arms costs power per-comparison.
+- Multi-variant test (3+ arms) → each treatment-vs-control comparison gets a fraction of total traffic. Each non-control variant needs to clear the platform's per-variant exposure floor in its own right. Adding arms costs power per-comparison.
 
 Never change traffic allocation mid-Frequentist test — it invalidates the SRM baseline and the power calculation. If allocation needs to change, restart the experiment.
 

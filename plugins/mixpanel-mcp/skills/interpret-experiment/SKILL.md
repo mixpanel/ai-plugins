@@ -28,7 +28,7 @@ Concepts the rest of this skill uses without redefining.
 - **CUPED.** Variance reduction using pre-exposure baseline. Cuts required sample 30–70% when it applies. Inert on new-user-only cohorts.
 - **Winsorization.** Outlier capping at a configured percentile, applied pooled across variants. Default 95.
 - **MDE (Minimum Detectable Effect).** The smallest lift the experiment was sized to detect. Set during experiment setup.
-- **Trustworthiness gate.** The pre-flight check in Step 1 of the Decision Tree: SRM ok, Retro A/A clean, exposures sufficient, ≥3-day window, no misconfig. Failing any of these means **do not interpret results yet** — route to the health-check reference.
+- **Trustworthiness gate.** The pre-flight check that runs before any results interpretation: SRM ok, Retro A/A clean, exposures sufficient, ≥3-day window, no misconfig. Failing any of these means **do not interpret results yet** — route to the health-check reference.
 
 ---
 

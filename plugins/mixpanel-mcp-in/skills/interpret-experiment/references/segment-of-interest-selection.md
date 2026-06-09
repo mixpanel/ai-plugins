@@ -64,7 +64,7 @@ If overall SRM is borderline (or failing in one variant only), per-segment SRM c
 - Bot-suspicious countries (`bot_traffic` cause from health-check).
 - A specific app version range that shipped a flag-evaluation change.
 
-This is diagnostic segmentation, not interpretation segmentation. Use it when Step 1 of the Decision Tree has already flagged trouble.
+This is diagnostic segmentation, not interpretation segmentation. Use it when the **trustworthiness gate** has already flagged trouble.
 
 ### 5. Segments the platform de facto requires
 
@@ -82,7 +82,7 @@ Don't include all three blindly — pick the one(s) most likely to vary given th
 
 For each segment you want to break down on:
 
-1. **Does each segment value have ~350+ exposed users per variant?** Below that floor, the per-segment stats are unreliable. If not, suggest pooling small segments or extending the experiment.
+1. **Does each segment value have enough exposed users per variant to clear the platform's overall sufficiency threshold?** Below that, the per-segment stats are unreliable. If not, suggest pooling small segments or extending the experiment.
 2. **Is the segmenting property captured for both control and treatment users?** (It almost always is, but verify.) A property only set when the treatment fires is not a valid segmenting axis.
 3. **Is the segment defined the same way in pre- and during-experiment data?** Drifting definitions (e.g. "Pro tier" boundaries changed mid-test) invalidate the comparison.
 4. **Is the segment determined _before_ exposure?** Segments derived from in-experiment behavior are post-treatment effects, not user attributes — slicing on them is selection-bias, not stratification.

@@ -45,7 +45,7 @@ Users were assigned to variants in proportions that disagree with the configured
 
 1. Compare `live_exposures` ratio to `settings.srm.targetAllocations` — which variant is over/under-represented?
 2. If feature-flag-based: check whether a property filter on the flag was added or changed mid-experiment. Inspect the flag's rollout rules and history.
-3. For multi-variant tests, the platform's SRM threshold is Bonferroni-corrected — the effective per-variant threshold may be tighter than the headline. Trust the bucket flag, not raw p-value math.
+3. For multi-variant tests, the platform may apply a per-comparison correction to the SRM threshold — the effective per-variant threshold may be tighter than the headline. Trust the platform's bucket flag, not raw p-value math.
 4. Verify SDK version and bucketing logic. Query `$experiment_started` events grouped by variant to confirm exposure events are flowing correctly.
 5. Check for bot/QA traffic — bots often skew toward control. If `settings.excludeQA` is unset or false, recommend enabling it.
 6. If exposures are very small (e.g. under ~1k total): SRM is unreliable on tiny samples. Wait for more data before acting.
@@ -115,8 +115,8 @@ A frequentist test that ends before reaching its configured target has an **infl
 
 ### Investigation checklist
 
-1. Retry the experiment-details request — transient backend load may resolve. Wait ~30s between retries.
-2. If repeated failures: count metrics × variants × date range. Many metrics on a multi-variant experiment over a long window can exceed the query budget.
+1. Retry the experiment-details request once. If it fails again, surface the error and stop retrying — the tool layer owns retry policy.
+2. On repeated failure: count metrics × variants × date range. Many metrics on a multi-variant experiment over a long window can exceed the query budget.
 3. Recommend reducing scope: drop unused secondary metrics, narrow the date range, or temporarily archive metrics that aren't part of the decision.
 4. If `results_cache` is recent (`$last_computed` within hours), surface those results with a "stale data" caveat and the timestamp. If the cache is days old or null, the user must resolve the backend issue before any meaningful interpretation.
 
@@ -150,9 +150,9 @@ These don't always invalidate results, but they change how to _read_ them. Surfa
 
 **Condition**: `settings.winsorization.enabled == true` AND `settings.winsorization.percentile` is very low (e.g. < ~80) or unusually high (e.g. > ~99).
 
-**Interpretation**: outlier capping is far from the platform's default of 95. A percentile near 50 caps almost all data and almost certainly indicates a misconfiguration.
+**Interpretation**: outlier capping is far from the configured platform default (typically 95 — verify in product). A percentile near 50 caps almost all data and almost certainly indicates a misconfiguration.
 
-**Action**: ask the user to confirm the percentile was intentional; recommend resetting to 95 unless they have a specific reason.
+**Action**: ask the user to confirm the percentile was intentional; recommend resetting to the platform default unless they have a specific reason.
 
 ### SRM check disabled
 

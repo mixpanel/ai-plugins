@@ -32,10 +32,10 @@ Surprisingly easy to forget when you're scanning a wide table — re-apply polar
 
 ## Sample-size floor per segment
 
-Each segment value needs its own meaningful per-variant sample for the per-segment stats to be reliable. As a rule of thumb, the same ~350-per-variant floor used for overall trustworthiness applies per segment.
+Each segment value needs its own meaningful per-variant sample for the per-segment stats to be reliable. The platform surfaces an "insufficient exposures" flag at the overall level — trust that signal over a hand-rolled threshold, and apply the same logic per segment.
 
-- Segments below the floor → mark "insufficient sample, treat as directional only."
-- A "significant" lift on a 50-user-per-variant segment is almost always noise. Say so.
+- Segments the platform would flag insufficient if scoped to alone → mark "insufficient sample, treat as directional only."
+- A "significant" lift on a tiny per-variant segment (e.g. tens of users) is almost always noise. Say so.
 - If many small segments matter to the user, pool them (e.g. all small countries into "RoW") and re-slice.
 
 ---
@@ -58,7 +58,7 @@ When you spot Simpson's paradox, route the user to the **SRM** section of [healt
 Don't recommend a segment-scoped ship unless **all** of these hold:
 
 1. The segment was named in the hypothesis upfront (pre-committed), OR the mechanism makes the heterogeneity obvious in hindsight (and you can articulate it).
-2. The segment's per-variant sample clears the ~350 floor by a comfortable margin.
+2. The segment's per-variant sample clears whatever exposure floor the platform applies to the overall experiment, by a comfortable margin.
 3. The segment's overall result (polarity-corrected) is a win on the primary metric with no guardrail regressions in that segment.
 4. Guardrail behavior in the **other** segments is acceptable — shipping to one cohort doesn't quietly regress the rest of the product.
 5. Multiple-testing correction is enabled, OR the segment was named upfront so multiple-testing doesn't apply.
