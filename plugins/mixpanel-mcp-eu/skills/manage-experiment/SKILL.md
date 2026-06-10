@@ -131,7 +131,9 @@ If a team agrees on a different threshold (3% for high-volume billing, 10% for e
 
 ### Peek-safety table
 
-What's safe to look at mid-flight, and what isn't. Used by `monitor` directly; referenced from `design` (when picking sequential vs frequentist) and `interpret` (when deciding whether a mid-flight peek invalidates a verdict).
+The **peeking trap**: stopping early on a favorable Frequentist peek inflates the false-positive rate because each look at the data is another chance to cross the significance threshold by chance. Sequential testing is built to make peeking safe (the stopping boundaries account for repeated looks); Frequentist testing is not.
+
+The table below is what's safe to look at mid-flight, and what isn't. Used by `monitor` directly; referenced from `design` (when picking sequential vs frequentist) and `interpret` (when deciding whether a mid-flight peek invalidates a verdict).
 
 | Signal                            | Safe to peek mid-flight? | Why                                                                                                                    |
 | --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |

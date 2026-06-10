@@ -111,7 +111,7 @@ On `CONFIRM`, invoke the launch action. If the launch fails, surface the platfor
 After a successful launch, recommend the user check back in 24h via the `monitor` command. Surface two things they should set up as follow-ups (don't interrupt the launch flow to do them inline):
 
 1. **A tracking dashboard** for the primary and guardrail metrics — gives the user a single place to watch the experiment without re-opening the skill every time. Recommend running `create-dashboard` in a follow-up session.
-2. **A calendar reminder** for the canary check (24h) and the mid-flight check (~halfway through the planned duration).
+2. **A calendar reminder** for the canary check (24h) and the mid-flight check (~halfway through the planned duration). Concrete phrasing the agent can use: _"Worth scheduling two check-ins: 24h from now for the canary, and at the midpoint of your N-day window for the mid-flight read. Both run through the `monitor` command."_
 
 Print `✅ Launched.` and return control to the umbrella.
 
