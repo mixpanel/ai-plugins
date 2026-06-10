@@ -57,7 +57,7 @@ Top-down: what to do, in order.
 
 ### 1. Fetch the experiment
 
-The umbrella's step 2 should have resolved the experiment already. If not (the user named it mid-command), accept by name or ID; try ID match first, then case-insensitive name match.
+The umbrella resolves the experiment in its step 2. If the user named one mid-command, hand back to the umbrella's experiment-resolution step rather than restating it here.
 
 Request the experiment details with exposure and metric data included. The agent's tool layer maps that intent to the right parameters; don't hand-write API arguments.
 

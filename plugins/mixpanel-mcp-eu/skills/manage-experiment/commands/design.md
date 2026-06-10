@@ -130,7 +130,7 @@ Use the exact catalogue labels from [../references/pitfalls.md](../references/pi
 
 After creating, link the new experiment back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
 
-If the user hasn't named a specific feature or surface, ask before fetching baselines or designing — designing the wrong experiment burns more time than the clarifying question costs. Accept the feature by name or by ID; try ID match first, then case-insensitive name match.
+If the user hasn't named a specific feature or surface, ask before fetching baselines or designing — designing the wrong experiment burns more time than the clarifying question costs.
 
 ---
 
