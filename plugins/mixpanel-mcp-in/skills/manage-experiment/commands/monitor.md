@@ -8,38 +8,28 @@ The umbrella `SKILL.md` defines the shared glossary. Phase-specific terms below.
 
 ## Glossary (monitor-specific)
 
-- **Peeking trap.** Looking at primary-metric results before the planned end of a Frequentist experiment and stopping early on a favorable peek inflates the false-positive rate. Sequential experiments are designed to make peeking safe; Frequentist experiments are not.
 - **Sample pace.** The ratio of actual exposures accumulated to expected exposures at this point in the experiment's planned duration. A pace below 0.7 (≥30% slower than projected) suggests the experiment is underpowered relative to its design, or that something is wrong with exposure tracking.
 - **Mid-flight SRM.** A Sample Ratio Mismatch detected during the experiment, before exposures are mature. Distinct from the SRM check at interpretation time — mid-flight SRM is a bucketing-bug early-warning, not a verdict on the result.
-- **Guardrail-only peek.** Looking at guardrail metrics mid-flight is responsible (catches a regression early); looking at primary metrics mid-flight is the peeking trap. The asymmetry matters.
+
+The **peeking trap** and the **peek-safety table** (what's safe to look at mid-flight, what isn't) live in the umbrella's [Cross-command policies](../SKILL.md#cross-command-policies) — this command applies them, doesn't re-derive them.
 
 ---
 
 ## Components (monitor-specific)
 
-### What's safe to peek at, and what isn't
-
-| Signal                            | Safe to peek mid-flight? | Why                                                                                                                    |
-| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| SRM verdict                       | Yes                      | Bucketing health is independent of effect size. Detecting SRM early lets you stop before more exposure data is wasted. |
-| Sample pace                       | Yes                      | A pacing problem is operational, not statistical. Detecting it early gives time to remediate.                          |
-| Guardrail polarity                | Yes (with care)          | A guardrail regression mid-flight is a real safety signal. Stopping for a guardrail regression is not p-hacking.       |
-| Primary metric lift (Sequential)  | Yes                      | Sequential testing makes peeking part of the design. The platform's stopping boundaries account for it.                |
-| Primary metric lift (Frequentist) | **No**                   | Stopping early on a favorable Frequentist peek is the canonical peeking trap. The false-positive rate inflates fast.   |
-
-The rule users get wrong most often: thinking they can "just check" the primary mid-flight on a Frequentist test "without acting on it." If the look influences any decision — even the decision to wait — it's a peek.
+For the **peek-safety table** (what's safe to look at mid-flight, what isn't), see the umbrella's [Cross-command policies](../SKILL.md#cross-command-policies). For the **guardrail hard-gate threshold**, same place.
 
 ### Terminate-early decision rules
 
 Three situations that justify ending a running experiment before its planned end:
 
 1. **Trustworthiness failure.** SRM fails mid-flight, or a misconfiguration is discovered that invalidates the design. Terminate, fix, restart. The accumulated exposures are not salvageable.
-2. **Guardrail regression beyond the design's tolerance.** A guardrail regresses by more than the >5% hard-gate threshold (or whatever the team agreed on), with a tight CI. Continuing exposes more users to a measurable harm. Terminate and route to `interpret` for the ship/iterate verdict.
+2. **Guardrail regression beyond the hard-gate threshold** (defined in the umbrella). The guardrail regresses by more than the threshold, with a tight CI. Continuing exposes more users to a measurable harm. Terminate and route to `interpret` for the ship/iterate verdict.
 3. **Sequential stopping boundary crossed (Sequential tests only).** The platform's sequential boundary fires. This is the by-design early stop — terminate and route to `interpret`.
 
 What does **not** justify early termination:
 
-- "It's been a week and the lift looks good" (peeking trap on Frequentist).
+- "It's been a week and the lift looks good" (peeking trap on Frequentist — see the umbrella's peek-safety table).
 - "The team is tired of waiting" (sunk cost mid-flight is real but not a statistical reason).
 - "Looks like it'll be inconclusive" (futility analysis exists but requires the right test design; don't improvise).
 - A guardrail wobbling within its noise band.

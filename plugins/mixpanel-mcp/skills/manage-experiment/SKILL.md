@@ -114,6 +114,44 @@ Each command file links into these on demand. The map is here so the skill has a
 | [references/session-replay-analysis.md](references/session-replay-analysis.md)                   | interpret                    | Turning a quantitative experiment result into a behavior story using session replays.                                         |
 | [references/lifecycle-handoff.md](references/lifecycle-handoff.md)                               | interpret                    | The decide-action call shape, multi-variant ship semantics, special variant constants.                                        |
 
+## Cross-command policies
+
+Rules that apply across more than one command. Defined here once so all commands reference the same threshold and don't drift.
+
+### Guardrail hard-gate (5% relative regression)
+
+A **5% relative regression on any guardrail blocks ship**, even when the primary wins. The threshold lives here, not in any one command:
+
+- `design` warns if no guardrails are configured (the gate has nothing to enforce).
+- `launch` blocks-or-warns based on guardrail configuration in the readiness check.
+- `monitor` uses the threshold to decide when a mid-flight guardrail regression justifies termination.
+- `interpret` uses the threshold for the ITERATE vs SHIP decision.
+
+If a team agrees on a different threshold (3% for high-volume billing, 10% for early experiments), change it here and the commands inherit it.
+
+### Peek-safety table
+
+What's safe to look at mid-flight, and what isn't. Used by `monitor` directly; referenced from `design` (when picking sequential vs frequentist) and `interpret` (when deciding whether a mid-flight peek invalidates a verdict).
+
+| Signal                            | Safe to peek mid-flight? | Why                                                                                                                    |
+| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| SRM verdict                       | Yes                      | Bucketing health is independent of effect size. Detecting SRM early lets you stop before more exposure data is wasted. |
+| Sample pace                       | Yes                      | A pacing problem is operational, not statistical. Detecting it early gives time to remediate.                          |
+| Guardrail polarity                | Yes (with care)          | A guardrail regression mid-flight is a real safety signal. Stopping for a guardrail regression is not p-hacking.       |
+| Primary metric lift (Sequential)  | Yes                      | Sequential testing makes peeking part of the design. The platform's stopping boundaries account for it.                |
+| Primary metric lift (Frequentist) | **No**                   | Stopping early on a favorable Frequentist peek is the canonical peeking trap. The false-positive rate inflates fast.   |
+
+The rule users get wrong most often: thinking they can "just check" the primary mid-flight on a Frequentist test "without acting on it." If the look influences any decision — even the decision to wait — it's a peek.
+
+### Output emoji conventions
+
+All four commands use the same visual vocabulary so multi-command sessions read consistently:
+
+- ✅ — pass / ok / nothing to flag
+- ⚠️ — warning / attention needed (proceed if user accepts)
+- 🛑 — blocker / fail / stop (do not proceed)
+- ℹ️ — fyi / informational
+
 ## Behaviour rules
 
 1. **Irreversible actions require explicit confirmation.** Creating an experiment (in `design`), launching one (in `launch`), terminating one mid-flight (in `monitor`), and concluding one (in `interpret`) are all irreversible. Show the proposed action, wait for the user to confirm with literal `CONFIRM` for the destructive ones.

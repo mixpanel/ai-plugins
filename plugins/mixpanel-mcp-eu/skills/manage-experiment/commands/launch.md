@@ -22,7 +22,7 @@ A launched experiment cannot be "un-launched" without losing the exposure data a
 
 - **Monitor** mid-flight (the `monitor` command in this skill).
 - **Conclude** at the end (the `interpret` command's decide action).
-- **Pause / resume** via the underlying feature flag (rarely the right move — usually masks a design problem).
+- **Pause / resume** via the underlying feature flag (handled by the `manage-feature-flags` skill) — rarely the right move; usually masks a design problem.
 
 There is no "edit the variants" or "change the statistical model" operation post-launch that preserves the result's validity. Surface this constraint to the user before launching — if there's any ambiguity about whether the configuration is final, send them back to `design`.
 
@@ -36,7 +36,7 @@ Run this against the experiment about to launch. Surface only what fires; order 
 | Blocker  | The experiment has no primary metric.                                                                                                                     |
 | Blocker  | The configured allocation doesn't sum to 100% across variants.                                                                                            |
 | Warning  | The pre-launch pitfall catalogue reports a warning.                                                                                                       |
-| Warning  | No guardrail metrics configured. Without guardrails, the >5% hard-gate from the design command cannot protect the ship decision.                          |
+| Warning  | No guardrail metrics configured. Without guardrails, the regression hard-gate (see umbrella Cross-command policies) cannot protect the ship decision.     |
 | Warning  | A primary metric has `direction` unset (defaults to `up`); cancel / error / latency / abandon / refund metrics need `down` set explicitly.                |
 | FYI      | The experiment isn't linked back to a prior experiment on the same feature, even though prior experiments exist. Recommend adding the link before launch. |
 
@@ -108,9 +108,9 @@ On `CONFIRM`, invoke the launch action. If the launch fails, surface the platfor
 
 ### 5. Hand off to monitor
 
-After a successful launch, recommend the user check back in 24h via the `monitor` command. Surface two things they should set up now:
+After a successful launch, recommend the user check back in 24h via the `monitor` command. Surface two things they should set up as follow-ups (don't interrupt the launch flow to do them inline):
 
-1. **A tracking dashboard** for the primary and guardrail metrics — gives the user a single place to watch the experiment without re-opening the skill every time. Use the `create-dashboard` skill if they don't have one.
+1. **A tracking dashboard** for the primary and guardrail metrics — gives the user a single place to watch the experiment without re-opening the skill every time. Recommend running `create-dashboard` in a follow-up session.
 2. **A calendar reminder** for the canary check (24h) and the mid-flight check (~halfway through the planned duration).
 
 Print `✅ Launched.` and return control to the umbrella.

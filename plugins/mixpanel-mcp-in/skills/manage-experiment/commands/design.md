@@ -33,9 +33,11 @@ MDE = 4σ / √n
 
 The `16` is `(z_{α/2} + z_β)² × 2` rounded. Variance `σ²` depends on metric type: Bernoulli `p(1−p)`; Poisson `≈ mean`; Gaussian computed from data. The full derivation, worked examples, lookup table, and the five remediations for underpowered experiments live in [../references/sizing.md](../references/sizing.md).
 
-### The >5% guardrail hard-gate
+### Guardrails (the hard-gate enforced downstream)
 
-A **5% relative regression on any guardrail blocks ship**, even when the primary wins. Guardrails are the trustworthiness backstop; without this rule, a winning primary with a quietly regressing guardrail ships and rolls back two weeks later. Below 5% lives in the noise band of most guardrails; above 5% means the team has traded measurable damage for headline lift. If the user wants to ship past a regressing guardrail, force the conversation — disable the guardrail explicitly and document why. Don't let them silently override. Full rationale in [../references/pitfalls.md](../references/pitfalls.md).
+Guardrails are the trustworthiness backstop. Without them, a winning primary with a quietly regressing guardrail ships and rolls back two weeks later. The umbrella owns the regression threshold — see [Cross-command policies in SKILL.md](../SKILL.md#cross-command-policies). This command's job is making sure guardrails exist; the threshold is enforced by `launch`, `monitor`, and `interpret`.
+
+If the user wants to ship past a regressing guardrail, force the conversation — disable the guardrail explicitly and document why. Don't let them silently override. Full rationale in [../references/pitfalls.md](../references/pitfalls.md).
 
 ### Pre-launch pitfall catalogue
 
@@ -83,7 +85,7 @@ Sample-size floor: keep per-variant target above the platform's reliability floo
 
 Four choices, each with a default that's right for most users:
 
-- **Testing model** — default Sequential (peeking is safe by design); Frequentist only for small-lift hunts on well-sized tests.
+- **Testing model** — default Sequential (peek-safety table in the umbrella's Cross-command policies covers why); Frequentist only for small-lift hunts on well-sized tests.
 - **End condition** — sample-based for variable traffic; date-based for strong weekly seasonality.
 - **Confidence level** — default 0.95 (verify in product); 0.99 for irreversible high-stakes ships; 0.90 only when speed beats rigour.
 - **Multiple-testing correction** — enable when there are ≥2 primaries OR ≥2 non-control variants; default Benjamini-Hochberg, Bonferroni for strict family-wise control.
@@ -163,5 +165,3 @@ If the user hasn't named a specific feature or surface, ask before fetching base
 - When underpowered, say so plainly and list remediations in order of cost.
 - Don't moralise about peeking — switch them to sequential.
 - Guardrail regressions are hard gates, not "slight concerns."
-
-When the draft is saved, hand off to the `launch` command in this same skill. Once the experiment is live, `monitor` covers mid-flight safety; `interpret` covers the final read once exposures are mature.
