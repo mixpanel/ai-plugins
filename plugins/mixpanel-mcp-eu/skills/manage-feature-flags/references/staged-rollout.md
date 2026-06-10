@@ -13,6 +13,8 @@ The pattern is **logarithmic, not linear**. Doubling at each stage exposes the f
 | Mid    | 50%     | Sustained KPI signal, cohort-level differences         | 24–72 hours            |
 | Full   | 100%    | Final guardrail check, support volume                  | —                      |
 
+Wait times are conservative defaults — calibrate to your monitoring latency and product risk. Faster monitoring (real-time crash reporting) supports shorter holds; slower-emerging signals (refund rates, retention) need longer holds.
+
 Bump the rollout incrementally — the merge preserves variants and other configuration. You don't need to re-send variants to change the rollout percentage.
 
 ## Slower cadence (high-stakes flags)

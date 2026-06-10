@@ -7,12 +7,12 @@ The three observable states a flag will ever expose are **disabled**, **enabled*
 ## State machine
 
 ```
-   ┌──────────┐    enable     ┌─────────┐
-   │ disabled │ ─────────────▶│ enabled │
-   │  (new)   │ ◀─────────────│         │
-   └─────┬────┘    disable    └─────────┘
+   ┌──────────┐    enable    ┌─────────┐
+   │ disabled │ ────────────▶│ enabled │
+   │  (new)   │◀──────────── │         │
+   └─────┬────┘    disable   └─────────┘
          │
-         │ archive   (only from disabled)
+         │ archive  (only from disabled)
          ▼
    ┌──────────┐
    │ archived │

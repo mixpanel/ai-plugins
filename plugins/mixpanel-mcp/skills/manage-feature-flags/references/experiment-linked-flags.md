@@ -1,6 +1,6 @@
 # Experiment-linked flags
 
-This is the playbook for flags governed by an experiment — how to spot one, which edits the experiment will overwrite, and when to hand off to `interpret-experiment` or `design-experiment`.
+This is the playbook for flags governed by an experiment — how to spot one, which edits the experiment will overwrite, and when to hand off to the `manage-experiment` skill.
 
 When a flag is linked to an experiment, the recommended lifecycle path is the experiment, not direct flag updates. The API will not block direct flag edits — but the experiment owns the canonical state, and the next experiment transition will overwrite anything you set manually.
 
@@ -47,12 +47,10 @@ Read the flag's current state first. If the flag has an associated experiment:
 
 - The flag is governed by an experiment lifecycle.
 - Status, ruleset, and variant changes should route through the linked experiment's actions, not direct flag updates.
-- For experiment-side concerns (interpretation, ship/kill decisions, setup guidance), defer to the `interpret-experiment` and `design-experiment` skills.
+- For experiment-side concerns (design, launch, mid-flight monitoring, results interpretation, ship/kill decisions), defer to the `manage-experiment` skill.
 
 If the flag has no experiment link, it's standalone and the lifecycle covered in `SKILL.md` and the other references applies directly.
 
 ## When the user is asking experiment questions, not flag questions
 
-If the user's actual question is about reading results, deciding ship/kill, or interpreting health checks for an experiment-linked flag, route to the **`interpret-experiment`** skill — that's where the verdict logic lives. This skill (`manage-feature-flags`) covers the flag-side lifecycle; it does not interpret experiment outcomes.
-
-Similarly, for experiment setup questions ("how should I size this A/B test?", "what's my MDE?"), use the **`design-experiment`** skill. This skill covers the routing decision (Feature Flag vs Experiment) but defers the actual experiment design to the dedicated skill.
+If the user's actual question is about experiment design, launch, mid-flight monitoring, results interpretation, or the ship/kill/iterate/wait decision for an experiment-linked flag, route to the **`manage-experiment`** skill. This skill (`manage-feature-flags`) covers the flag-side lifecycle and the routing decision (Feature Flag vs Experiment); it does not own the experiment lifecycle.

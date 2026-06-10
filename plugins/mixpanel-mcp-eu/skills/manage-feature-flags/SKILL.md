@@ -1,6 +1,6 @@
 ---
 name: manage-feature-flags
-description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, archive and restore, and SDK call patterns. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a rollout-percentage change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', 'is this a feature flag or an experiment', 'feature flag for the new checkout flow', or when the user names a specific feature they want to gate. Do NOT use for experiment results interpretation ('should we ship?', 'what does this SRM failure mean?') — that belongs to the `interpret-experiment` skill. Do NOT use for experiment setup ('how should I size this A/B test?', 'what MDE can I detect?') — that belongs to the `design-experiment` skill."
+description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, archive and restore, and SDK call patterns. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a rollout-percentage change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', 'is this a feature flag or an experiment', 'feature flag for the new checkout flow', or when the user names a specific feature they want to gate. Do NOT use for experiment design ('how should I size this A/B test?', 'what MDE can I detect?'), launch, mid-flight monitoring, or results interpretation ('should we ship?', 'what does this SRM failure mean?') — all of those belong to the `manage-experiment` skill."
 license: Apache-2.0
 ---
 
@@ -28,7 +28,7 @@ Trigger when the user asks anything about creating, configuring, ramping, killin
 - "Archive all our stale flags" / "what's our flag debt?"
 - "Roll back to 0%" / "restore an archived flag"
 
-Do **not** trigger for experiment results interpretation ("should we ship this experiment?", "what does this SRM failure mean?") — use the `interpret-experiment` skill. For experiment setup ("how should I size this A/B test?", "what's my MDE?"), use the `design-experiment` skill.
+Do **not** trigger for experiment design ("how should I size this A/B test?", "what's my MDE?"), launch, mid-flight monitoring, or results interpretation ("should we ship this experiment?", "what does this SRM failure mean?") — all of those belong to the `manage-experiment` skill.
 
 ---
 
@@ -56,7 +56,7 @@ Do **not** trigger for experiment results interpretation ("should we ship this e
 | [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) | The disabled ↔ enabled → archived state machine. The three flag-update call shapes and which silently drop fields.                     |
 | [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md)                 | Pre-creation duplicate check. The cleanup playbook for stale flags. Naming hygiene. The "100% forever" anti-pattern.                    |
 | [references/sdk-and-exposure.md](references/sdk-and-exposure.md)                       | SDK call shapes. Exposure-event semantics. The "no exposures after enable" diagnostic checklist.                                        |
-| [references/experiment-linked-flags.md](references/experiment-linked-flags.md)         | How to spot an experiment-linked flag, what transitions overwrite, and when to route to `interpret-experiment` or `design-experiment`.  |
+| [references/experiment-linked-flags.md](references/experiment-linked-flags.md)         | How to spot an experiment-linked flag, what transitions overwrite, and when to route to the `manage-experiment` skill.                  |
 
 ---
 
@@ -74,12 +74,12 @@ Before doing anything, decide which flag-shaped product the user actually wants:
 | --------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------- |
 | Toggle a feature on/off for some users (kill switch, gradual rollout, geo-gate, internal-only enable)                 | Create a Feature Gate   | This skill, step 3        |
 | Serve different **configuration** values per user (copy variations, theme keys, structured payloads) — no measurement | Create a Dynamic Config | This skill, step 3        |
-| Compare variants and **measure** which performs better — hypothesis, primary metric, statistical significance         | Create an experiment    | `design-experiment` skill |
+| Compare variants and **measure** which performs better — hypothesis, primary metric, statistical significance         | Create an experiment    | `manage-experiment` skill |
 
 Three rules that catch the most common mis-routes:
 
 1. **Experiment-backed flags must be created via the experiment path.** Direct flag creation rejects the experiment flag type. Creating a flag directly after creating an experiment produces an unlinked orphan.
-2. **"A/B test" or "split traffic to measure X"** is always an experiment, even when the user says "feature flag." Route to `design-experiment`.
+2. **"A/B test" or "split traffic to measure X"** is always an experiment, even when the user says "feature flag." Route to `manage-experiment`.
 3. **"Roll this out to 10% of users"** without measurement is a Feature Gate. Route to step 3 of this skill.
 
 If the request is ambiguous (e.g. _"create a feature flag for the new checkout flow"_), ask **one** clarifying question: "Do you want a Feature Gate (on/off toggle), a Dynamic Config (different configuration values per user), or an Experiment (compare variants and measure a metric)?" One disambiguation, then proceed.

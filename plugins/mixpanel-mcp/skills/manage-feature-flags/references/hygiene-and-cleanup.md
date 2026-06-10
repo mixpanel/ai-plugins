@@ -4,13 +4,7 @@ Most flag debt is the same shape: a feature shipped or got reverted, and its fla
 
 ## Before any new flag — check for prior work
 
-When a user asks to set up a flag for a feature, **always list the project's existing flags first** with a partial display-name or key match seeded from the feature name. Surface anything you find:
-
-- **Same feature already gated?** Ask whether they want to update the existing flag instead of creating a duplicate. Two flags controlling the same code path is a debugging nightmare.
-- **Earlier flag from a now-shipped experiment?** Often safe to archive. Don't create a new flag whose key collides.
-- **Flag with the same intended key?** Keys must be unique within a project. The system auto-suffixes to avoid collisions, but the user almost always wants the clean key — ask whether to retire the old one.
-
-Skipping this check leads to flag debt: orphaned flags, ambiguous evaluation, and codepaths gated by stale or duplicate flags.
+The canonical pre-creation check lives in [SKILL.md step 2](../SKILL.md#2-check-for-prior-work) — list existing flags with a partial-name/key match seeded from the feature name; surface duplicates, archived-but-related flags, and key collisions before the user creates a new one. Skipping it leads to the flag debt this reference exists to clean up.
 
 ## Cleanup workflow
 
