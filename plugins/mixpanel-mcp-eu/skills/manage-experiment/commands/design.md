@@ -1,6 +1,6 @@
 # Command: design
 
-Design a Mixpanel experiment before launch. A well-designed experiment starts from the hypothesis and works backward: the hypothesis dictates the metrics that test it, the metrics dictate the sample size, the sample size + traffic dictate duration and testing model. **Don't create the experiment until the user explicitly confirms the configuration** — once it's live, mid-flight config changes invalidate the test.
+Design a Mixpanel experiment before launch. A well-designed experiment starts from the hypothesis and works backward: the hypothesis dictates the metrics that test it, the metrics dictate the sample size, the sample size + traffic dictate duration and testing model. This command stops at `DRAFT` — the irreversible launch happens in the separate `launch` command. **Don't save the draft until the user explicitly confirms the configuration.**
 
 The umbrella `SKILL.md` defines the shared glossary (Variant, Primary/Guardrail/Secondary metric, Direction, Lift, MDE, CUPED, Winsorization, Multiple-testing correction). Phase-specific terms below.
 
@@ -33,9 +33,11 @@ MDE = 4σ / √n
 
 The `16` is `(z_{α/2} + z_β)² × 2` rounded. Variance `σ²` depends on metric type: Bernoulli `p(1−p)`; Poisson `≈ mean`; Gaussian computed from data. The full derivation, worked examples, lookup table, and the five remediations for underpowered experiments live in [../references/sizing.md](../references/sizing.md).
 
-### The >5% guardrail hard-gate
+### Guardrails (the hard-gate enforced downstream)
 
-A **5% relative regression on any guardrail blocks ship**, even when the primary wins. Guardrails are the trustworthiness backstop; without this rule, a winning primary with a quietly regressing guardrail ships and rolls back two weeks later. Below 5% lives in the noise band of most guardrails; above 5% means the team has traded measurable damage for headline lift. If the user wants to ship past a regressing guardrail, force the conversation — disable the guardrail explicitly and document why. Don't let them silently override. Full rationale in [../references/pitfalls.md](../references/pitfalls.md).
+Guardrails are the trustworthiness backstop. Without them, a winning primary with a quietly regressing guardrail ships and rolls back two weeks later. The umbrella owns the regression threshold — see [Cross-command policies in SKILL.md](../SKILL.md#cross-command-policies). This command's job is making sure guardrails exist; the threshold is enforced by `launch`, `monitor`, and `interpret`.
+
+If the user wants to ship past a regressing guardrail, force the conversation — disable the guardrail explicitly and document why. Don't let them silently override. Full rationale in [../references/pitfalls.md](../references/pitfalls.md).
 
 ### Pre-launch pitfall catalogue
 
@@ -83,7 +85,7 @@ Sample-size floor: keep per-variant target above the platform's reliability floo
 
 Four choices, each with a default that's right for most users:
 
-- **Testing model** — default Sequential (peeking is safe by design); Frequentist only for small-lift hunts on well-sized tests.
+- **Testing model** — default Sequential (peek-safety table in the umbrella's Cross-command policies covers why); Frequentist only for small-lift hunts on well-sized tests.
 - **End condition** — sample-based for variable traffic; date-based for strong weekly seasonality.
 - **Confidence level** — default 0.95 (verify in product); 0.99 for irreversible high-stakes ships; 0.90 only when speed beats rigour.
 - **Multiple-testing correction** — enable when there are ≥2 primaries OR ≥2 non-control variants; default Benjamini-Hochberg, Bonferroni for strict family-wise control.
@@ -97,13 +99,15 @@ Decision tree, the peeking-trap explanation, worked compounding-FPR numbers, and
 
 When/why each is right and the common misconfigurations are in [../references/advanced-features.md](../references/advanced-features.md).
 
-### 7. Run the pre-launch pitfall check
+### 7. Sanity-check the design before saving
 
-Run the catalogue from **Components** against the proposed configuration. Surface only what fires; order blockers → warnings → fyi. Blockers should stop launch (the experiment cannot reach statistical power as configured). Warnings should be explained — name the trade-off, don't just nag. Full catalogue in [../references/pitfalls.md](../references/pitfalls.md).
+Run the catalogue from [../references/pitfalls.md](../references/pitfalls.md) against the proposed configuration so the user catches design-time problems before they save a `DRAFT`. Surface only what fires; order blockers → warnings → fyi.
 
-### 8. Confirm with the user, then create
+The full readiness check runs again in the `launch` command before the experiment goes live — this step in `design` is for catching issues now while the configuration is easy to change, not for gating draft creation.
 
-Creating the experiment is the irreversible step. Present a compact summary and **wait for explicit confirmation** before invoking the creation action:
+### 8. Confirm and save as DRAFT
+
+Saving the design as a `DRAFT` is reversible (the user can keep iterating, or delete the draft). It is **not** the launch — the experiment doesn't go live until the `launch` command runs. Surface the configuration summary and **wait for explicit confirmation** before creating the draft:
 
 ```
 *Experiment Setup Summary*
@@ -120,15 +124,19 @@ Creating the experiment is the irreversible step. Present a compact summary and 
 • *Expected duration on current traffic:* <D> days
 • *Achievable MDE on current traffic:* <X>% relative
 
-*Pitfall check:*
+*Design-time pitfall check:*
 ✅ Insufficient duration — adequate
 ✅ Cohort too small — adequate
 ⚠️ Missing guardrails — no guardrail metrics configured; >5% hard-gate cannot protect this ship
 ```
 
-Use the exact catalogue labels from [../references/pitfalls.md](../references/pitfalls.md) so the agent's pitfall messages stay consistent across sessions.
+Use the exact catalogue labels from [../references/pitfalls.md](../references/pitfalls.md) so the agent's pitfall messages stay consistent across the design and launch commands.
 
-After creating, link the new experiment back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
+After saving the draft, link it back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
+
+### 9. Hand off to launch
+
+`design` stops at `DRAFT`. When the user is ready to go live, route to the `launch` command in this skill, which runs the final readiness check and performs the irreversible launch.
 
 If the user hasn't named a specific feature or surface, ask before fetching baselines or designing — designing the wrong experiment burns more time than the clarifying question costs.
 
@@ -157,5 +165,3 @@ If the user hasn't named a specific feature or surface, ask before fetching base
 - When underpowered, say so plainly and list remediations in order of cost.
 - Don't moralise about peeking — switch them to sequential.
 - Guardrail regressions are hard gates, not "slight concerns."
-
-When the experiment is created and live, hand off to the `interpret` command in this same skill once exposures are flowing.
