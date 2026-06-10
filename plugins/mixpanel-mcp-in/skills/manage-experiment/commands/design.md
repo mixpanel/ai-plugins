@@ -93,7 +93,7 @@ Decision tree, the peeking-trap explanation, worked compounding-FPR numbers, and
 ### 6. Decide on advanced features
 
 - **CUPED** — enable when the primary metric correlates with pre-exposure behaviour AND all experiment users existed before start AND 2–4 weeks of stable pre-exposure history is available. Do not enable on new-user-only experiments, one-time-event metrics, or brand-new metrics.
-- **Winsorization** — enable for heavy-tailed continuous metrics (revenue, time-on-page, session duration). Do not enable on Bernoulli (conversion) metrics. Push back if the configured percentile is below ~80.
+- **Winsorization** — enable for heavy-tailed continuous metrics (revenue, time-on-page, session duration). Do not enable on Bernoulli (conversion) metrics. The `percentile` field is the tail width to cap (default `5` = 5% tails); push back if the user sets a percentile above ~20 — more than 20% of values capped on each side throws away too much signal.
 
 When/why each is right and the common misconfigurations are in [../references/advanced-features.md](../references/advanced-features.md).
 

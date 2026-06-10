@@ -53,7 +53,7 @@ If the team genuinely wants to make that trade, they can disable the guardrail b
 
 ### High variance, no Winsorization — warning
 
-**At least one continuous-ish metric is configured AND Winsorization is off.** Outliers will inflate variance and widen confidence intervals; a handful of power users can dominate the per-arm mean. Enable Winsorization at the platform default percentile (typically 95). Push back if the user sets a percentile below ~80 — more than 20% of values capped is almost always a misconfiguration.
+**At least one continuous-ish metric is configured AND Winsorization is off.** Outliers will inflate variance and widen confidence intervals; a handful of power users can dominate the per-arm mean. Enable Winsorization at the default `percentile=5` (cap each 5% tail). Push back if the user sets a `percentile` above ~20 — more than 20% of values capped on each side is almost always a misconfiguration.
 
 ### Multiple primaries, no correction — warning
 

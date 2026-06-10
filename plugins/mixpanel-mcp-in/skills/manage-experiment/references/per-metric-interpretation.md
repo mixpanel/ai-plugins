@@ -116,7 +116,7 @@ Different metric types behave differently; cite the relevant nuance in your verd
 ## Variance-reduction & outlier settings that change interpretation
 
 - **CUPED enabled**: mean is unchanged; variance reduced 30–70%; CIs narrower; power higher. Note: CUPED requires users to exist before the experiment — new-user-only experiments cannot use CUPED; if it's enabled there, it had no effect (mention as informational, not as a misconfiguration to fix).
-- **Winsorization enabled**: extreme values capped at the configured percentile, pooled across variants. Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A percentile much lower than the platform default (typically 95) is a misconfiguration — see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
+- **Winsorization enabled**: extreme values capped at both tails, pooled across variants. The `percentile` field is the tail width (default `5` = 5% tails). Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A `percentile` much higher than the default — capping more than ~20% of each tail — is a misconfiguration; see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
 
 ---
 

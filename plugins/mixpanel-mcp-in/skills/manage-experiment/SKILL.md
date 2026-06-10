@@ -69,7 +69,7 @@ Terms both commands use without redefining. Phase-specific terms (hypothesis, po
 - **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign of lift is mechanical (up/down); it is not by itself a verdict.
 - **MDE (Minimum Detectable Effect).** The smallest lift the experiment is sized to detect. Set during design, enforced at interpretation.
 - **CUPED.** Variance-reduction technique using pre-exposure baseline. Cuts required sample 30–70% when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
-- **Winsorization.** Outlier capping at a configured percentile, applied pooled across variants. Default 95 (verify in product). Cuts variance on heavy-tailed continuous metrics; meaningless on Bernoulli metrics.
+- **Winsorization.** Outlier capping applied pooled across variants. The `percentile` field is the **tail width** to cap on each side (default `5` caps below the 5th and above the 95th — i.e. the 5% tails). The schema rejects `percentile` ≥ 50. Cuts variance on heavy-tailed continuous metrics; meaningless on Bernoulli metrics.
 - **Multiple-testing correction.** Adjusts per-test significance threshold when several primaries or several non-control variants are tested together. Default Benjamini-Hochberg; Bonferroni for strict family-wise control.
 
 ## Reference files

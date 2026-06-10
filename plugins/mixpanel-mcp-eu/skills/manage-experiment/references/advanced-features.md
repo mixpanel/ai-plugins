@@ -36,9 +36,9 @@ Three optional features most experiments don't touch — and that, used in the r
 
 ## Winsorization — outlier handling
 
-**What it does.** Caps extreme values at a percentile boundary (default 95th — verify in product). This squeezes the long tail of heavy-tailed distributions so a handful of outliers can't dominate the per-arm mean.
+**What it does.** Caps extreme values at both tails of the distribution. The `percentile` field on the settings is the **tail width** to cap on each side: the default `5` caps below the 5th and above the 95th (i.e. the 5% tails). This squeezes the long tail of heavy-tailed distributions so a handful of outliers can't dominate the per-arm mean.
 
-**How to enable.** Turn Winsorization on for the experiment and pick a percentile.
+**How to enable.** Turn Winsorization on for the experiment and pick a `percentile`. The schema rejects `percentile` ≥ 50.
 
 ### When to enable
 
@@ -54,9 +54,9 @@ Three optional features most experiments don't touch — and that, used in the r
 
 ### Percentile guidance
 
-The platform default is typically 95 (cap top/bottom 5%) — verify in product. This is almost always right. Push back if the user sets a percentile below ~80 — that's more than 20% of values being capped, which throws away too much signal. Confirm intent before launching.
+The default is `percentile=5` (cap each 5% tail). This is almost always right. Push back if the user sets a `percentile` above ~20 — that's more than 20% of values capped on each side, which throws away too much signal. Confirm intent before launching.
 
-For very heavy tails (extreme whale distributions), 99th percentile is sometimes appropriate, but that's the corner case. The platform default is the default for a reason.
+For very heavy tails (extreme whale distributions), `percentile=1` (cap each 1% tail) is sometimes appropriate, but that's the corner case. The default is the default for a reason.
 
 ### What changes downstream
 

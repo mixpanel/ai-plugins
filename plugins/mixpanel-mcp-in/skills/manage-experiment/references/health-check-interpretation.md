@@ -142,7 +142,7 @@ These don't always invalidate results, but they change how to _read_ them. Surfa
 
 ### Extreme winsorization percentile
 
-**Winsorization enabled with a percentile far from the platform default (typically 95).** A percentile near 50 caps almost all data — almost certainly a misconfiguration. Confirm with the user; recommend resetting to the default unless they have a specific reason.
+**Winsorization enabled with a `percentile` far from the default (`5`, meaning 5% tails capped on each side).** A `percentile` approaching the schema cap of 50 caps almost all data — almost certainly a misconfiguration. Confirm with the user; recommend resetting to the default unless they have a specific reason.
 
 ### SRM check disabled
 
