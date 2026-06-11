@@ -4,7 +4,7 @@ The first thing to do when a user proposes an experiment on a feature is look up
 
 ## The lookup
 
-Search the project's prior experiments by keywords drawn from the feature name and surface area. Cast the net wide on the first call — single-keyword searches catch related experiments the user may have forgotten about.
+Search the project's prior experiments using the draft you're building — its flag key, its planned metrics, and its hypothesis. The lookup ranks stored experiments by overlap on those signals (shared metrics weigh most, then flag key, then hypothesis wording), so hand it as much of the draft as you have rather than a single keyword. Cast the net wide on the first call — keep the similarity threshold low so adjacent experiments the user may have forgotten about still surface.
 
 If no prior-experiments lookup is available in the current environment, tell the user explicitly that you couldn't check and proceed. Don't fabricate "no prior tests found" — that's worse than admitting the blind spot.
 
