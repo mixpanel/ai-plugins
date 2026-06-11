@@ -2,6 +2,18 @@
 
 Turn the platform's already-computed health verdict into a plain-language explanation, an ordered list of likely causes, and a recommended next action.
 
+## Contents
+
+- Kohavi framing — always cite when a health check fails
+- 1. SRM (Sample Ratio Mismatch)
+- 2. Retro A/A (pre-experiment bias) failure
+- 3. Insufficient exposures
+- 4. Frequentist peeking
+- 5. Live computation timeout / broken data
+- 6. Experiment ran < 3 days
+- 7. Misconfigurations
+- Output shape when a health check fails
+
 ---
 
 ## Kohavi framing — always cite when a health check fails

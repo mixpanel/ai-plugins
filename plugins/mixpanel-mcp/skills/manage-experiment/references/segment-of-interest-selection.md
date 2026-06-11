@@ -4,6 +4,15 @@ Pick 3–5 segments **likely to reveal a real effect difference** before slicing
 
 The companion reference [segment-breakdown-interpretation.md](segment-breakdown-interpretation.md) covers how to _read_ the per-segment results once you have them.
 
+## Contents
+
+- Why this matters: the fishing-expedition problem
+- The decision tree for picking segments
+- Sanity checks before committing to a slice
+- How many slices to commit to
+- The pre-commit ritual
+- Then read the results
+
 ---
 
 ## Why this matters: the fishing-expedition problem

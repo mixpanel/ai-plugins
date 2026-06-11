@@ -2,6 +2,14 @@
 
 Three optional features most experiments don't touch — and that, used in the right spot, dramatically improve power or trustworthiness. Each one has a clear set of conditions where it helps and a clear set of conditions where enabling it is wrong.
 
+## Contents
+
+- CUPED — variance reduction
+- Winsorization — outlier handling
+- Multiple testing correction — Bonferroni vs Benjamini-Hochberg
+- Decision flowchart
+- Common misconfigurations
+
 ## CUPED — variance reduction
 
 **What it does.** CUPED (Controlled-experiment Using Pre-Experiment Data) reduces variance on metrics that correlate with users' pre-experiment behaviour. Lower variance → smaller required sample size → faster experiments. Typical reductions are 30–70%, which translates directly into 30–70% smaller required sample.
@@ -83,7 +91,7 @@ Primary metric is Bernoulli (conversion rate)?
 │         └── No  → CUPED OFF
 └── No (continuous / count / retention)
           Heavy-tailed distribution with outliers (revenue, time-on-page, session length)?
-          ├── Yes → Winsorization ON (platform default percentile, typically 95)
+          ├── Yes → Winsorization ON (default `percentile=5`, i.e. cap each 5% tail)
           └── No  → Winsorization OFF
           Does it correlate with pre-exposure behaviour of existing users?
           ├── Yes → CUPED ON (if 2–4 week pre-exposure window available, no new-user cohort)
@@ -98,6 +106,6 @@ Primary count ≥ 2 OR non-control variants ≥ 2?
 
 - ⛔ **CUPED on a new-user-only experiment.** No pre-exposure data; the feature does nothing. Worse, the user thinks they're being protected and ships an underpowered test.
 - ⛔ **Winsorization on a conversion metric.** Capping 0/1 values is meaningless. The setting either no-ops or, if a buggy implementation interprets it literally, makes the metric worse.
-- ⛔ **Winsorization at a percentile below ~80.** Cuts more than 20% of data. Almost always a typo for 95 or 90. Confirm intent.
+- ⛔ **Winsorization at a `percentile` above ~20.** Caps more than 20% of each tail — throws away too much signal. Almost always a misconfiguration. Confirm intent.
 - ⛔ **Multiple testing correction OFF on a 5-primary test.** Family-wise FPR balloons to ~22.6%. One in five "wins" is noise.
 - ⛔ **CUPED enabled "to be safe" on a metric where pre-exposure doesn't predict post-exposure.** Best case: no effect. Common case: the variance estimate gets noisier because the regression adjustment is fitting to noise.

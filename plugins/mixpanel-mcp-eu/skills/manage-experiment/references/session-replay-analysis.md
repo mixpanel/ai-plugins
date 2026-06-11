@@ -4,6 +4,15 @@ Turn a quantitative experiment result into a behavior story using session replay
 
 > **Scope boundary.** This skill provides the _interpretation_ guidance for replay analysis. Actually fetching replay IDs for control vs treatment cohorts is a separate platform capability. If replay fetching isn't available in the current environment, say so to the user and recommend the manual flow: pull replays via the experiment's "View replays" UI for each variant, then bring the IDs back to discuss.
 
+## Contents
+
+- When replays help, when they don't
+- Cohort selection: which replays to compare
+- What to actually watch for
+- How to frame the findings
+- What NOT to do
+- Output shape
+
 ---
 
 ## When replays help, when they don't

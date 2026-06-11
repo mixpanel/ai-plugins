@@ -2,6 +2,20 @@
 
 You almost never know the right sample size by guessing. Pull the data first, then run the math.
 
+## Contents
+
+- The standard formula
+- Variance by metric type
+- Worked example
+- Kohavi's inverted formula
+- Achievable MDE for a running experiment (diagnosis form)
+- Estimating the inputs from real data
+- Five remediations when the experiment is underpowered
+- Sample-size floor
+- Lookup table (Bernoulli, 95% conf, 80% power)
+- Sample-size growth with variants
+- Duration considerations
+
 ## The standard formula
 
 Required sample size per variant (two-sample, two-sided test at 95% confidence, 80% power):
@@ -47,6 +61,26 @@ MDE = 4σ / √n
 This tells the user: "given your traffic, the smallest effect you can reliably detect is X." If that achievable MDE is larger than the lift the user actually expects, the experiment is **underpowered**. Flag immediately.
 
 Underpowered experiments suffer from **winner's curse**: if you do reach significance, the lift estimate is exaggerated, because only the high-variance positive realisations crossed the threshold. The post-launch result then fails to replicate, and the team learns "experiments are unreliable" rather than "this experiment was underpowered."
+
+## Achievable MDE for a running experiment (diagnosis form)
+
+When diagnosing a live experiment that hasn't hit significance (see [why-no-statsig.md](why-no-statsig.md)), you want the achievable MDE as a **relative** lift so it compares directly against the reported `lift`. Two unit traps make this wrong more often than not:
+
+- `MDE = 4σ / √n` above is **absolute** (metric units). Divide by the baseline to get a relative fraction:
+
+  ```
+  MDE_relative = 4σ / (baseline × √n)
+  ```
+
+- Use `σ`, the **standard deviation** — `σ = √σ²`. Plugging the variance `σ²` in directly overstates the MDE by a factor of `√σ²`. For a Bernoulli metric, `σ = √(p(1−p))`, not `p(1−p)`.
+
+Now compare apples to apples: both `MDE_relative` and the platform's `lift` are relative fractions. If `|lift| < MDE_relative`, the observed effect is below the detection floor at the current sample — it may be real, but the experiment was sized for a larger one. Invert the required-sample formula to quote the multiplier ("~3× more exposures"):
+
+```
+n_required = 16 × σ² / (baseline × MDE_target)²
+```
+
+These formulas explain _why_ the platform returned `significance = NO`; they do **not** override it. Never recompute or restate the platform's significance verdict from them.
 
 ## Estimating the inputs from real data
 

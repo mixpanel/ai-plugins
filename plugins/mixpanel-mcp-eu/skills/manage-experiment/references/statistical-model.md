@@ -2,6 +2,14 @@
 
 Once required sample size and acceptable duration are known, two configuration choices are left: the **testing model** (sequential vs frequentist) and the **end condition** (sample-based vs date-based). Two adjacent choices change how the tests are interpreted: **confidence level** and **multiple-testing correction**.
 
+## Contents
+
+- Testing model: sequential vs frequentist
+- End condition: sample-based vs date-based
+- Confidence level
+- Multiple testing correction
+- Power vs significance trade-off
+
 ## Testing model: sequential vs frequentist
 
 **Default to sequential** for most users. Peeking is the most common Mixpanel customer mistake, and sequential testing makes early-look safe by design.

@@ -2,6 +2,15 @@
 
 All four properties of a good hypothesis — falsifiable, directional, mechanistic, bounded in time — matter. Drop any one and the design downstream silently degrades.
 
+## Contents
+
+- The shape
+- When the user gives you a one-liner
+- Mechanism → metric class
+- Hypothesis ↔ metric alignment
+- When to push back
+- Worked examples
+
 ## The shape
 
 > **If** `<change>`, **then** `<measurable outcome>` will `<direction>`, **because** `<mechanism>`.

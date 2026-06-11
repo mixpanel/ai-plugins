@@ -1,6 +1,23 @@
 # Per-Metric Interpretation
 
-Translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single row of `summary` actually mean?"_
+Translate a metric's lift, confidence interval, and p-value into a plain-language verdict — i.e. _"what does this single result row actually mean?"_
+
+## Contents
+
+- The mental model
+- Polarity recipe
+- Reading the p-value in this platform
+- Reading the lift correctly
+- Verdict phrasing — a small palette
+- Magnitude — make it absolute
+- Twyman's Law in practice — changed-denominator lifts
+- Metric distribution types
+- Variance-reduction & outlier settings that change interpretation
+- Multiple comparisons & metric tiers — what's decisional and what isn't
+- When a primary metric is inconclusive
+- Frequentist vs Sequential — what affects per-metric reading
+- Triggered analysis & dilution
+- Novelty and primacy
 
 ---
 
@@ -19,7 +36,7 @@ A "win" requires **yes to (2)** AND **yes to (3)** AND **yes to (4)**. Skip any 
 
 ## Polarity recipe
 
-Apply the polarity recipe from the spine — see the **Components** section of `SKILL.md`. Treat the bucket name in `summary.positive` / `summary.negative` as sign-of-lift only; the business verdict comes from combining it with `metric.direction`. Examples worth remembering:
+Treat the bucket name (the positive / negative / no grouping) as sign-of-lift only; the business verdict comes from combining that sign with the metric's **Direction** (defined in the Shared glossary in `SKILL.md`). A positive-sign movement on a `down`-direction metric is a regression, not a win. Examples worth remembering:
 
 - A row in `summary.positive` with `direction: "down"` is a **regression**.
 - A row in `summary.negative` with `direction: "down"` is a **win** (e.g. a `-1% interstitials_shown` lift means less interruption).

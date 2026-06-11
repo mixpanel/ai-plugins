@@ -51,7 +51,7 @@ If the user has already shipped to 100% and wants to "analyse the effect," there
 
 ### "Just give me an A/B test, the simplest one"
 
-Probably an experiment. But "simplest" usually means "skip hypothesis, skip MDE, skip guardrails," which kills the test's interpretability. Coach the user through Step 1 (hypothesis) and Step 2 (metrics) of the main workflow — the cost is 10 minutes; the value is having a result you can actually act on.
+Probably an experiment. But "simplest" usually means "skip hypothesis, skip MDE, skip guardrails," which kills the test's interpretability. Coach the user through the hypothesis and metric-selection steps of the `design` command — the cost is 10 minutes; the value is having a result you can actually act on.
 
 ### "I want a feature flag but with stats"
 
@@ -61,7 +61,7 @@ Now you're back to an experiment. Run the full setup workflow.
 
 ### If experiment
 
-Continue with the four-step setup workflow in the main `SKILL.md`. The output of this skill is a configured experiment ready to launch.
+Continue with the `design` command's setup workflow. The output is a configured experiment ready to launch.
 
 ### If feature flag
 

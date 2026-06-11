@@ -24,13 +24,7 @@ license: Apache-2.0
 
 # Manage Experiment
 
-This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella; pick by experiment phase.
-
-The four commands map cleanly to experiment states:
-
-- `DRAFT` (experiment doesn't exist or hasn't launched) → `design` or `launch`.
-- `ACTIVE` (mid-flight, exposures accumulating) → `monitor`.
-- `ACTIVE` (reached planned end) or `CONCLUDED` → `interpret`.
+This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella, picked by experiment phase (the state→command mapping lives in the **Canonical commands** section below).
 
 The skill runs as a single interactive session per experiment. Commands compose naturally across phases — designing produces a configuration that launching commits, monitoring watches for safety issues mid-flight, interpreting consumes the matured result — but they're rarely invoked in the same session (the lifecycle spans days to weeks).
 
@@ -190,12 +184,7 @@ Apply these rules in order; the first match wins.
 
 1. **Explicit:** user names a phase (`/design`, "launch this experiment", "monitor experiment X", "interpret the results") → use that command.
 2. **Implicit:** message matches one canonical trigger phrase from the Components table → use that command.
-3. **Phase-derived (only when an experiment was resolved in step 2):**
-   - `DRAFT` + configuration incomplete or user is iterating on it → `design`.
-   - `DRAFT` + configuration complete and user is ready → `launch`.
-   - `ACTIVE` and planned end not reached → `monitor`.
-   - `ACTIVE` and planned end reached, or `CONCLUDED` → `interpret`.
-     If `DRAFT` doesn't disambiguate between design and launch, ask: "Is the configuration final, or are you still iterating on it?"
+3. **Phase-derived (only when an experiment was resolved in step 2):** apply the state→command mapping from the **Canonical commands** section. If `DRAFT` doesn't disambiguate between design and launch, ask: "Is the configuration final, or are you still iterating on it?"
 4. **Ambiguous verbs** ("audit", "check", "review") — apply phase-derived routing if an experiment is in context, otherwise fall through to the menu.
 5. **Otherwise:** show the Command menu, take the user's choice.
 
