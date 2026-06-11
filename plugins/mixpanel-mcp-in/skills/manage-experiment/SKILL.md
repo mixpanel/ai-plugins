@@ -2,23 +2,17 @@
 name: manage-experiment
 description: >
   Coach the user through any phase of a Mixpanel experiment — design (hypothesis
-  framing, metric selection, sizing, statistical model choice, advanced features
-  like CUPED / Winsorization / Bonferroni / Benjamini-Hochberg), launch (final
-  pre-launch readiness check and the irreversible launch action), monitor
-  (mid-flight safety: SRM, sample pace, guardrail-only peek, the don't-peek-on-
-  Frequentist rule, terminate-early decisions), and interpret after the
-  experiment is mature (read results, decide ship / iterate / kill / wait,
-  interpret health checks like SRM and Retro A/A, break results down by segment,
-  use session replays to explain a result). Use when the user mentions
-  experiment, A/B test, ship/kill decision, MDE, minimum detectable effect,
-  sample ratio mismatch, CUPED, sizing, statistical significance, lift, or any
-  phrasing like "set up an experiment", "design an A/B test", "launch this
-  experiment", "is it safe to keep this running", "is my experiment SRM-ing",
-  "should I peek", "how did experiment X do", "should we ship", "why isn't this
-  significant yet", "should this be sequential or fixed-horizon", "what's my
-  MDE", "is this experiment configured correctly", "audit my experiment". Do
-  NOT use for plain feature-flag rollouts with no measurement criterion — that
-  belongs to the `manage-feature-flags` skill.
+  framing, metric selection, sizing, statistical-model choice, advanced features
+  like CUPED / Winsorization / multiple-testing correction), launch (pre-launch
+  readiness check and the irreversible launch), monitor (mid-flight safety: SRM,
+  sample pace, guardrail peeks, terminate-early calls), and interpret (read
+  results, decide ship / iterate / kill / wait, read health checks like SRM and
+  Retro A/A, break down by segment, use session replays). Use when the user
+  mentions an experiment or A/B test, a ship/kill decision, MDE, sample ratio
+  mismatch, CUPED, or statistical significance, or asks things like "set up an
+  experiment", "is my experiment SRM-ing", "should we ship", "what's my MDE", or
+  "audit my experiment". Do NOT use for plain feature-flag rollouts with no
+  measurement criterion — that belongs to the `manage-feature-flags` skill.
 license: Apache-2.0
 ---
 
