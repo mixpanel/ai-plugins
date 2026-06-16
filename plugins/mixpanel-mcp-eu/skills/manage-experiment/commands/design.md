@@ -71,7 +71,9 @@ The hypothesis names a specific outcome. The primary metric must measure that ou
 - **Guardrails** (strongly recommended) cover the most likely failure mode of the change — see the guardrails-by-domain table in [../references/metric-selection.md](../references/metric-selection.md).
 - **Secondaries** are diagnostic only.
 
-Every primary and guardrail needs an explicit `direction`. Watch for the **lagging-indicator trap** (30-day retention as primary on a 2-week experiment) and the **changed-denominator trap** (metric defined only over treatment-exposed users — lift is artificially infinite). Full sanity checklist and standard guardrails-by-domain table in [../references/metric-selection.md](../references/metric-selection.md).
+Every primary and guardrail needs an explicit `direction`. **Caveat — the experiment-create tool's inline metric input does not expose `direction`; every metric it creates defaults to `up`.** For any down-polarity metric (cancel / error / latency / abandon / refund / removed), set `direction` to `down` in the Mixpanel UI after the draft is created, and confirm it before launch — an unset `down` silently flips the polarity verdict at interpretation. The `launch` readiness check re-flags any primary still left at the `up` default.
+
+Watch for the **lagging-indicator trap** (30-day retention as primary on a 2-week experiment) and the **changed-denominator trap** (metric defined only over treatment-exposed users — lift is artificially infinite). Full sanity checklist and standard guardrails-by-domain table in [../references/metric-selection.md](../references/metric-selection.md).
 
 ### 4. Size the experiment with real data
 
@@ -131,6 +133,8 @@ Saving the design as a `DRAFT` is reversible (the user can keep iterating, or de
 ```
 
 Use the exact catalogue labels from [../references/pitfalls.md](../references/pitfalls.md) so the agent's pitfall messages stay consistent across the design and launch commands.
+
+If the user iterates on an already-saved draft, apply the **read-merge-write** rule for settings (umbrella Behaviour rules) — re-send the full settings object on every edit so a one-field change doesn't silently drop `srm` / `excludeQA`.
 
 After saving the draft, link it back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
 

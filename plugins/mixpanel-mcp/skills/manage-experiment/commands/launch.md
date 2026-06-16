@@ -38,6 +38,7 @@ Run this against the experiment about to launch. Surface only what fires; order 
 | Warning  | The pre-launch pitfall catalogue reports a warning.                                                                                                       |
 | Warning  | No guardrail metrics configured. Without guardrails, the regression hard-gate (see umbrella Cross-command policies) cannot protect the ship decision.     |
 | Warning  | A primary metric has `direction` unset (defaults to `up`); cancel / error / latency / abandon / refund metrics need `down` set explicitly.                |
+| Warning  | `srm.enabled` is false or `excludeQA` is unset — both are easily lost to a partial settings edit (see the umbrella's read-merge-write rule); re-confirm before the allocation locks.   |
 | FYI      | The experiment isn't linked back to a prior experiment on the same feature, even though prior experiments exist. Recommend adding the link before launch. |
 
 The pitfall catalogue itself lives in [../references/pitfalls.md](../references/pitfalls.md) — don't duplicate the rules here; run them and report results.

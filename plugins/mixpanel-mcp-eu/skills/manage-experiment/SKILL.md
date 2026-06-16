@@ -145,9 +145,10 @@ All four commands use the same visual vocabulary so multi-command sessions read 
 ## Behaviour rules
 
 1. **Irreversible actions require explicit confirmation.** Creating an experiment (in `design`), launching one (in `launch`), terminating one mid-flight (in `monitor`), and concluding one (in `interpret`) are all irreversible. Show the proposed action, wait for the user to confirm with literal `CONFIRM` for the destructive ones.
-2. **If a command can't complete, explain why.** Tell the user what failed and what they can try. Don't fail silently.
-3. **Experiment switching.** If the user wants to operate on a different experiment mid-session, ask which one and reset experiment-scoped context.
-4. **Project switching.** If the user wants to operate on a different project mid-session, suggest starting a new conversation first. If they insist, resolve the new project and continue with that `project_id`.
+2. **If a command can't complete, explain why.** Tell the user what failed and what they can try. Don't fail silently. This includes a failed experiment lookup (e.g. the listing tool errors on a project where experiments aren't enabled) — surface the error and stop; don't proceed as if no experiments exist.
+3. **Editing settings is a full replace — read-merge-write.** The experiment-update tool's `settings` payload **replaces the entire settings object**; any field you omit is reset, silently dropping `srm`, `excludeQA`, `cuped`, `winsorization`, `preExperimentBias`, and `controlKey`. Before any settings edit, fetch the current experiment and re-send the **complete** settings object with your one change applied — never a partial `settings`. After the edit, re-verify `srm.enabled` and `excludeQA` survived. Losing `srm` (Kohavi's #1 trustworthiness check) to a one-field edit is the failure mode this rule exists to prevent.
+4. **Experiment switching.** If the user wants to operate on a different experiment mid-session, ask which one and reset experiment-scoped context.
+5. **Project switching.** If the user wants to operate on a different project mid-session, suggest starting a new conversation first. If they insist, resolve the new project and continue with that `project_id`.
 
 ---
 

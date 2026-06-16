@@ -37,3 +37,5 @@ A multi-variant test where only one treatment is significantly different from co
 ## After concluding
 
 The decision record — the rationale message, the shipped variant, and the experiment's terminal status — becomes the durable artifact. If a follow-up question comes in about why this experiment was shipped, that record is the answer.
+
+Concluding (or archiving) the experiment does **not** clean up the backing feature flag that `create` auto-provisioned — it's left disabled, not archived. If the team wants the flag gone too, archive it separately via the `manage-feature-flags` skill; don't assume the experiment's terminal state removed it.
