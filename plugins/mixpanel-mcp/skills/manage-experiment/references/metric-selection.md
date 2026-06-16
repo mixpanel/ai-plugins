@@ -7,7 +7,7 @@ Each metric serves exactly one of three roles. The hypothesis tells you which.
 The metrics whose movement decides ship / no-ship. They come straight from the hypothesis's "outcome will `<direction>`" clause.
 
 - **Cap at 3.** Each additional primary inflates the family-wise false-positive rate. With multiple-testing correction enabled (which is the right default at 2+ primaries), more primaries → tighter per-metric threshold → harder to detect any individual effect. Beyond 3 the math punishes you regardless of how well the test is run.
-- **Explicit direction.** Every primary needs `up` or `down`. The platform's default is `up` (verify in product), which is wrong for cancel / error / latency / abandon / refund metrics. Setting it explicitly at setup time is the only way to keep the polarity correct through interpretation.
+- **Explicit direction.** Every primary needs `up` or `down`. The platform's default is `up` (verify in product), which is wrong for cancel / error / latency / abandon / refund metrics. Set it explicitly at setup time so the polarity stays correct through interpretation; if it's wrong, the metric-update tool can fix it in place later (direction lives on the saved metric).
 - **Leading, not lagging.** A primary must be able to actually move within the planned experiment window. Match the metric's response window to the experiment's duration:
   - Onboarding-screen change → activation in the first session, not Week-4 retention.
   - Checkout button A/B → checkout conversion, not 30-day LTV.
@@ -36,7 +36,7 @@ Standard guardrails by domain — pick at least one from the row that matches th
 | Trust / safety / moderation          | Complaint rate, unsubscribe rate, support-ticket volume |
 | Time-to-task / search / IA           | Task abandonment rate, time-to-completion               |
 
-For every guardrail, **set direction explicitly**. A guardrail named "errors" left at the default `up` will silently let regressions slip through interpretation as "wins."
+For every guardrail, **set direction explicitly**. A guardrail named "errors" left at the default `up` will silently let regressions slip through interpretation as "wins." A wrong direction is fixable later via the metric-update tool.
 
 Same lagging-indicator rule applies: a guardrail that takes 30 days to react can't protect a 2-week experiment. If the user names retention or LTV as a guardrail on a short experiment, recommend a leading proxy (Day-1 or Day-7 retention) and demote the lagging metric to a post-launch monitor.
 

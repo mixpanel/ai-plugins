@@ -73,7 +73,7 @@ Terms all four commands use without redefining. Phase-specific terms (hypothesis
   - **Primary** — drives the ship decision. Cap at 3; the platform applies multiple-testing correction across primaries when configured.
   - **Guardrail** — must not regress; a guardrail regression vetoes a ship even when primaries win.
   - **Secondary** — exploratory / diagnostic only, never decisional, no correction applied.
-- **Direction.** Whether bigger is better (`up`) or smaller is better (`down`). Set `down` explicitly for cancel / error / latency / abandon / refund metrics — the default `up` silently flips polarity at interpretation.
+- **Direction.** Whether bigger is better (`up`) or smaller is better (`down`). Set `down` explicitly for cancel / error / latency / abandon / refund metrics — the default `up` silently flips polarity at interpretation. Direction is a property of the saved metric, so a wrong polarity can be corrected after setup with the metric-update tool — no need to recreate the metric or the experiment.
 - **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign is mechanical (up/down), not by itself a verdict.
 - **MDE (Minimum Detectable Effect).** The smallest lift the experiment is sized to detect. Set during design, enforced at interpretation.
 - **CUPED.** Variance reduction using a pre-exposure baseline; cuts required sample ~30–70% when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.

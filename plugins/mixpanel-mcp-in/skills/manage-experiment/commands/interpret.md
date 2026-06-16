@@ -33,6 +33,8 @@ Given a row's lift and the metric's direction ("up" = bigger is better, "down" =
 
 A positive-bucket row on a "down" metric is a **regression**, not a win. Always filter out the control row first — the platform marks which variant is control.
 
+If a metric's direction is plainly wrong at read time (e.g. an error / cancel / latency metric left at the default `up`), the polarity reads inverted. The metric-update tool can correct it in place — fix it and re-read rather than mentally inverting the row.
+
 The platform auto-applies multiple-testing correction when the experiment is configured for Bonferroni or Benjamini-Hochberg — **don't re-correct**.
 
 ### Data-source fallback
