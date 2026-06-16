@@ -96,7 +96,7 @@ The same statistical comparison run on the **pre-exposure** period revealed that
 4. If the experiment is still ACTIVE: extend duration via an experiment update with a new end target.
 5. If the experiment concluded too early: relaunch with longer planned duration. The setup-side skill covers the power-analysis math.
 
-If the user wants to talk about _why_ a primary metric is still inconclusive even when exposures look adequate, route to [why-no-statsig.md](why-no-statsig.md) — different question.
+If the user wants to talk about _why_ a primary metric is still inconclusive even when exposures look adequate, route to the why-no-statsig playbook (the interpret command links it) — different question.
 
 ---
 

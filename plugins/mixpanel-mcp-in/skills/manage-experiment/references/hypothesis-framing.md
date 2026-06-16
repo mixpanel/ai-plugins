@@ -20,7 +20,7 @@ All four properties of a good hypothesis — falsifiable, directional, mechanist
 | **Falsifiable**     | Could the data say "no"?                                    | "Improving UX" can't be falsified. "Increasing weekly retention by ≥2pp" can.                                                                                                                    |
 | **Directional**     | Is the predicted change up or down?                         | "Affecting cart size" leaves the polarity ambiguous; the system defaults to `direction: "up"` and the interpretation step misreads regressions as wins.                                          |
 | **Mechanistic**     | What's the proposed causal chain?                           | "Because users will see X and decide Y" is a mechanism. "We think it'll work" is not. Without a mechanism, the team can't tell when the metric they picked is actually downstream of the change. |
-| **Bounded in time** | Does the predicted effect occur within a measurable window? | Day-30 LTV claims need a ≥30-day experiment. A 2-week test on a 30-day metric guarantees an inconclusive result on the real effect plus a high chance of reaching false significance from noise. |
+| **Bounded in time** | Does the predicted effect occur within a measurable window? | Day-30 LTV claims need a ≥30-day experiment. A 2-week test on a 30-day metric can't measure the real effect (the metric isn't mature yet) and invites a noise-driven false read. |
 
 ## When the user gives you a one-liner
 

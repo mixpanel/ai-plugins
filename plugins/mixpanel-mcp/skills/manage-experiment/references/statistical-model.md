@@ -85,7 +85,7 @@ Enable when there are ≥2 primary metrics OR ≥2 non-control variants. Without
 
 Derived from the standard `1 − (1 − α)^k` compounding for `k = primaries × non-control variants` independent tests at per-test α = 0.05.
 
-The takeaway: by the time you're testing 5 primaries on a 3-arm experiment, more than half of the "wins" are noise.
+The takeaway: by the time you're testing 5 primaries on a 4-arm experiment (3 non-control variants), more than half of the "wins" are noise.
 
 Two methods are available:
 
@@ -107,4 +107,4 @@ When the user pushes you on the confidence level:
 - Raising α from 0.05 to 0.10 increases power (smaller required sample for the same MDE) but doubles the rate of false-positive "wins."
 - Lowering α from 0.05 to 0.01 cuts the false-positive rate fivefold but requires roughly 1.5× the sample for the same MDE.
 
-If the user wants more power without raising α, the right move is **smaller MDE → bigger required sample**, not loosening significance. If sample is the binding constraint, reach for CUPED (`references/advanced-features.md`) or a higher-volume proxy metric.
+If the user wants more power without raising α, the right move is **smaller MDE → bigger required sample**, not loosening significance. If sample is the binding constraint, reach for CUPED or a higher-volume proxy metric.

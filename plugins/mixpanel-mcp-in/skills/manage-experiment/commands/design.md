@@ -77,7 +77,7 @@ Every primary and guardrail needs an explicit `direction`. Watch for the **laggi
 
 Pull baseline rate, variance, and daily traffic from Mixpanel. Don't guess.
 
-Use the formulas in **Components**. Then compare the required sample to what the available traffic delivers inside an acceptable window (typically 2–4 weeks). If the achievable MDE exceeds the user's expected lift, the experiment is **underpowered** — surface immediately. Don't wave it through; offer the remediations from the sizing reference (accept a larger MDE → increase allocation → enable CUPED → pick a higher-volume primary → don't run).
+Use the formulas in **Components**. Then compare the required sample to what the available traffic delivers inside an acceptable window (typically 2–4 weeks). If the achievable MDE exceeds the user's expected lift, the experiment is **underpowered** — surface immediately. Don't wave it through; offer the remediations from the sizing reference, in cost order (cheapest first).
 
 Sample-size floor: keep per-variant target above the platform's reliability floor (verify in product — historically ~350–400). Below the floor, the central limit theorem breaks down and the SRM check gets noisy. Full worked examples, baseline-by-rate lookup table, and the duration / seasonality rules in [../references/sizing.md](../references/sizing.md).
 
@@ -95,7 +95,7 @@ Decision tree, the peeking-trap explanation, worked compounding-FPR numbers, and
 ### 6. Decide on advanced features
 
 - **CUPED** — enable when the primary metric correlates with pre-exposure behaviour AND all experiment users existed before start AND 2–4 weeks of stable pre-exposure history is available. Do not enable on new-user-only experiments, one-time-event metrics, or brand-new metrics.
-- **Winsorization** — enable for heavy-tailed continuous metrics (revenue, time-on-page, session duration). Do not enable on Bernoulli (conversion) metrics. The `percentile` field is the tail width to cap (default `5` = 5% tails); push back if the user sets a percentile above ~20 — more than 20% of values capped on each side throws away too much signal.
+- **Winsorization** — enable for heavy-tailed continuous metrics (revenue, time-on-page, session duration). Do not enable on Bernoulli (conversion) metrics. The tail-width setting defaults to 5 (5% tails); apply the umbrella glossary's Winsorization push-back rule (don't cap tails above ~20%).
 
 When/why each is right and the common misconfigurations are in [../references/advanced-features.md](../references/advanced-features.md).
 

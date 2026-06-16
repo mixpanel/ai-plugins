@@ -53,7 +53,7 @@ Concretely, when you have a prior result that's relevant, the setup workflow cha
 | Step 1 — hypothesis        | Coach from scratch                              | Anchor on the prior's hypothesis; ask what's different                                                                 |
 | Step 2 — metric selection  | Suggest standard primaries/guardrails           | Use the prior's metric set as the default; modify only with reason                                                     |
 | Step 3 — sizing            | Query baseline + variance over the prior window | Use the prior's observed baseline and variance                                                                         |
-| Step 4 — statistical model | Default to sequential / benjamini-hochberg      | If the prior used a specific model and the team is comparing across tests, keep the same model for comparability       |
+| Step 4 — statistical model | Default to sequential / Benjamini-Hochberg (verify current)      | If the prior used a specific model and the team is comparing across tests, keep the same model for comparability       |
 | Pitfall check              | Run the standard catalogue                      | Cross-reference: did the prior have an SRM problem? A guardrail regression that should be set up as primary this time? |
 
 ## When prior tests warn you away from testing at all

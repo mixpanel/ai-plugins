@@ -13,15 +13,15 @@ Concluding an experiment is **irreversible**. Before invoking the decide action,
 A decide call expresses three things:
 
 1. **Did the experiment succeed?** A win for one of the treatments, or a deliberate stop.
-2. **Which variant ships?** Required when success is true. Either a real variant key, or one of the two special constants below.
+2. **Which variant ships?** Required when success is true. Either a real variant key, or one of the two special choices below.
 3. **Why?** A rationale message — what metrics were evaluated, the polarity reading, the tradeoffs accepted. The platform requires this on every decide call; treat it as a one-paragraph decision record, not a placeholder.
 
 ## Special variant choices for success
 
 When you have a winning result but no single variant to ship:
 
-- **Ship the change without picking a variant.** Use when the experiment validated a direction but the team will ship outside the experiment's variant set. (The platform exposes this as the constant `__no_variant_shipped__`.)
-- **Defer the variant decision.** Use when you want to lock in the success verdict but the variant choice needs more discussion. (The platform exposes this as `__defer_variant_decision__` and shows `SUCCESS_DEFERRED` in the UI.)
+- **Ship the change without picking a variant.** Use when the experiment validated a direction but the team will ship outside the experiment's variant set. (The decide action exposes a dedicated "ship without a variant" choice; the tool layer supplies the exact value.)
+- **Defer the variant decision.** Use when you want to lock in the success verdict but the variant choice needs more discussion. (The decide action exposes a "defer the variant decision" choice; the UI shows the experiment as deferred.)
 
 When the verdict is KILL — no winner — record success as false. No variant key is needed in that case.
 
@@ -30,7 +30,7 @@ When the verdict is KILL — no winner — record success as false. No variant k
 For a 3+ arm test, the decide action still names a single winning variant. If two treatments are roughly tied:
 
 - If both clear the practical-significance bar and shipping either is acceptable, pick on simplicity (smaller diff from control, lower implementation cost).
-- If the team genuinely cannot pick, use the defer constant above — better than fabricating a winner.
+- If the team genuinely cannot pick, use the defer-the-decision choice above — better than fabricating a winner.
 
 A multi-variant test where only one treatment is significantly different from control is a clean SHIP for that variant; the inconclusive arms are simply not the winner.
 

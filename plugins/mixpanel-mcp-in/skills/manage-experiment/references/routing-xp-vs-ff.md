@@ -13,7 +13,7 @@ Before any setup work, decide whether the user actually wants an **experiment** 
 | Targeted access — "give beta access to these 50 design partners."                 | **Feature flag** (FF).                                                         |
 | Both — "ship to 10%, but also tell me if it moves checkout conversion."           | **Experiment** with a phased rollout, or **FF + a separate experiment** later. |
 
-The clean way to think about it: a feature flag is a **delivery mechanism**. An experiment is a **decision mechanism** built on top of one. Every experiment uses a feature flag under the hood (Mixpanel auto-creates one when an experiment is created); not every feature flag use case needs an experiment.
+The clean way to think about it: a feature flag is a **delivery mechanism**. An experiment is a **decision mechanism** built on top of one. An experiment using the feature-flag collection method auto-creates a flag under the hood (verify current); not every feature flag use case needs an experiment.
 
 ## Disambiguation prompt
 

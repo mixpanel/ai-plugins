@@ -2,7 +2,7 @@
 
 Pick 3–5 segments **likely to reveal a real effect difference** before slicing every available dimension and ending up p-hacking.
 
-The companion reference [segment-breakdown-interpretation.md](segment-breakdown-interpretation.md) covers how to _read_ the per-segment results once you have them.
+The companion segment-breakdown interpretation reference covers how to _read_ the per-segment results once you have them.
 
 ## Contents
 
@@ -122,4 +122,4 @@ Pre-commitment is what separates "segmentation analysis" from "fishing."
 
 ## Then read the results
 
-Once the segment breakdown is in hand, switch to [segment-breakdown-interpretation.md](segment-breakdown-interpretation.md). The reading rules (Simpson's paradox, per-segment polarity, sample-size floor per segment) live there.
+Once the segment breakdown is in hand, switch to the segment-breakdown interpretation reference (the interpret command links it). The reading rules (Simpson's paradox, per-segment polarity, sample-size floor per segment) live there.

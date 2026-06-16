@@ -74,7 +74,7 @@ For very heavy tails (extreme whale distributions), `percentile=1` (cap each 1% 
 
 ## Multiple testing correction — Bonferroni vs Benjamini-Hochberg
 
-Covered in detail in [statistical-model.md](statistical-model.md). The short version:
+Covered in detail in the statistical-model reference. The short version:
 
 - Enable when there are ≥2 primaries OR ≥2 non-control variants.
 - Default to Benjamini-Hochberg. More powerful with correlated primaries.
@@ -106,6 +106,6 @@ Primary count ≥ 2 OR non-control variants ≥ 2?
 
 - ⛔ **CUPED on a new-user-only experiment.** No pre-exposure data; the feature does nothing. Worse, the user thinks they're being protected and ships an underpowered test.
 - ⛔ **Winsorization on a conversion metric.** Capping 0/1 values is meaningless. The setting either no-ops or, if a buggy implementation interprets it literally, makes the metric worse.
-- ⛔ **Winsorization at a `percentile` above ~20.** Caps more than 20% of each tail — throws away too much signal. Almost always a misconfiguration. Confirm intent.
+- ⛔ **Winsorization tail width above ~20%.** Almost always a misconfiguration — see Percentile guidance above. Confirm intent.
 - ⛔ **Multiple testing correction OFF on a 5-primary test.** Family-wise FPR balloons to ~22.6%. One in five "wins" is noise.
 - ⛔ **CUPED enabled "to be safe" on a metric where pre-exposure doesn't predict post-exposure.** Best case: no effect. Common case: the variance estimate gets noisier because the regression adjustment is fitting to noise.

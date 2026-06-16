@@ -76,9 +76,9 @@ Terms all four commands use without redefining. Phase-specific terms (hypothesis
 - **Direction.** Whether bigger is better for a metric (`up`) or smaller is better (`down`). Cancel / error / latency / abandon / refund metrics need `down` set explicitly — leaving the default silently flips polarity at interpretation.
 - **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign of lift is mechanical (up/down); it is not by itself a verdict.
 - **MDE (Minimum Detectable Effect).** The smallest lift the experiment is sized to detect. Set during design, enforced at interpretation.
-- **CUPED.** Variance-reduction technique using pre-exposure baseline. Cuts required sample 30–70% when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
-- **Winsorization.** Outlier capping applied pooled across variants. The `percentile` field is the **tail width** to cap on each side (default `5` caps below the 5th and above the 95th — i.e. the 5% tails). The schema rejects `percentile` ≥ 50. Cuts variance on heavy-tailed continuous metrics; meaningless on Bernoulli metrics.
-- **Multiple-testing correction.** Adjusts per-test significance threshold when several primaries or several non-control variants are tested together. Default Benjamini-Hochberg; Bonferroni for strict family-wise control.
+- **CUPED.** Variance-reduction technique using pre-exposure baseline. Cuts required sample 30–70% (typical, empirical range) when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
+- **Winsorization.** Outlier capping applied pooled across variants. The `percentile` field is the **tail width** to cap on each side (default `5` caps below the 5th and above the 95th — i.e. the 5% tails). The schema rejects `percentile` ≥ 50. **Push back on tail widths above ~20%** — capping more than a fifth of each side discards too much signal; this is the canonical push-back rule the commands inherit. Cuts variance on heavy-tailed continuous metrics; meaningless on Bernoulli metrics.
+- **Multiple-testing correction.** Adjusts per-test significance threshold when several primaries or several non-control variants are tested together. Default Benjamini-Hochberg (platform default — verify current); Bonferroni for strict family-wise control.
 
 ## Reference files
 

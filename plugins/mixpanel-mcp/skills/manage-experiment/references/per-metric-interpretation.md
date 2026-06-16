@@ -23,12 +23,12 @@ Translate a metric's lift, confidence interval, and p-value into a plain-languag
 
 ## The mental model
 
-Each row in `summary.positive` / `summary.negative` / `summary.no` answers four questions:
+Each row (positive / negative / no-effect bucket) answers four questions:
 
-1. **Did the lift go up or down?** — the `summary` bucket name (sign-of-lift, not polarity).
-2. **Was the change distinguishable from noise?** — the `significance` field (or the bucket name itself: rows in `summary.positive` / `summary.negative` are significant, rows in `summary.no` are not).
-3. **Was the change in the goal direction?** — apply the polarity recipe with `metric.direction`.
-4. **Was the change big enough to matter?** — multiply `lift` by the control baseline `value` to get absolute impact, then judge against business context.
+1. **Did the lift go up or down?** — the bucket name (sign-of-lift, not polarity).
+2. **Was the change distinguishable from noise?** — the significance classification (or the bucket name itself: positive / negative buckets are significant, the no-effect bucket is not).
+3. **Was the change in the goal direction?** — apply the polarity recipe with the metric's direction.
+4. **Was the change big enough to matter?** — multiply lift by the control baseline value to get absolute impact, then judge against business context.
 
 A "win" requires **yes to (2)** AND **yes to (3)** AND **yes to (4)**. Skip any one of those and you're shipping the wrong thing.
 
@@ -36,10 +36,10 @@ A "win" requires **yes to (2)** AND **yes to (3)** AND **yes to (4)**. Skip any 
 
 ## Polarity recipe
 
-Treat the bucket name (the positive / negative / no grouping) as sign-of-lift only; the business verdict comes from combining that sign with the metric's **Direction** (defined in the Shared glossary in `SKILL.md`). A positive-sign movement on a `down`-direction metric is a regression, not a win. Examples worth remembering:
+Apply the **canonical polarity recipe** (defined in the interpret command's Components): the bucket name is sign-of-lift only; the business verdict comes from combining that sign with the metric's **Direction** (Shared glossary in `SKILL.md`). Re-apply it on every row here — a positive-sign movement on a "down" metric is a regression, not a win. Examples worth remembering:
 
-- A row in `summary.positive` with `direction: "down"` is a **regression**.
-- A row in `summary.negative` with `direction: "down"` is a **win** (e.g. a `-1% interstitials_shown` lift means less interruption).
+- A positive-bucket row on a "down" metric is a **regression**.
+- A negative-bucket row on a "down" metric is a **win** (e.g. a -1% interstitials_shown lift means less interruption).
 
 ---
 
@@ -47,7 +47,7 @@ Treat the bucket name (the positive / negative / no grouping) as sign-of-lift on
 
 Mixpanel runs a frequentist comparison at the experiment's configured confidence level — typically 0.95 (verify in product if results look off). If it differs from 0.95, call it out (`0.9` inflates false positives; `0.99` is conservative).
 
-The platform-specific trap worth flagging: `liftConfidence` on a result row is the **confidence level used** (e.g. `0.95`), **not the CI width**. Easy to misread.
+The platform-specific trap worth flagging: the confidence figure shown on each result row is the **confidence level used** (e.g. 0.95), **not the CI width**. Easy to misread.
 
 For the general meaning of a p-value (the probability under the null), trust the model's baseline knowledge — don't invent thresholds in either direction.
 
@@ -59,8 +59,8 @@ For the general meaning of a p-value (the probability under the null), trust the
 lift = (treatment_mean - control_mean) / control_mean
 ```
 
-- **Total / sum metrics use exposure rebalancing.** If treatment has more exposed users than control, the raw sum will mechanically be higher. The platform computes lift per-exposure already; **don't manually divide raw totals when explaining results** — the `lift` field is correct.
-- If `lift is None` in a row, **the calculation failed for that variant.** Surface the failure; do not interpret as "no effect."
+- **Total / sum metrics use exposure rebalancing.** If treatment has more exposed users than control, the raw sum will mechanically be higher. The platform computes lift per-exposure already; **don't manually divide raw totals when explaining results** — the reported lift is correct.
+- If a row's lift is missing, **the calculation failed for that variant.** Surface the failure; do not interpret as "no effect."
 
 ---
 
@@ -133,7 +133,7 @@ Different metric types behave differently; cite the relevant nuance in your verd
 ## Variance-reduction & outlier settings that change interpretation
 
 - **CUPED enabled**: mean is unchanged; variance reduced 30–70%; CIs narrower; power higher. Note: CUPED requires users to exist before the experiment — new-user-only experiments cannot use CUPED; if it's enabled there, it had no effect (mention as informational, not as a misconfiguration to fix).
-- **Winsorization enabled**: extreme values capped at both tails, pooled across variants. The `percentile` field is the tail width (default `5` = 5% tails). Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A `percentile` much higher than the default — capping more than ~20% of each tail — is a misconfiguration; see the **Misconfigurations** section in [health-check-interpretation.md](health-check-interpretation.md).
+- **Winsorization enabled**: extreme values capped at both tails, pooled across variants. The tail-width setting defaults to 5 (5% tails). Lifts reflect typical-user behavior, not whale behavior. Bernoulli (conversion) metrics ignore Winsorization. A much higher tail width — capping more than ~20% of each side — is a misconfiguration; see the Misconfigurations notes in the health-check interpretation reference.
 
 ---
 
@@ -153,7 +153,7 @@ If multiple-testing correction is off AND there are 2+ primaries × 1+ non-contr
 
 A "not significant" verdict means the experiment didn't have enough signal to distinguish the effect from noise at the chosen confidence level — **not that there is no effect.** Important when the user is about to call something a null result.
 
-For the full walk-through on what to do about it (wait, extend, boost power, narrow, accept null), see [why-no-statsig.md](why-no-statsig.md).
+For the full walk-through on what to do about it (wait, extend, boost power, narrow, accept null), see the why-no-statsig playbook.
 
 ---
 
@@ -161,7 +161,7 @@ For the full walk-through on what to do about it (wait, extend, boost power, nar
 
 Concluding a Frequentist experiment before it reaches its configured target is a peeking event — per-metric significance verdicts become unreliable. Sequential experiments are designed for continuous monitoring and don't have this problem.
 
-For the full diagnosis when peeking is suspected, see the **Frequentist peeking** section of [health-check-interpretation.md](health-check-interpretation.md).
+For the full diagnosis when peeking is suspected, see the **Frequentist peeking** section of the health-check interpretation reference.
 
 ---
 

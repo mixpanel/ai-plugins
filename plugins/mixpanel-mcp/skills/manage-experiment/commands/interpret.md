@@ -9,7 +9,7 @@ The umbrella `SKILL.md` defines the shared glossary (Variant, Primary/Guardrail/
 ## Glossary (interpret-specific)
 
 - **Polarity.** Whether a movement is _good for the business_. Combines sign of lift with the metric's `direction` ("up" = bigger is better; "down" = smaller is better). See the **Polarity recipe** in Components.
-- **Significance.** The platform's per-row classification: `YES_POSITIVE`, `YES_NEGATIVE`, or `NO`. Read from the response — do not recompute.
+- **Significance.** The platform's per-row classification: significant-positive, significant-negative, or not-significant. Read it from the result — do not recompute.
 - **SRM (Sample Ratio Mismatch).** Variants received traffic in proportions that disagree with the configured split. **Kohavi's #1 trustworthiness check** — when SRM fails, downstream lift, p-values, and CIs cannot be trusted.
 - **Retro A/A (pre-experiment bias).** Re-runs the comparison on the pre-exposure period. A failure means cohorts already differed before treatment started.
 - **Twyman's Law.** "Any unusually clean or unusually large result is more likely a bug than a discovery." Apply on lifts > ~30% — usually a changed-denominator artifact.
@@ -21,15 +21,17 @@ The umbrella `SKILL.md` defines the shared glossary (Variant, Primary/Guardrail/
 
 ### Polarity recipe (load-bearing — apply on every metric row)
 
-The platform's summary buckets (`positive` / `negative` / `no`) classify by **sign of lift**, NOT by business value. Translate each row through the recipe before drawing any conclusion.
+This is the **canonical polarity recipe** for the skill — the interpret references point back here instead of restating it.
 
-Given `lift` and the metric's `direction` ("up" or "down", defaults to "up"):
+The platform's result buckets (positive / negative / no-effect) classify by **sign of lift**, NOT by business value. Translate each row through the recipe before drawing any conclusion.
 
-- `lift is None` or `lift == 0` → **neutral** (no measurement / no effect respectively).
-- `direction == "up"` → **positive** if `lift > 0`, else **negative**.
-- `direction == "down"` → **positive** if `lift < 0`, else **negative**.
+Given a row's lift and the metric's direction ("up" = bigger is better, "down" = smaller is better; defaults to "up"):
 
-A row in `summary.positive` with `direction: "down"` is a **regression**, not a win. Always filter out the control row first — the platform marks which variant is control.
+- Lift missing or exactly zero → **neutral** (no measurement / no effect respectively).
+- Direction "up" → **positive** if lift > 0, else **negative**.
+- Direction "down" → **positive** if lift < 0, else **negative**.
+
+A positive-bucket row on a "down" metric is a **regression**, not a win. Always filter out the control row first — the platform marks which variant is control.
 
 The platform auto-applies multiple-testing correction when the experiment is configured for Bonferroni or Benjamini-Hochberg — **don't re-correct**.
 
@@ -47,7 +49,7 @@ Experiment-details has two parallel data paths — live (preferred) and cached. 
 | Trust ✓, target sample/duration not yet reached                        | **WAIT** (or extend, or restart with more power — see [../references/why-no-statsig.md](../references/why-no-statsig.md)).                                                           |
 | Trust ✗                                                                | **DO NOT DECIDE.** Report the failure and recommend remediation from [../references/health-check-interpretation.md](../references/health-check-interpretation.md).                   |
 
-For multi-variant tests, special variant constants (`__no_variant_shipped__`, `__defer_variant_decision__`), and the exact decide-call shape, see [../references/lifecycle-handoff.md](../references/lifecycle-handoff.md).
+For multi-variant tests, the special success-without-a-single-variant choices (ship-without-a-variant, defer-the-decision), and the exact decide-call shape, see [../references/lifecycle-handoff.md](../references/lifecycle-handoff.md).
 
 ---
 
@@ -77,7 +79,7 @@ Apply the **polarity recipe** from Components to each non-control variant × pri
 
 #### 2c. Guardrail check
 
-Any guardrail significant in the wrong polarity? A guardrail regression → **ITERATE**, not ship. Guardrail polarity uses the same recipe — a row in `summary.positive` for a `direction: "down"` guardrail is still a regression.
+Any guardrail significant in the wrong polarity? A guardrail regression → **ITERATE**, not ship. Guardrail polarity uses the same recipe — a positive-bucket row for a "down" guardrail is still a regression.
 
 #### 2d. Practical significance
 

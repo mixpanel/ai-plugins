@@ -7,7 +7,7 @@ Each metric serves exactly one of three roles. The hypothesis tells you which.
 The metrics whose movement decides ship / no-ship. They come straight from the hypothesis's "outcome will `<direction>`" clause.
 
 - **Cap at 3.** Each additional primary inflates the family-wise false-positive rate. With multiple-testing correction enabled (which is the right default at 2+ primaries), more primaries → tighter per-metric threshold → harder to detect any individual effect. Beyond 3 the math punishes you regardless of how well the test is run.
-- **Explicit direction.** Every primary needs `up` or `down`. The platform's default is `up`, which is wrong for cancel / error / latency / abandon / refund metrics. Setting it explicitly at setup time is the only way to keep the polarity correct through interpretation.
+- **Explicit direction.** Every primary needs `up` or `down`. The platform's default is `up` (verify in product), which is wrong for cancel / error / latency / abandon / refund metrics. Setting it explicitly at setup time is the only way to keep the polarity correct through interpretation.
 - **Leading, not lagging.** A primary must be able to actually move within the planned experiment window. Match the metric's response window to the experiment's duration:
   - Onboarding-screen change → activation in the first session, not Week-4 retention.
   - Checkout button A/B → checkout conversion, not 30-day LTV.
@@ -20,11 +20,11 @@ If the user proposes a primary, sanity-check:
 - _Is this metric downstream of the change?_ (A pricing change cannot move "tutorial completion".)
 - _Does the metric exist for both control and treatment users?_ If the change creates new events that don't exist in control, lift is artificially infinite (changed-denominator).
 - _Is the metric's response window shorter than the experiment's duration?_ If not, the metric is lagging — pick a leading proxy.
-- _Does the metric have enough volume to detect the expected lift?_ (Cross-reference `references/sizing.md`.)
+- _Does the metric have enough volume to detect the expected lift?_ (Volume drives the sizing math.)
 
 ## Guardrail metrics (0+, strongly recommended)
 
-Metrics that **must not regress**, even if primaries win. The trustworthiness backstop on a ship decision: a 5% relative regression on any guardrail blocks ship even if the primary wins. This is the **>5% guardrail hard-gate**, and it's the most important single rule in the pitfall catalogue.
+Metrics that **must not regress**, even if primaries win. The trustworthiness backstop on a ship decision: a 5% relative regression on any guardrail blocks ship even if the primary wins. This is the **>5% guardrail hard-gate** — the umbrella owns the threshold (rationale in the pitfall catalogue), and it's the most important single rule there.
 
 Standard guardrails by domain — pick at least one from the row that matches the change:
 
@@ -49,7 +49,7 @@ Metrics for understanding **why** the primary moved, not for the ship decision. 
 > **Setup misconfiguration to flag.** If the user's hypothesis text names a metric that they then classify as secondary, ask:
 > _"You mentioned `<metric>` in your hypothesis. Should this be a primary metric? Secondary metrics don't influence ship/no-ship decisions, so if it matters for the outcome, promote it."_
 
-This is the **Hypothesis ↔ metric mismatch** pitfall — see [pitfalls.md](pitfalls.md).
+This is the **Hypothesis ↔ metric mismatch** pitfall in the pre-launch pitfall catalogue.
 
 ## Sanity checklist
 

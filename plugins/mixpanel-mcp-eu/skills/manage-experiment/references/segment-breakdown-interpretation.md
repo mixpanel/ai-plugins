@@ -1,6 +1,6 @@
 # Segment-Breakdown Interpretation
 
-Read per-segment results once you have them. The companion reference [segment-of-interest-selection.md](segment-of-interest-selection.md) covers how to pick the segments in the first place.
+Read per-segment results once you have them. The companion segment-of-interest selection reference covers how to pick the segments in the first place.
 
 ---
 
@@ -18,11 +18,7 @@ Reading a segment breakdown well means recognizing which of those three you're l
 
 ## Per-segment polarity recipe — apply per row
 
-The same recipe from the per-metric reference applies _inside_ each segment. Don't take a shortcut.
-
-- For each segment × metric × non-control variant, look at the row's `lift` and bucket (positive/negative/no).
-- Translate sign-of-lift into business polarity using `metric.direction`. **The bucket name is sign-of-lift, never the business verdict** — same trap as the overall summary.
-- Filter out the control row in each segment.
+The **canonical polarity recipe** (interpret command Components) applies _inside_ each segment too — don't take a shortcut. For each segment × metric × non-control variant, translate the row's sign-of-lift into business polarity using the metric's direction, and filter out the control row in each segment. **The bucket name is sign-of-lift, never the business verdict** — same trap as the overall summary.
 
 Surprisingly easy to forget when you're scanning a wide table — re-apply polarity per row.
 
@@ -47,7 +43,7 @@ Each segment value needs its own meaningful per-variant sample for the per-segme
 | Every segment shows treatment winning, but the overall metric shows control winning (or vice versa) | **Simpson's paradox.** The variant mix differs across segments. Run per-segment SRM checks — this often signals a bucketing bug rather than a real effect. |
 | Two opposite-direction effects in different segments that roughly cancel overall                    | **Mixed effects.** The headline says "no effect" but real winners and losers are hiding. The product question is whether the gains outweigh the losses.    |
 
-When you spot Simpson's paradox, route the user to the **SRM** section of [health-check-interpretation.md](health-check-interpretation.md) — bucketing is usually the cause, not a real reversal.
+When you spot Simpson's paradox, route the user to the **SRM** section of the health-check interpretation reference — bucketing is usually the cause, not a real reversal.
 
 ---
 
@@ -96,4 +92,4 @@ This is the everyday case of mixed effects.
 
 ## Platform support status
 
-Reading segment-level experiment results depends on the platform exposing per-segment metric rows. While that's still in progress, this skill may need to fall back to running per-segment queries against the experiment's metrics and exposures, then interpreting the resulting numbers with the rules above. If the experiment-details response doesn't return segmented data and the user wants per-segment interpretation, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.
+Reading segment-level experiment results depends on the platform exposing per-segment metric rows. When the experiment-details response doesn't return per-segment rows, fall back to running per-segment queries against the experiment's metrics and exposures, then interpret the resulting numbers with the rules above. If the user wants per-segment interpretation and segmented data isn't available, say so explicitly and offer the per-segment query fallback — do not invent per-segment significance verdicts.

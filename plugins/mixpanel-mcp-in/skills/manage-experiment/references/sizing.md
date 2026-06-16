@@ -29,13 +29,13 @@ Where:
 - `σ²` = variance of the metric (depends on metric type — see below).
 - `d` = MDE in the same units as the metric.
 
-The `16` is `(z_{α/2} + z_{β})² × 2` rounded to a workable constant — `(1.96 + 0.84)² × 2 = 15.68 ≈ 16`. Good enough for setup-phase reasoning; for ship-decision rigour use the precise formula in `references/statistical-model.md`.
+The `16` is `(z_{α/2} + z_{β})² × 2` rounded to a workable constant — `(1.96 + 0.84)² × 2 = 15.68 ≈ 16`. Good enough for setup-phase reasoning; for ship-decision rigour use the precise z-score formula rather than the rounded constant.
 
 ## Variance by metric type
 
 - **Bernoulli (conversion rate).** `σ² = p(1−p)` where `p` is the baseline conversion rate. Variance peaks at `p = 0.5` (variance 0.25) and shrinks toward 0 at `p = 0` or `p = 1`. Lifts are easier to detect on rates near 50%, harder near the extremes.
 - **Poisson (event counts per user).** `σ² ≈ mean count per user`. High-count metrics need proportionally more sample.
-- **Gaussian (revenue, time-on-page, etc.).** Compute `σ²` from historical data directly. Long-tailed distributions have high variance — Winsorization (`references/advanced-features.md`) cuts this.
+- **Gaussian (revenue, time-on-page, etc.).** Compute `σ²` from historical data directly. Long-tailed distributions have high variance — Winsorization cuts this.
 
 ## Worked example
 
@@ -64,7 +64,7 @@ Underpowered experiments suffer from **winner's curse**: if you do reach signifi
 
 ## Achievable MDE for a running experiment (diagnosis form)
 
-When diagnosing a live experiment that hasn't hit significance (see [why-no-statsig.md](why-no-statsig.md)), you want the achievable MDE as a **relative** lift so it compares directly against the reported `lift`. Two unit traps make this wrong more often than not:
+When diagnosing a live experiment that hasn't hit significance (the why-no-statsig playbook covers that path), you want the achievable MDE as a **relative** lift so it compares directly against the reported lift. Two unit traps make this wrong more often than not:
 
 - `MDE = 4σ / √n` above is **absolute** (metric units). Divide by the baseline to get a relative fraction:
 
@@ -105,7 +105,7 @@ Offer these in order of cost — cheap first.
 
 1. **Accept a larger MDE.** Only commit to ship if the effect is bigger. This costs nothing but redraws the success criterion; confirm the user is OK with shipping only on a larger lift.
 2. **Increase traffic allocation to the experiment.** If other tests don't need the traffic, give this one more.
-3. **Use CUPED to reduce variance** (if pre-exposure data is available). 30–70% variance reduction translates directly into 30–70% smaller required sample. See `references/advanced-features.md`.
+3. **Use CUPED to reduce variance** (if pre-exposure data is available). 30–70% variance reduction translates directly into 30–70% smaller required sample.
 4. **Pick a higher-volume primary metric** (if the hypothesis allows). Often there's a leading proxy with more volume than the lagging metric the team originally chose.
 5. **Don't run the experiment.** Invest the engineering elsewhere. Sometimes the right answer.
 
@@ -133,11 +133,11 @@ Use this for quick sanity-checking. Always confirm with a query against actual b
 
 For a multi-arm test (N non-control variants), the per-variant target grows with the number of pairwise comparisons being made (each treatment vs control). With multiple-testing correction enabled (which is the right default at 2+ variants), the per-test α tightens, which inflates required sample size further.
 
-Rule of thumb: a 3-variant test (control + 2 treatments) needs about 1.3× the per-arm sample of a 2-variant test for the same MDE; a 4-variant test needs about 1.5×. Exact multipliers depend on the correction method — see `references/advanced-features.md`.
+Rule of thumb: a 3-variant test (control + 2 treatments) needs about 1.3× the per-arm sample of a 2-variant test for the same MDE; a 4-variant test needs about 1.5×. Exact multipliers depend on the correction method.
 
 ## Duration considerations
 
 - **Minimum 1 week** — anything shorter misses weekly seasonality and conflates the day-of-week mix between control and treatment if traffic differs across days.
 - **Minimum 3 days for read-out** — even with sequential testing and big effects, results under 3 days are typically un-interpretable (cohort hasn't stabilised, day-of-week effects dominate, novelty effect not separated from treatment effect).
-- **Multiples of the seasonal cycle.** If the primary metric has strong weekly seasonality, set `endCondition: "days"` and choose 7, 14, 21, or 28 days so each variant sees the same mix of high- and low-traffic periods.
+- **Multiples of the seasonal cycle.** If the primary metric has strong weekly seasonality, use a date-based end condition and choose 7, 14, 21, or 28 days so each variant sees the same mix of high- and low-traffic periods.
 - **Cap at ~6 weeks** for most tests — beyond this, novelty effects wear off, the user population drifts, and other experiments running in the same window create cross-test contamination. If the math says you need 8+ weeks, you're underpowered — pick a remediation from the list above.

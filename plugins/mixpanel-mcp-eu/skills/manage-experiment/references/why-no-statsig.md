@@ -2,7 +2,7 @@
 
 Help the user decide between **wait**, **extend**, **boost power**, **narrow the hypothesis**, or **accept the null** — _without_ recomputing the platform's verdicts.
 
-The actual stop / extend math (sample size, power, MDE) lives in [sizing.md](sizing.md) — point the user there for the formulas. This reference explains _which_ lever to pull, not how to recompute one.
+The actual stop / extend math (sample size, power, MDE) lives in the sizing reference — point the user there for the formulas. This reference explains _which_ lever to pull, not how to recompute one.
 
 ## Contents
 
@@ -23,7 +23,7 @@ Inconclusive can mean two very different things:
 1. **The experiment is genuinely too small to detect the effect** — this is what the rest of this document is about.
 2. **The result isn't trustworthy at all** — SRM failing, broken data, peeked frequentist, etc. — and "inconclusive" is the wrong frame entirely.
 
-Before answering "why no statsig?", run the **trustworthiness gate**. If anything fails, route to [health-check-interpretation.md](health-check-interpretation.md) — fixing the bucketing or the data is a prerequisite to talking about power.
+Before answering "why no statsig?", run the **trustworthiness gate**. If anything fails, route to the health-check interpretation guidance — fixing the bucketing or the data is a prerequisite to talking about power.
 
 Also check:
 
@@ -40,12 +40,12 @@ Before walking the reasons, fetch the experiment with its exposures and metric r
 - **Per-variant exposure counts** — the smallest arm is the binding constraint, not the total.
 - **Control baseline** for each inconclusive primary (its rate or value). If it's missing, query the metric scoped to the control variant over the experiment's dates.
 - **Observed lift** per primary — relative, `(treatment − control) / control`. Apply the polarity recipe before reading the sign.
-- **Variance proxy by metric type** — Bernoulli `p(1−p)`, Poisson `mean`, Gaussian from the per-arm value and sample size (see the variance-by-metric-type table in [sizing.md](sizing.md)).
+- **Variance proxy by metric type** — Bernoulli `p(1−p)`, Poisson `mean`, Gaussian from the per-arm value and sample size (see the variance-by-metric-type table in the sizing reference).
 - **Configured MDE and end target** (sample-size or duration, whichever the experiment uses). If no MDE was set, ask the user for "the smallest lift worth shipping" — that's the operative MDE.
 - **Configured traffic split vs the actual exposure ratio** — a skewed split bottlenecks the test on the smaller arm even when SRM didn't fail.
 - **Overall exposure volume vs plan** (target per arm × arm count) — far below plan means exposures aren't flowing as configured (reason 5).
 
-For the closed-form power math (`n_required`, achievable `MDE_relative`), see [sizing.md](sizing.md) — those numbers explain the `NO` verdict; they don't override it.
+For the closed-form power math (`n_required`, achievable `MDE_relative`), see the sizing reference — those numbers explain the not-significant verdict; they don't override it.
 
 ---
 
@@ -101,7 +101,7 @@ Never change traffic allocation mid-Frequentist test — it invalidates the SRM 
 - The exposure event isn't firing where the user thinks it does (e.g. only on a deep-funnel page) → effective exposed cohort is much smaller than top-of-funnel traffic. Confirm with a query on the exposure event.
 - QA traffic isn't being excluded and you suspect internal traffic is dominating one variant → enable the QA exclusion on the next run (results then are cleaner but also smaller).
 
-**Triggered / dilution math** matters here too. If only a fraction of "exposed" users actually saw the change (e.g. they didn't reach the screen where the treatment differs), the population-level lift is diluted. See the triggered-analysis notes in [per-metric-interpretation.md](per-metric-interpretation.md).
+**Triggered / dilution math** matters here too. If only a fraction of "exposed" users actually saw the change (e.g. they didn't reach the screen where the treatment differs), the population-level lift is diluted. See the triggered-analysis notes in the per-metric interpretation reference.
 
 ---
 
@@ -137,7 +137,7 @@ Once you know which reason fits, the recommendation almost picks itself.
 | Exposure config is filtering           | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample.               |
 | Experiment finished, well-powered      | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters.       |
 
-When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or use the power math in [sizing.md](sizing.md).
+When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or use the power math in the sizing reference.
 
 ---
 

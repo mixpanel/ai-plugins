@@ -83,7 +83,7 @@ If treatment users _arrive_ at a screen more often but _complete_ at a lower per
 ### Variant-specific UI issues
 
 - **Treatment showed the wrong copy / wrong asset** — surprisingly common; treatment shipped, but to a subset of routes only.
-- **Treatment didn't render at all** — users in the treatment cohort saw the control UI (exposure-tracking bug; bucketing bug). If you see this, route back to [health-check-interpretation.md](health-check-interpretation.md).
+- **Treatment didn't render at all** — users in the treatment cohort saw the control UI (exposure-tracking bug; bucketing bug). If you see this, route back to the health-check interpretation guidance.
 - **Treatment fired twice / persisted state across sessions** — implementation regression.
 
 ---
