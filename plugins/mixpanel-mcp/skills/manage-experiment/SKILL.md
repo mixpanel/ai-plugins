@@ -73,12 +73,12 @@ Terms all four commands use without redefining. Phase-specific terms (hypothesis
   - **Primary** — drives the ship decision. Cap at 3; the platform applies multiple-testing correction across primaries when configured.
   - **Guardrail** — must not regress; a guardrail regression vetoes a ship even when primaries win.
   - **Secondary** — exploratory / diagnostic only, never decisional, no correction applied.
-- **Direction.** Whether bigger is better for a metric (`up`) or smaller is better (`down`). Cancel / error / latency / abandon / refund metrics need `down` set explicitly — leaving the default silently flips polarity at interpretation.
-- **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign of lift is mechanical (up/down); it is not by itself a verdict.
+- **Direction.** Whether bigger is better (`up`) or smaller is better (`down`). Set `down` explicitly for cancel / error / latency / abandon / refund metrics — the default `up` silently flips polarity at interpretation.
+- **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign is mechanical (up/down), not by itself a verdict.
 - **MDE (Minimum Detectable Effect).** The smallest lift the experiment is sized to detect. Set during design, enforced at interpretation.
-- **CUPED.** Variance-reduction technique using pre-exposure baseline. Cuts required sample 30–70% (typical, empirical range) when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
-- **Winsorization.** Outlier capping applied pooled across variants. The `percentile` field is the **tail width** to cap on each side (default `5` caps below the 5th and above the 95th — i.e. the 5% tails). The schema rejects `percentile` ≥ 50. **Push back on tail widths above ~20%** — capping more than a fifth of each side discards too much signal; this is the canonical push-back rule the commands inherit. Cuts variance on heavy-tailed continuous metrics; meaningless on Bernoulli metrics.
-- **Multiple-testing correction.** Adjusts per-test significance threshold when several primaries or several non-control variants are tested together. Default Benjamini-Hochberg (platform default — verify current); Bonferroni for strict family-wise control.
+- **CUPED.** Variance reduction using a pre-exposure baseline; cuts required sample ~30–70% when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
+- **Winsorization.** Outlier capping (pooled across variants) for heavy-tailed continuous metrics; meaningless on Bernoulli. The `percentile` field is the tail width per side (default `5` = 5% tails). The push-back rule (don't cap tails above ~20%) and full guidance live in [references/advanced-features.md](references/advanced-features.md).
+- **Multiple-testing correction.** Tightens the per-test threshold when several primaries or non-control variants are tested together. Default Benjamini-Hochberg (verify current); Bonferroni for strict family-wise control.
 
 ## Reference files
 
@@ -175,13 +175,12 @@ If the user is starting a new experiment from scratch (no existing experiment to
 
 ## 3. Pick the command
 
-Apply these rules in order; the first match wins.
+Apply in order, first match wins. The trigger phrases and the state→command mapping both live in the **Canonical commands** section — don't restate them here, just apply them.
 
-1. **Explicit:** user names a phase (`/design`, "launch this experiment", "monitor experiment X", "interpret the results") → use that command.
-2. **Implicit:** message matches one canonical trigger phrase from the Components table → use that command.
-3. **Phase-derived (only when an experiment was resolved in step 2):** apply the state→command mapping from the **Canonical commands** section. If `DRAFT` doesn't disambiguate between design and launch, ask: "Is the configuration final, or are you still iterating on it?"
-4. **Ambiguous verbs** ("audit", "check", "review") — apply phase-derived routing if an experiment is in context, otherwise fall through to the menu.
-5. **Otherwise:** show the Command menu, take the user's choice.
+1. **Explicit or implicit match** → the matched command (Canonical commands table).
+2. **Phase-derived** (an experiment was resolved in step 2 and rules 1–2 didn't decide) → apply the state→command mapping. If `DRAFT` doesn't disambiguate design vs launch, ask: "Is the configuration final, or are you still iterating on it?"
+3. **Ambiguous verbs** ("audit", "check", "review") → phase-derived routing if an experiment is in context; otherwise the menu.
+4. **Otherwise** → show the Command menu, take the user's choice.
 
 ## 4. Load and execute the command
 

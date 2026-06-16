@@ -53,7 +53,7 @@ If the team genuinely wants to make that trade, they can disable the guardrail b
 
 ### High variance, no Winsorization — warning
 
-**At least one continuous-ish metric is configured AND Winsorization is off.** Outliers will inflate variance and widen confidence intervals; a handful of power users can dominate the per-arm mean. Enable Winsorization at the default tail width (5% tails). Push back on tail widths above ~20% — see the umbrella glossary's Winsorization push-back rule.
+**At least one continuous-ish metric is configured AND Winsorization is off.** Outliers will inflate variance and widen confidence intervals; a handful of power users can dominate the per-arm mean. Enable Winsorization at the default tail width (5% tails). Push back on tail widths above ~20% — capping more than a fifth of each side discards too much signal.
 
 ### Multiple primaries, no correction — warning
 
