@@ -20,10 +20,7 @@ For each disabled flag, ask: **is the SDK code that reads this flag still in the
 - **No** → safe to archive.
 - **Yes** → ask why the flag is disabled. There's an unresolved decision behind it.
 
-For each enabled flag at 100%, ask: **is this an operational flag (permanent) or a shipped feature (cleanup)?**
-
-- **Operational** (kill switch for a critical subsystem, geo-gate, plan tier) → leave enabled at 100%. **Document why in the description** so the next maintainer knows it's permanent.
-- **Shipped feature** → schedule archive + code removal in the same engineering cycle.
+For each enabled flag at 100%, decide its terminal state — operational (keep) or shipped/reverted (clean up). The triage and what each state means is in [Terminal states for every flag](#terminal-states-for-every-flag) below.
 
 ## Before archiving — confirm with the user
 
@@ -50,7 +47,7 @@ Sequence:
 2. Delete the SDK call sites in the application code.
 3. Once the deploy has rolled out and no production code reads the flag, archive: disable first, then archive (two flag updates).
 
-See [lifecycle-and-state-machine.md](lifecycle-and-state-machine.md#archive-precondition) for the full state machine.
+The full state machine and the disable-before-archive precondition are in the lifecycle-and-state-machine reference (linked from `SKILL.md`).
 
 ## Terminal states for every flag
 

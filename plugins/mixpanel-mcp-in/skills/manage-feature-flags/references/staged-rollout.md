@@ -60,11 +60,11 @@ Two reasons, both compounding:
 
 ### The one exception
 
-If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's a different problem and the right path is the experiment-side `conclude` action, not a flag-level operation. This only applies to experiment-linked flags; see [experiment-linked-flags.md](experiment-linked-flags.md).
+If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's a different problem and the right path is concluding the experiment, not a flag-level operation. This only applies to experiment-linked flags — covered in the experiment-linked-flags reference (linked from `SKILL.md`).
 
 ## After mid-stage rollout — three honest choices
 
-The lifecycle spine in `SKILL.md` covers ship / hold / roll back briefly. Two patterns to watch for:
+`SKILL.md` covers the ship / hold / roll-back call. Two patterns this reference adds:
 
-- **"It moved, but not as much as we hoped."** This is a "hold" or "iterate" call, not a "ship anyway" call. A small positive effect at 50% rollout is the same small positive effect at 100%, and the maintenance cost of the flag is now the dominant question.
+- **"It moved, but not as much as we hoped"** is a hold-or-iterate call, not a ship-anyway call — the maintenance cost of the flag is now the dominant question.
 - **"Averages look fine but a cohort regressed."** Simpson's paradox is real. A flag that helps power users and hurts new users can show a flat overall effect while damaging the segment you most need to protect. Always look at cohorts before shipping to 100%.

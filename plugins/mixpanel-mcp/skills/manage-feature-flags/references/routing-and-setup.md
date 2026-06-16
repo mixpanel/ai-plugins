@@ -32,11 +32,11 @@ Variants are required — there's no sensible default. The rules:
 - Splits sum to `1.0`.
 - Every variant's value is either a string or a JSON object. Pick one shape per flag — mixing string variants and object variants in the same flag is rejected.
 - For a single value served to everyone, pass one variant with split `1.0`.
-- For structured config, pass JSON objects directly — no string-wrapping required.
+- For structured config, pass JSON objects directly — no string-wrapping required (e.g. a variant value of `{"theme": "dark", "max_items": 20}`, versus string values like `"Buy now"` for a copy-variation flag).
 
 ### Split sum tolerance
 
-Splits must sum to `1.0` within ±0.01. A 3-way even split — `0.33 + 0.33 + 0.33 = 0.99` or `0.34 + 0.33 + 0.33 = 1.00` — both pass. Anything outside `[0.99, 1.01]` is rejected.
+Splits must sum to `1.0` within a small tolerance (currently ±0.01 — verify against the current API). A 3-way even split — `0.33 + 0.33 + 0.33 = 0.99` or `0.34 + 0.33 + 0.33 = 1.00` — both pass; anything well outside the band is rejected.
 
 ## Control variant: value-based for Feature Gates, positional for Dynamic Configs
 
@@ -48,7 +48,7 @@ The Feature Gate convention is **value-based**, not positional: whichever varian
 
 - Disabling the flag serves the control variant to everyone. If your "control" had value `true`, disabling would silently turn the feature ON for all users — the opposite of what disable should mean.
 - The UI renders the OFF variant on the safe side of the toggle.
-- The rule is enforced server-side — custom variants that put the false-valued variant on the non-control side surface a misconfiguration error.
+- The rule is enforced server-side (verify against the current API) — custom variants that put the false-valued variant on the non-control side surface a misconfiguration error.
 
 Two-variant Feature Gates are the norm. The system will accept more, but if the user needs three or more behaviors, they almost certainly want a Dynamic Config or an Experiment instead.
 
@@ -84,7 +84,7 @@ Don't try to shortcut this by passing an enabled status on creation. The right s
 2. Engineer ships SDK code that reads the flag (safe — flag returns control).
 3. User explicitly enables the flag once they're ready to ramp.
 
-For everything that happens after enable — staged rollout, kill switch, archival — see the lifecycle spine in `SKILL.md` and [staged-rollout.md](staged-rollout.md).
+For everything that happens after enable — staged rollout, kill switch, archival — see the lifecycle spine in `SKILL.md`, which links the staged-rollout reference.
 
 ## Cohort targeting and advanced rollout (UI-only)
 

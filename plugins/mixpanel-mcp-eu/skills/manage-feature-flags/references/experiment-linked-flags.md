@@ -19,7 +19,7 @@ Treat the experiment as the only safe lifecycle path for these flags; route all 
 | Ship winner (pick a variant)  | Ruleset is replaced — winning variant gets 100% of traffic, others removed |
 | Kill (active → failed)        | Flag is disabled and unmarked as an experiment                             |
 
-The table is the **contract the experiment will eventually re-impose**, even if you manually mutate the flag in the meantime.
+The table is the state the experiment re-imposes on its next transition (verify against current experiment behavior), even if you manually mutate the flag in the meantime.
 
 ## Three implications for lifecycle operations
 
@@ -39,7 +39,7 @@ This is a hard limitation — modifying variants invalidates the exposure data a
 
 ## Stopping new exposures while preserving bucketing
 
-If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's the experiment's conclude action, not a flag-level operation. Disabling the flag serves control to everyone (including users who'd already been bucketed), which is the opposite of what you want for preserving the exposure cohort.
+If you want to **stop new exposures while preserving the current bucketing for users already exposed**, that's the experiment's conclude action, not a flag-level operation. Concluding disables the flag *through the experiment*, which preserves the exposure cohort — this is not the same as a manual flag disable, which serves control to everyone (including users who'd already been bucketed) and is the opposite of what you want here.
 
 ## How to spot an experiment-linked flag
 

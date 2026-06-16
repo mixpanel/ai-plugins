@@ -1,6 +1,6 @@
 ---
 name: manage-feature-flags
-description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, archive and restore, and SDK call patterns. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a rollout-percentage change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', 'is this a feature flag or an experiment', 'feature flag for the new checkout flow', or when the user names a specific feature they want to gate. Do NOT use for experiment design ('how should I size this A/B test?', 'what MDE can I detect?'), launch, mid-flight monitoring, or results interpretation ('should we ship?', 'what does this SRM failure mean?') — all of those belong to the `manage-experiment` skill."
+description: "Coach the user through Mixpanel feature-flag work — picking the right flag-shaped product (Feature Gate vs Dynamic Config vs Experiment), naming and keying, staged rollouts, the kill switch, exposure debugging, and archive/restore. Use when the user wants to create, configure, ramp, kill, archive, restore, debug, or clean up a Mixpanel feature flag, or asks why exposures are zero, why a rollout-percentage change had no effect, whether to use a flag or an experiment, or how to clean up stale flags. Trigger on phrasings like 'create a feature flag', 'roll out X to 10%', 'kill the flag', 'why doesn't my flag work', 'archive these stale flags', or 'is this a feature flag or an experiment'. Do NOT use for experiment design ('how should I size this A/B test?', 'what MDE can I detect?'), launch, mid-flight monitoring, or results interpretation ('should we ship?', 'what does this SRM failure mean?') — those belong to the `manage-experiment` skill."
 license: Apache-2.0
 ---
 
@@ -135,15 +135,9 @@ Don't conflate "no clear win" with "should ship anyway." A small positive effect
 
 ### 8. Pick a terminal state
 
-Every flag ends up in one of three honest terminal states:
+Every flag should reach one of three explicit terminal states: a **permanent operational flag** (leave enabled at 100%, **documented** so the next maintainer knows it's deliberate), **shipped-and-retired**, or **reverted-and-retired**. The fourth state — drifting at "enabled, 100%" with no documentation — is flag debt; don't leave a flag there. The triage for which to pick, and the SDK-cleanup sequencing for the retired states, is in [hygiene-and-cleanup.md](references/hygiene-and-cleanup.md#terminal-states-for-every-flag).
 
-- **Permanent operational flag** (kill switch for a critical subsystem, geo gate, plan tier) → leave enabled at 100%. **Document why in the description** so the next maintainer knows it's permanent.
-- **Shipped feature, flag retired** → archive the flag and delete the SDK call sites in the same engineering cycle.
-- **Reverted feature, flag retired** → archive the flag and delete the SDK call sites. Same as ship, but the rollback decision is the trigger.
-
-Letting a flag drift in "enabled, 100%" indefinitely without documentation is the fourth state, and it's the wrong one — that's how flag debt accumulates.
-
-**Archive is destructive on a live flag** — the SDK starts serving control to everyone and the rollout configuration is lost. Before archiving, confirm with the user that traffic is off and SDK call sites have been removed. The state machine requires disabling first; full lifecycle in [lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md), cleanup playbook in [hygiene-and-cleanup.md](references/hygiene-and-cleanup.md).
+**Archive is destructive on a live flag** — the SDK starts serving control to everyone and the rollout configuration is lost. Before archiving, confirm with the user that traffic is off and SDK call sites have been removed. The state machine requires disabling first; full lifecycle in [lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md).
 
 ---
 

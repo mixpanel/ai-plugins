@@ -38,11 +38,11 @@ A restored flag lands back in **disabled**. It does **not** restore variants tha
 
 ## Three update-call shapes — what gets dropped silently
 
-A flag update routes through one of three paths depending on what you send. Picking the wrong call shape silently drops fields. Picking the right one prevents the most common "I sent the update and X disappeared" surprise.
+A flag update routes through one of three paths depending on what you send. Picking the wrong call shape silently drops fields. Picking the right one prevents the most common "I sent the update and X disappeared" surprise. The routing behavior below reflects the current update path — if an update drops or preserves a field differently than described, re-confirm against the flag-update tool rather than assuming this still holds.
 
 ### 1. Archive or restore — short-circuit, drops everything else
 
-An update that flips status to archived or restored routes straight to the archive/restore endpoint. **Any name, description, or ruleset you pass alongside is silently dropped** — the short-circuit returns before the merge logic runs.
+An update that flips status to archived or restored routes straight to the archive/restore endpoint. **Any name, description, or ruleset you pass alongside is silently dropped** — the archive/restore path doesn't apply the other edits.
 
 If the user wants to archive _and_ rename, do it as separate updates:
 
