@@ -31,7 +31,7 @@ A 50% rollout that shows a 60/40 split in exposures is either:
 
 ## "No exposures after enable" — diagnostic checklist
 
-First rule out ingestion lag: exposure events are not instant. After enabling (and after real traffic has actually hit the flag's code path), give it a few minutes for events to land before treating a zero count as real. If exposures are still zero after that, work the checklist in order, most-likely cause first:
+First rule out ingestion lag: exposure events are not instant. They usually surface within seconds to a few minutes, but SDK batching, server-side buffering, or third-party pipelines (e.g. Segment) can push ingestion out to as long as ~24 hours. After enabling (and after real traffic has actually hit the flag's code path), use **Live View** to confirm events are arriving in real time; if they are, don't wait on the report — otherwise allow up to 24h before treating a zero count as real. Once lag is ruled out, work the checklist in order, most-likely cause first:
 
 1. **Is the flag actually enabled?** Most common cause of zero exposures by a wide margin. A disabled flag serves control to everyone regardless of the rollout percentage, and no exposure events fire for users who would have been in the rollout. Read the flag's current state first.
 2. **Does the SDK code path call the tracking entry point?** The non-tracking variant suppresses exposures by design. Also compare the flag key string exactly — typos are silent failures.
