@@ -3,6 +3,14 @@
 Use this reference when the chart being analyzed is a **Retention**
 chart (cohort retention triangle, stickiness, DAU/MAU).
 
+## Contents
+
+- What to read first
+- Patterns to flag
+- Stickiness (DAU/MAU) anomalies
+- Common reader pitfalls
+- Output focus
+
 ---
 
 ## What to read first
@@ -74,7 +82,9 @@ If period-1 retention is 0% across the board, the return event likely
 is the same as the birth event (e.g., signup retention measured against
 signup, which by definition only fires once per user).
 
-### Stickiness (DAU/MAU) anomalies
+---
+
+## Stickiness (DAU/MAU) anomalies
 
 For DAU/MAU charts:
 - Healthy consumer products: 10–25%
@@ -100,8 +110,9 @@ launch or major change.
 **Confusing retention with churn**
 Retention is the inverse of churn, but they're not always perfectly
 complementary in Mixpanel. A user "not retained" in week N might
-return in week N+1. Don't equate "not retained this week" with "lost
-forever."
+return in week N+1 — and recent cohorts may include users who simply
+haven't had the chance to return yet. Don't equate "not retained this
+week" with "lost forever."
 
 **Cohort retention vs. rolling retention**
 Mixpanel's native retention is cohort retention (% of birth-week users

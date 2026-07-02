@@ -12,12 +12,10 @@ description: >
   this". Also trigger when the user pastes a Mixpanel chart or report
   URL and asks anything about it. Lean by default — surfaces what the
   report shows and flags notable patterns, but does not chase root
-  causes. This skill = interpret WHAT a report shows; mxp-metric-diagnosis
-  = investigate WHY a metric moved. Do NOT trigger for building new charts,
-  reviewing entire dashboards, or full root-cause diagnostic workflows. Do NOT
-  trigger for root-cause diagnosis, anomaly investigation, or metric drift —
-  use mxp-metric-diagnosis for those. Requires Mixpanel MCP.
-compatibility: "Requires Mixpanel MCP. Works for any project the user has access to."
+  causes. Do NOT trigger for building new charts, reviewing entire
+  dashboards, or full root-cause diagnostic workflows (for "why did
+  this change" questions, use monitor-metrics). Requires Mixpanel MCP (EU).
+compatibility: "Requires Mixpanel MCP (EU). Works for any EU data-residency project the user has access to."
 ---
 
 # Mixpanel Analyze Report
@@ -27,10 +25,9 @@ and turn it into a one-screen summary the customer can act on. The skill
 is **lean by default** — it explains what the report shows and flags
 what's notable, but does not chase root causes unless the customer asks.
 
-If the customer's follow-up is "why is this happening" or anything
-similar, treat that as a deeper root-cause investigation that is out of
-scope here. Flag what you see and stop; don't attempt multi-step RCA
-inline. This skill is built for fast interpretation.
+This skill is built for fast interpretation: flag what you see and stop.
+The boundary — when a "why" question turns this into a root-cause
+investigation — is defined in "Hybrid scope — when to stop" below.
 
 ---
 
@@ -50,13 +47,12 @@ Three input modes. Detect which one applies from the customer's message:
 ### Mode A — Customer provides a URL or chart/report ID
 
 Most common. Mixpanel report URLs look like
-`https://mixpanel.com/project/<project_id>/view/<board_id>/app/<chart>`
+`https://eu.mixpanel.com/project/<project_id>/view/<board_id>/app/<chart>`
 or include `report_id=<id>`. Extract the ID(s).
 
-Use the relevant Mixpanel MCP tool to fetch the report's metadata and
-configuration — this gives you the events, properties, filters,
-breakdowns, date range, and chart type without having to ask the
-customer.
+Fetch the report's saved configuration — the events, properties,
+filters, breakdowns, date range, and chart type — so you can ground the
+analysis without asking the customer to re-explain what they built.
 
 If you can't resolve the URL/ID (404, permission error, malformed URL),
 say so plainly and ask if they meant a different report.
@@ -65,30 +61,20 @@ say so plainly and ask if they meant a different report.
 
 If the customer says "the DAU chart on my exec board" or "the funnel I
 built last week," they're pointing at an existing report but haven't
-given an ID. Use `Search-Entities` with `entity_types=['report']` to
-find candidates. Show the top 3 matches with their titles and dates,
-ask which one.
+given an ID. Search saved reports for candidates, show the top 3 matches
+with their titles and dates, and ask which one they mean.
 
-If `Search-Entities` returns nothing useful, escalate to Mode C:
+If nothing useful comes back, escalate to Mode C:
 
 > *"I can't find that report. Want to build it fresh and analyze that?"*
 
 ### Mode C — Customer wants to analyze a report that doesn't exist yet
 
-The report has to be built before it can be analyzed. This skill builds
-it inline — it does not hand off to another skill. Do it in three calls:
-
-1. Call `Get-Query-Schema` to learn the valid shape for the query type
-   (insights, funnel, retention, flows) the customer is describing.
-2. Construct the query from the customer's description and call
-   `Run-Query` to execute it. This returns the result data and gives you
-   the configuration metadata you need for analysis.
-3. Optionally call `Display-Query` to render the chart so the customer
-   can see it alongside the summary.
-
-Once `Run-Query` returns, you already have the data and config — skip
-ahead to Step 3 and read the shape (Step 2 is only for pulling data on
-an existing report).
+The report has to be built before it can be analyzed. Build the chart
+first (or ask the customer to point you at the configuration they want),
+then come back to Step 2 and analyze the result. Once the chart is
+built you have a fresh result and a rendered widget; this skill picks
+up from there.
 
 If the customer asks for both in one turn ("build me a DAU chart and
 tell me what it shows"), do them as one workflow: build → analyze →
@@ -98,13 +84,14 @@ present together.
 
 ## Step 2 — Pull the data
 
-For Mode A or B (existing report), call `Run-Query` with the same
-configuration as the saved report to get fresh data. Don't trust cached
-chart state — the customer may not have refreshed in days.
+For Mode A or B (existing report), re-run the report against its saved
+configuration to get fresh data. Don't trust cached chart state — the
+customer may not have refreshed in days.
 
-For Mode C, you already have the `query_id` from the just-built chart.
+For Mode C, the chart was just built, so its result is already current —
+analyze that.
 
-In both cases, you need:
+In all cases, you need:
 - The query result data (time series, breakdown values, etc.)
 - The chart configuration (events, properties, filters, date range,
   chart type)
@@ -123,9 +110,6 @@ What to look for depends on chart type. Read the matching reference:
 - Funnels → `references/read-funnels.md`
 - Retention → `references/read-retention.md`
 - Flows → `references/read-flows.md`
-
-Only load the reference file that matches the chart type — do not load
-all four.
 
 The references hold the **specific patterns** to look for in each
 chart type. The high-level rules across all types:
@@ -150,13 +134,12 @@ chart type. The high-level rules across all types:
 
 ### What NOT to do
 
-- **Don't chase root cause.** If you spot a drop, flag it and stop.
-  Attributing the movement to a specific cause is a separate, deeper
-  workflow.
-- **Don't speculate about external causes.** Saying "this might be
-  because of holiday traffic" without evidence is hallucination.
-- **Don't recommend fixes.** The customer didn't ask for fixes. They
-  asked what the report shows.
+- **Don't chase root cause here.** Flag movement and stop — see
+  "Hybrid scope — when to stop".
+- **Don't speculate about external causes.** "This might be holiday
+  traffic" without evidence is hallucination.
+- **Don't recommend fixes.** The customer asked what the report shows,
+  not how to fix it.
 
 ---
 
@@ -236,32 +219,17 @@ boundary explicit and let the customer opt in.
 - **Always re-run the query.** Don't trust cached chart state.
 - **Configuration metadata grounds the analysis.** Without knowing the
   events/filters, you can't tell the customer what they're looking at.
-- **Flag, don't diagnose.** Drift detection ≠ root cause.
 - **One screen of output.** Long analyses lose the customer.
-- **Make "why" an explicit next step.** Don't RCA inline.
 - **No speculation about external causes.** Stick to what the data
   shows.
 
----
-
-## Quick reference — MCP tools used
-
-| Step | Tool |
-|---|---|
-| 1 | `Get-Report` (for URL/ID), `Search-Entities` (for NL search) |
-| 1, Mode C | build the chart first, then come back with the `query_id` |
-| 2 | `Run-Query` |
-| 3 | (no new tool calls — pure analysis on the data already pulled) |
-| 4 | (output to user) |
-
-For chart-type-specific reading patterns, see `references/`.
+For chart-type-specific reading patterns, see the matching file in
+`references/`.
 
 ---
 
 ## When to stop and redirect
 
-- Customer asks "why" → that's a root-cause investigation; flag and
-  offer it as a deeper next step, don't do it inline
 - Customer wants to modify or rebuild the chart → that's a build task,
   out of scope for interpretation
 - Customer wants to analyze the whole dashboard → out of scope; this

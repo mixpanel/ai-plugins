@@ -2,6 +2,13 @@
 
 Use this reference when the chart being analyzed is a **Funnel**.
 
+## Contents
+
+- What to read first
+- Patterns to flag
+- Common reader pitfalls
+- Output focus
+
 ---
 
 ## What to read first
@@ -68,7 +75,8 @@ different order than the funnel assumes).
 
 If a breakdown shows one cohort converting at 60% and another at 5% on
 the same funnel, that's the headline finding. The funnel isn't really
-"the funnel" — it's two different user experiences.
+"the funnel" — it's two different user experiences. (The 60% / 5%
+figures here are illustrative, not fixed thresholds.)
 
 > Flag as: *"[Cohort A] converts at X%, [Cohort B] at Y%. The headline
 > rate hides a 10x gap between segments."*

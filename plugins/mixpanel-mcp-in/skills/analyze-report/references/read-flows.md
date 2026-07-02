@@ -3,6 +3,13 @@
 Use this reference when the chart being analyzed is a **Flow** (Sankey
 showing event-to-event transitions before or after an anchor event).
 
+## Contents
+
+- What to read first
+- Patterns to flag
+- Common reader pitfalls
+- Output focus
+
 ---
 
 ## What to read first
@@ -62,18 +69,17 @@ disagree.
 > [expected event] is only [%]. The flow's not what you might
 > intuitively expect."*
 
-### Backward flow showing unexpected sources
+### Uninformative backward flow
 
-If the customer is looking at "what leads to [event]" and the top
-preceding event is a generic event (Page View, App Open) rather than
-a meaningful action, the flow isn't very informative. Suggest a
-deeper backward flow or filter out generic events.
+In a backward flow ("what leads to [event]"), if the top preceding
+event is a generic event (Page View, App Open) rather than a meaningful
+action, the flow tells you nothing about intent — the anchor is reached
+from everywhere. Flag that the chart needs a deeper depth or a filter
+excluding generic events to surface a real path.
 
-### Loops or repeating events
-
-If the flow shows the same event repeating (e.g., Page View → Page
-View → Page View), the chart needs a filter on a property to
-differentiate (which page?). Flag as a chart configuration issue.
+> Flag as: *"The top event leading into [anchor] is [generic event] —
+> so the flow isn't isolating a meaningful path. Worth filtering out
+> generic events or going a step deeper."*
 
 ---
 
@@ -93,6 +99,12 @@ customer is asking about within-session behavior, flag this caveat.
 Flows can be anchored anywhere, not just on entry events. If the
 customer says "user journey from signup" and the chart anchors on a
 mid-funnel event, the data isn't answering the question they asked.
+
+**Repeating events inflating the flow**
+If the flow shows the same event repeating (Page View → Page View →
+Page View), the transitions are real but uninformative — the flow needs
+a property filter (which page?) to differentiate. Read it as a chart
+configuration gap, not a behavior finding.
 
 **Depth too shallow or too deep**
 Depth-1 flows show only one next event — useful for "what's the

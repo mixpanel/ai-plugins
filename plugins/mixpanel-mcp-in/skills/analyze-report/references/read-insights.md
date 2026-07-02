@@ -3,6 +3,13 @@
 Use this reference when the chart being analyzed is an **Insights**
 chart (event volume, trend over time, breakdown, ratio).
 
+## Contents
+
+- What to read first
+- Patterns to flag
+- Common reader pitfalls
+- Output focus
+
 ---
 
 ## What to read first
@@ -30,8 +37,9 @@ chart (event volume, trend over time, breakdown, ratio).
 ### Step-change
 
 A single point where the line jumps or drops and stays at the new
-level. Distinct from a gradual trend. Almost always indicates a
-deploy, instrumentation change, or external trigger event.
+level. Distinct from a gradual trend. Typically points to a deploy,
+instrumentation change, or external trigger event — worth flagging as
+a discrete event rather than a trend.
 
 > Flag as: *"Step-change on [date] — value moved from X to Y and held."*
 
@@ -54,9 +62,10 @@ harder to spot at a glance.
 
 ### Going to zero
 
-A series that drops to zero and stays there is almost never a real
-business signal — it's an instrumentation break. SDK update, event
-rename, deploy that broke tracking.
+A series that drops to zero and stays there is usually an
+instrumentation break (SDK update, event rename, deploy that broke
+tracking) — but confirm no feature was deprecated or region shut off
+before calling it a bug.
 
 > Flag as: *"Series goes to zero on [date] and stays flat. This usually
 > means tracking broke, not that the behavior actually stopped."*
