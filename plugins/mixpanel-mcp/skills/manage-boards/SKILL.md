@@ -10,15 +10,13 @@ description: >
   "dashboard inventory", "duplicate board", "update dashboard", "delete dashboard",
   "dashboard audit", "stale dashboards", "empty boards", "board management". Also trigger
   when dashboards are mentioned with "governance", "cleanup", "template", "onboarding",
-  or "standardize". Do NOT use for A/B experiments (use `manage-experiments`), feature-flag
-  rollouts (use `manage-flags`), or Lexicon/event-and-property metadata cleanup (use
+  or "standardize". Do NOT use for A/B experiments (use `manage-experiment`), feature-flag
+  rollouts (use `manage-feature-flags`), or Lexicon/event-and-property metadata cleanup (use
   `manage-lexicon`). Requires Mixpanel MCP.
 compatibility: "Requires Mixpanel MCP (mcp.mixpanel.com or regional variants). No other connectors required."
 ---
 
 # Manage Boards
-
-> **Loading model:** Progressive. Only this file on entry. Command files read on-demand after routing. Do not pre-load.
 
 Top-level router: validate project → route command → handle return.
 
@@ -28,7 +26,7 @@ This skill uses the **Mixpanel MCP only**. No other connectors are required or r
 
 ## Execution Philosophy
 
-**Silent execution.** Do not narrate steps, announce phases, or explain what you are about to do. Execute MCP calls, process results, present only final output. The user sees:
+**Silent execution.** Do not narrate steps, announce phases, or explain what you are about to do. Run the work, process results, present only final output. The user sees:
 - Command menu (when needed)
 - Confirmation prompts before destructive operations (delete, bulk cleanup)
 - Progress indicators during batch operations
@@ -45,13 +43,13 @@ Nothing else. No "Starting X...", no "I'll now fetch Y...", no "Let me analyze Z
 
 **Project ID without command:** Validate and show menu.
 
-**No project ID:** Ask which project. 'list' → call `Get-Projects`, show table.
+**No project ID:** Ask which project. On 'list' → retrieve the accessible projects and show them in a table.
 
 **Validation:**
-1. Call `Get-Projects`. Match ID. If found → `✅ [Project Name] ([project_id])`, proceed.
+1. Retrieve the list of accessible projects and match the ID. If found → `✅ [Project Name] ([project_id])`, proceed.
 2. Not found → error, ask to re-enter or 'list'.
 
-**MCP check:** If `Get-Projects` fails with tool-not-found → tell user to connect Mixpanel MCP, stop.
+**MCP check:** If the project lookup fails because no Mixpanel capability is available → tell the user to connect the Mixpanel MCP, then stop.
 
 ---
 
@@ -99,8 +97,8 @@ Persist across commands within a session. **Cross-command reuse is mandatory** �
 |----------|-------------|
 | `project_id` | Immutable after Step 0. |
 | `project_name` | Display name. |
-| `projects_list` | All accessible projects (from `Get-Projects`). |
-| `dashboard_list_cache` | `dashboard_id → {title, description, last_modified, ...}` map. Report counts are NOT returned by the list call — populate them from `dashboard_layout_cache` after a `Get-Dashboard(include_layout=true)`. |
+| `projects_list` | All accessible projects. |
+| `dashboard_list_cache` | `dashboard_id → {title, description, last_modified, ...}` map. Report counts are NOT returned by the list operation — populate them from `dashboard_layout_cache` after reading a board's full layout. |
 | `dashboard_layout_cache` | `dashboard_id → {layout, report_count, text_count, row_count}` map (populated on-demand). |
 
 ---
@@ -108,10 +106,12 @@ Persist across commands within a session. **Cross-command reuse is mandatory** �
 ## Global Rules
 
 1. **Silent execution.** No narration, no phase announcements. Only output: progress during batch writes, errors, confirmation prompts, and final results.
-2. **Project ID immutable.** All MCP calls use confirmed `project_id` unless explicitly cross-project (template command).
+2. **Project ID immutable.** All work uses the confirmed `project_id` unless explicitly cross-project (template command).
 3. **Surface MCP failures explicitly.** Never silently skip.
-4. **Confirm before destructive ops.** Always preview + explicit user confirmation before: Delete-Dashboard, bulk cleanup, overwriting dashboard content.
+4. **Confirm before destructive ops.** Always preview + explicit user confirmation before: deleting a dashboard, bulk cleanup, or overwriting dashboard content.
 5. **'exit' always valid.** Stop, discard uncommitted, return to menu.
 6. **No per-command "what next" menus.** Commands return control here. The router shows the menu.
 7. **Cross-project operations.** The template command is the only one that works across projects. It validates both source and target project IDs and reconstructs the board in the target project (see `commands/template-dashboard.md`).
-8. **Validate every write before reporting success.** After any operation that mutates a board — Create-Dashboard, Update-Dashboard, Duplicate-Dashboard, or a template rebuild — re-fetch the affected board with `Get-Dashboard(include_layout=true)` and confirm the result matches intent (expected row count, report/text cell counts, title/description). If the readback diverges, do NOT report `✅` — surface what landed vs. what was requested. Layout cells use opaque server-generated IDs, so a write can partially succeed silently; the readback is the only reliable confirmation. Refresh `dashboard_layout_cache` from this readback.
+8. **Validate every write before reporting success.** After any operation that mutates a board — create, update, duplicate, or a template rebuild — re-read the affected board *including its full layout* and confirm the result matches intent (expected row count, report/text cell counts, title/description). If the readback diverges, do NOT report `✅` — surface what landed vs. what was requested. Layout cells use opaque server-generated IDs, so a write can partially succeed silently; the readback is the only reliable confirmation. Refresh `dashboard_layout_cache` from this readback.
+9. **Fetching the dashboard set.** Default to the sortable entity-search capability when listing dashboards — it returns richer metadata and supports sorting. Fall back to the plain dashboard-list capability only if search is unavailable. Cache the result in `dashboard_list_cache` and reuse it across commands rather than re-fetching.
+10. **Shared constraints.** Layout limits, the text-card HTML whitelist, and other API gotchas live once in `references/mcp-tool-reference.md`. Command files point to it by name rather than restating.

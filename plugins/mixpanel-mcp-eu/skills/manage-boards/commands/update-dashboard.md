@@ -1,46 +1,35 @@
 # Command: Update Dashboard
 
-Modifies an existing dashboard's metadata, rows, or cell layout. This is the most flexible command — it handles renames, description edits, adding/removing rows, reordering rows, and updating cell content.
+Modifies an existing dashboard's metadata, rows, or cell layout. The most flexible command — it handles renames, description edits, adding/removing rows, reordering rows, and updating cell content.
 
 ---
 
 ## Intake
 
 Required:
-1. **Dashboard ID** — the board to update
+1. **Dashboard ID** — the board to update (accept by name or ID)
 
-The user's intent determines which update path to take:
-- **Rename** → title update only
-- **Update description** → description update only
+The user's intent determines the update path:
+- **Rename** → title only
+- **Update description** → description only
 - **Add a section/row** → row + cell creation
 - **Remove a row** → row deletion
-- **Reorder rows** → rows_order update
-- **Update a report cell** → cell update with new query_id
-- **Update a text card** → cell update with new html_content
-- **Bulk restructure** → combination of the above
+- **Reorder rows** → row-order update
+- **Update a report cell** → cell update with a new `query_id`
+- **Update a text card** → cell update with new HTML
+- **Bulk restructure** → a combination of the above
 
-If the user doesn't specify a dashboard ID, help them find it using `dashboard_list_cache` or `List-Dashboards`.
+If the user doesn't specify a dashboard, help them find it using `dashboard_list_cache` or by fetching the set (Global Rule 9).
 
 ---
 
 ## Execution
 
-### Step 1 — Fetch current layout
+### Step 1 — Read current layout
 
-Always start by calling `Get-Dashboard` with `include_layout=true`.
+Always start by reading the board's full layout, then show the user a structural
+summary so they can point at real rows/cells:
 
-Parse the layout to understand current structure:
-```
-Layout format: [[row_id, [[cell_id, type, extra], ...]], ...]
-```
-
-Where:
-- `row_id` — string ID of each row
-- `cell_id` — string ID of each cell
-- `type` — "report" or "text"
-- `extra` — for reports: `{id, name}`; for text: `{html_content}`
-
-Show the user a structural summary:
 ```
 Dashboard: [Title] (ID: [dashboard_id])
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -50,84 +39,30 @@ Row 3: [Report: "Session Length"] [Report: "Retention"]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+Layout cell/row IDs are opaque server-generated strings — read the real IDs from
+this layout; use temporary placeholder IDs only for newly-added rows/cells (see
+`references/mcp-tool-reference.md`).
+
 ### Step 2 — Apply updates
 
-Based on user intent, construct the `Update-Dashboard` call.
+Submit a single update to the board carrying the operations the user's intent
+requires. The operation shapes:
 
-**Metadata only (title/description):**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  title="New Title",
-  description="New description"
-)
-```
+| Intent | Operation(s) to submit |
+|--------|------------------------|
+| Rename / edit description | Set `title` and/or `description` on the board |
+| Add a new row | Row op: `["temp-row-1", "add"]` |
+| Add a text card to a new row | Row op `["temp-row-1", "add"]` + cell op `["temp-cell-1", "create", "text", {row_id: "temp-row-1", html_content: "<h2>New Section</h2>"}]` |
+| Add a report cell to a new row | First mint a `query_id` (run its query with results skipped), then row op `["temp-row-1", "add"]` + cell op `["temp-cell-1", "create", "report", {row_id: "temp-row-1", query_id: "...", name: "...", description: "..."}]` |
+| Delete a row | Row op: `["<real_row_id>", "delete"]` |
+| Delete a cell | Cell op: `["<real_cell_id>", "delete"]` |
+| Update a text card | Cell op: `["<real_cell_id>", "update", "text", {html_content: "<h2>Updated</h2>"}]` |
+| Update a report cell | Cell op: `["<real_cell_id>", "update", "report", {query_id: "<new>", name: "..."}]` |
+| Reorder rows | Set row order: `["row_id_3", "row_id_1", "row_id_2"]` |
 
-**Add a new row with content:**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  rows=[["temp-row-1", "add"]],
-  cells=[
-    ["temp-cell-1", "create", "text", {
-      "row_id": "temp-row-1",
-      "html_content": "<h2>New Section</h2>"
-    }]
-  ]
-)
-```
-
-**Add a report cell to a new row (requires Run-Query first):**
-1. Call `Run-Query` with `skip_results=true` to get `query_id`.
-2. Then:
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  rows=[["temp-row-1", "add"]],
-  cells=[
-    ["temp-cell-1", "create", "report", {
-      "row_id": "temp-row-1",
-      "query_id": "[from Run-Query]",
-      "name": "Report Name",
-      "description": "What this report shows"
-    }]
-  ]
-)
-```
-
-**Delete a row:**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  rows=[["[real_row_id]", "delete"]]
-)
-```
-
-**Delete a cell:**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  cells=[["[real_cell_id]", "delete"]]
-)
-```
-
-**Update a text card:**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  cells=[["[real_cell_id]", "update", "text", {
-    "html_content": "<h2>Updated Section Header</h2><p>New description</p>"
-  }]]
-)
-```
-
-**Reorder rows:**
-```
-Update-Dashboard(
-  project_id, dashboard_id,
-  rows_order=["row_id_3", "row_id_1", "row_id_2"]
-)
-```
+Temp IDs are placeholders for new items; the server assigns the real ones.
+Text-card HTML must obey the tag whitelist and no-newline rule in
+`references/mcp-tool-reference.md`.
 
 ### Step 3 — Confirm before applying
 
@@ -146,18 +81,9 @@ For simple renames or description updates, skip confirmation unless the user see
 
 ### Step 4 — Execute and verify
 
-1. Call `Update-Dashboard` with the assembled parameters.
-2. Call `Get-Dashboard` again to verify the update took effect.
-3. Show the updated structure.
-
----
-
-## HTML Content Guidelines
-
-When creating or updating text cards, use only allowed HTML tags:
-`a`, `blockquote`, `br`, `code`, `em`, `h1`, `h2`, `h3`, `hr`, `li`, `mark`, `ol`, `p`, `s`, `strong`, `u`, `ul`
-
-Other tags are stripped by the API. Do not include newlines in the HTML string — each HTML element creates a new line.
+Apply the update, then re-read the board's full layout to confirm the change took
+effect (Global Rule 8) and show the updated structure. If the readback diverges
+from intent, surface what landed vs. what was requested rather than reporting `✅`.
 
 ---
 
@@ -179,7 +105,7 @@ Return control to router.
 | Situation | Action |
 |-----------|--------|
 | Dashboard not found | Error, help user find correct ID |
-| Invalid row/cell ID | Re-fetch layout, map correct IDs |
-| Update API fails | Surface error with details |
+| Invalid row/cell ID | Re-read layout, map correct IDs |
+| Update fails | Surface error with details |
 | User cancels | "No changes made." Return. |
-| Run-Query fails (for adding reports) | Skip that report, note in output |
+| A report's query fails to mint | Skip that report, note in output |

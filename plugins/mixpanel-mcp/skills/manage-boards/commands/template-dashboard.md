@@ -2,7 +2,7 @@
 
 Reproduces a reference dashboard in another project, renames it, and optionally updates the description. This is the core enabler for standardized onboarding dashboard templates across accounts.
 
-**Key API fact:** `Duplicate-Dashboard` only copies *within the source project* — it has no target-project parameter. So genuine cross-project templating cannot be done by duplicating. It is done by **reconstructing** the board in the target project: read the source layout, re-run each report's query in the target project to mint new `query_id`s, then `Create-Dashboard` in the target. This command does that.
+**Key API fact:** duplication only copies *within the source project* — it has no target-project parameter. So genuine cross-project templating cannot be done by duplicating. It is done by **reconstructing** the board in the target project: read the source layout, re-mint each report's query in the target project, then create the board there. This command does that.
 
 ---
 
@@ -18,22 +18,22 @@ Optional:
 5. **New description** — defaults to original description with a "[Templated from [source]]" note appended
 6. **Batch mode** — template to multiple target projects at once
 
-If the user doesn't provide source/target explicitly, ask. Use `Get-Projects` from session cache to help them pick.
+If the user doesn't provide source/target explicitly, ask. Use the session's projects list to help them pick. Accept projects and boards by name or ID.
 
 ---
 
 ## Routing: same project vs. cross project
 
-- **Target project == source project** → this is a plain copy. Use `Duplicate-Dashboard` (Path A). Fast, exact, preserves everything.
-- **Target project != source project** → use the reconstruction flow (Path B). `Duplicate-Dashboard` cannot reach another project.
+- **Target project == source project** → this is a plain copy. Use Path A. Fast, exact, preserves everything.
+- **Target project != source project** → use the reconstruction flow (Path B). Duplication cannot reach another project.
 
 ---
 
-## Path A — Same-project copy (`Duplicate-Dashboard`)
+## Path A — Same-project copy
 
-1. **Validate source.** Call `Get-Dashboard(include_layout=true)`; preview title, description, report count, row count. If not found → error, stop.
-2. **Duplicate.** Call `Duplicate-Dashboard` with `project_id` = source project, `dashboard_id` = source, plus `title`/`description` overrides if provided.
-3. Report the new dashboard ID. Done.
+1. **Validate source.** Read its full layout; preview title, description, report count, row count. If not found → error, stop.
+2. **Duplicate** within the source project, applying `title`/`description` overrides if provided.
+3. Verify (Global Rule 8) and report the new dashboard ID. Done.
 
 ---
 
@@ -41,10 +41,9 @@ If the user doesn't provide source/target explicitly, ask. Use `Get-Projects` fr
 
 ### Step 1 — Read the source
 
-1. Call `Get-Dashboard(project_id=source, dashboard_id=source, include_layout=true)`.
-   - Layout format: `[[row_id, [[cell_id, type, extra], ...]], ...]`.
-   - For each **report** cell, capture `extra = {id, name}` — `id` is the source report/bookmark/query id — plus the cell's `description` if present.
-   - For each **text** cell, capture `extra = {html_content}`.
+1. Read the source board's full layout (from the source project).
+   - For each **report** cell, capture its report/query reference and name, plus the cell's description if present.
+   - For each **text** cell, capture its HTML content.
    - Preserve row grouping and cell order so the rebuilt board matches the original layout.
 2. Preview to the user: title, description, report count, text-card count, row count.
 
@@ -52,8 +51,8 @@ If the user doesn't provide source/target explicitly, ask. Use `Get-Projects` fr
 
 A report only renders in the target project if the events, properties, and cohorts it references **exist there**. Templating an onboarding board into a brand-new project where nothing is instrumented yet will produce empty charts.
 
-- Identify the events/properties each source report depends on (read each report's query definition via the report/query id; use `Get-Report` / the query-schema tools as available).
-- Check they exist in the target project (`Get-Query-Schema` / `Get-Events` / `List-Properties` against the target `project_id`).
+- Identify the events/properties each source report depends on (from each report's query definition).
+- Check they exist in the target project (inspect the target project's schema — its events and properties).
 - Classify each report: **portable** (all dependencies present in target) vs **at-risk** (missing events/props).
 - Show the user the at-risk list before building:
   ```
@@ -62,46 +61,48 @@ A report only renders in the target project if the events, properties, and cohor
     - "Feature Adoption"   → missing: feature_used
   Proceed and create them anyway (they may stay empty until instrumented), skip them, or cancel?
   ```
-- Default to asking. For a fresh-onboarding template this is expected — the user often wants the scaffold in place ahead of instrumentation, so "proceed anyway" is a valid choice, just an informed one.
+- Default to asking. For a fresh-onboarding template this is expected — the user often wants the scaffold in place ahead of instrumentation, so "proceed anyway" is a valid, informed choice.
 
-### Step 3 — Re-mint query_ids in the target project
+### Step 3 — Re-mint queries in the target project
 
-For each report to carry over, the query must be re-run **against the target project** to produce a target-valid `query_id` (a source project's query_id is not valid in another project):
+For each report to carry over, its query must be re-run **against the target project** to produce a target-valid `query_id` (a source project's `query_id` is not valid elsewhere — see `references/mcp-tool-reference.md`):
 
-1. Reconstruct the query for the report (from the source report/query definition).
-2. Call `Run-Query(project_id=target, ..., skip_results=true)` to obtain a fresh `query_id`.
-3. Fire in parallel where possible. If a `Run-Query` fails (e.g. unsupported by missing schema), mark that report skipped and continue.
+1. Reconstruct the query from the source report/query definition.
+2. Run it against the target project with results skipped to obtain a fresh `query_id`.
+3. Fire in parallel where possible. If a query fails (e.g. unsupported by missing schema), mark that report skipped and continue.
 
 ### Step 4 — Build the board in the target project
 
-1. Assemble `rows` preserving the source's grouping:
-   - Report cells: `{"type": "report", "query_id": "[fresh target query_id]", "name": "[original name]", "description": "[original description]"}`
-   - Text cells: `{"type": "text", "html_content": "[original html_content]"}` (≤ 2000 chars; allowed tags only)
-   - Max 30 rows; max 4 cells per row; each row needs ≥ 1 cell.
-2. Call `Create-Dashboard(project_id=target, title=[new title], description=[new description + templated-from note], rows=[...], time_filter=[carry over if source had one])`.
+1. Assemble the rows preserving the source's grouping — report cells referencing
+   their fresh target `query_id` and original name/description, text cells carrying
+   their original HTML. Observe the layout limits and content rules in
+   `references/mcp-tool-reference.md`.
+2. Create the board in the target project with the new title, the new description
+   plus a templated-from note, and the assembled rows (carry over the source's
+   time filter if it had one).
 3. Capture the new dashboard ID.
 
 ### Step 5 — Verify
 
-Call `Get-Dashboard(project_id=target, dashboard_id=new, include_layout=true)` and confirm report/row counts match expectations (minus any reports the user chose to skip).
+Re-read the new board's full layout in the target project and confirm report/row counts match expectations (minus any reports the user chose to skip). See Global Rule 8.
 
 ---
 
 ## Batch template (multiple target projects)
 
 1. Read + portability-check the source once.
-2. For each target project, run Path B Steps 3–5 (re-mint query_ids per target — they cannot be shared across projects).
+2. For each target project, run Path B Steps 3–5 (re-mint queries per target — they cannot be shared across projects).
 3. Show progress: `Templated 3/7...`
 4. Final summary table:
 
 ```
 Template Results — "[Source Dashboard Title]"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Project              | Status        | New ID | Reports carried / skipped
 [Project A]          | ✅            | 12345  | 7 / 0
 [Project B]          | ⚠️ partial    | 12346  | 4 / 3 (missing events)
-[Project C]          | ❌ Error      | —      | Run-Query timeout
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[Project C]          | ❌ Error      | —      | Query timeout
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ---
@@ -125,8 +126,8 @@ Return control to router.
 | Situation | Action |
 |-----------|--------|
 | Source dashboard not found | Error, ask user to re-check ID |
-| Target project not accessible | Error, list available projects via `Get-Projects` |
-| Same source & target project | Use Path A (`Duplicate-Dashboard`) instead |
+| Target project not accessible | Error, list available projects |
+| Same source & target project | Use Path A instead |
 | Report depends on events/props missing in target | Flag in portability pre-check; let user proceed / skip / cancel |
-| `Run-Query` fails for a report in target | Skip that report, note in output, continue with the rest |
-| `Create-Dashboard` fails | Surface full error, suggest retry |
+| A query fails to mint in target | Skip that report, note in output, continue with the rest |
+| Board creation fails | Surface full error, suggest retry |

@@ -1,138 +1,60 @@
-# Dashboard MCP Tool Reference
+# Dashboard API — Gotchas & Constraints
 
-Quick reference for all dashboard-related Mixpanel MCP tools used by this skill.
+Non-obvious behaviour the tool descriptions don't make clear. For tool
+parameters and response shapes, rely on the tool descriptions themselves —
+this file is only the knowledge those descriptions leave out.
 
----
+## Contents
 
-## Tool Schemas
-
-### Get-Projects
-```
-Params: (none)
-Returns: list of {id, name, workspaces, context}
-```
-Use to validate project IDs and list available projects.
-
-### List-Dashboards
-```
-Params:
-  project_id: integer (required)
-  query: string (optional) — title substring filter, case-insensitive
-  workspace_id: integer (optional)
-Returns: list of dashboard summaries
-```
-Note: `Search-Entities` with `entity_types=["dashboard"]` is preferred for filtered searches — it supports sort_by and richer results.
-
-### Get-Dashboard
-```
-Params:
-  project_id: integer (required)
-  dashboard_id: integer (required)
-  include_layout: boolean (default: false)
-Returns: dashboard metadata + layout (if requested)
-```
-**Layout format:** `[[row_id, [[cell_id, type, extra], ...]], ...]`
-- `type`: "report" or "text"
-- `extra` for report: `{id, name}` (id = bookmark_id / report_id)
-- `extra` for text: `{html_content}`
-
-Always use `include_layout=true` when you need to inspect contents, update cells, or count reports.
-
-### Create-Dashboard
-```
-Params:
-  project_id: integer (required)
-  title: string (required)
-  rows: array of row objects (required)
-  description: string (optional)
-  is_private: boolean (default: false)
-  is_restricted: boolean (default: false)
-  time_filter: object (optional)
-  workspace_id: integer (optional)
-```
-
-**Row schema:**
-```json
-{
-  "contents": [
-    {"type": "text", "html_content": "<h1>Title</h1>"},
-    {"type": "report", "query_id": "abc-123", "name": "Report Name", "description": "..."}
-  ]
-}
-```
-- Max 30 rows per dashboard.
-- Max 4 items per row.
-- Report cells require a `query_id` from a prior `Run-Query` call.
-- Allowed HTML tags in text cards: `a`, `blockquote`, `br`, `code`, `em`, `h1`, `h2`, `h3`, `hr`, `li`, `mark`, `ol`, `p`, `s`, `strong`, `u`, `ul`.
-
-**Time filter schema:**
-```json
-{
-  "dateRange": {
-    "type": "in the last",           // or "since" or "between"
-    "window": {"unit": "day", "value": 30},  // for "in the last"
-    "from": "2024-01-01",            // for "since" or "between"
-    "to": "2024-03-31"              // for "between" only
-  },
-  "displayText": "Last 30 days"
-}
-```
-
-### Update-Dashboard
-```
-Params:
-  project_id: integer (required)
-  dashboard_id: integer (required)
-  title: string (optional)
-  description: string (optional)
-  rows: array (optional) — add/delete rows
-  rows_order: array of string (optional) — reorder rows
-  cells: array (optional) — create/update/delete cells
-```
-
-**Row operations:**
-- Add: `["temp-row-id", "add"]`
-- Delete: `["real-row-id", "delete"]`
-
-**Cell operations:**
-- Create: `["temp-cell-id", "create", "text"|"report", {row_id, ...content}]`
-- Update: `["real-cell-id", "update", "text"|"report", {...content}]`
-- Delete: `["real-cell-id", "delete"]`
-
-**Critical:** Always call `Get-Dashboard` with `include_layout=true` first to get real row/cell IDs. Use temp IDs only for new rows/cells.
-
-### Delete-Dashboard
-```
-Params:
-  project_id: integer (required)
-  dashboard_id: integer (required)
-```
-**Always confirm with user before calling.** This is irreversible.
-
-### Duplicate-Dashboard
-```
-Params:
-  project_id: integer (required)
-  dashboard_id: integer (required)
-  title: string (optional) — override title of the copy
-  description: string (optional) — override description of the copy
-```
-Creates a copy **in the same project** as the source. Cross-project duplication is not supported by the API.
+- Layout & structure limits
+- Content rules for text cards
+- Cross-project & duplication constraints
+- Listing dashboards
+- Reading layout for updates
 
 ---
 
-## API Constraints & Gotchas
+## Layout & structure limits
 
-1. **Duplicate is same-project only.** The API cannot duplicate a dashboard into a different project. For cross-project templating, you either duplicate in-place and inform the user, or recreate via Create-Dashboard.
+- A dashboard holds at most **30 rows**, and each row at most **4 cells**
+  (report or text). *(verify current — API-enforced.)*
+- Every row needs at least one cell.
+- Report cells require a `query_id` minted by a prior query run (run the
+  query with results skipped). You cannot place a report without one.
 
-2. **Report cells need query_ids.** You can't create a dashboard with report cells without first running `Run-Query` (with `skip_results=true`) to generate query_ids.
+## Content rules for text cards
 
-3. **Layout IDs are opaque strings.** Don't try to construct them — always read them from `Get-Dashboard` responses.
+- Only these HTML tags survive; everything else is stripped:
+  `a, blockquote, br, code, em, h1, h2, h3, hr, li, mark, ol, p, s,
+  strong, u, ul`. No `div`, `span`, `img`, or `table`. *(verify current.)*
+- No newlines in the HTML — each element implicitly line-breaks. Use
+  `<br>` for an explicit break.
+- Keep `html_content` reasonably short (≤ ~2000 chars).
 
-4. **Max 30 rows.** The Create-Dashboard API enforces this limit.
+## Cross-project & duplication constraints
 
-5. **HTML tag whitelist.** Text cards strip any tags not in the allowed list. No `<div>`, `<span>`, `<img>`, `<table>`.
+- Duplication is **same-project only** — there is no target-project
+  parameter. Cross-project templating must *reconstruct* the board
+  (see `commands/template-dashboard.md`).
+- A `query_id` is only valid in the project it was minted in. Re-mint
+  queries per target project when templating.
 
-6. **No newlines in html_content.** Each HTML element implicitly creates a line break. Use `<br>` for explicit breaks.
+## Listing dashboards
 
-7. **List-Dashboards vs Search-Entities.** `Search-Entities` with `entity_types=["dashboard"]` is more flexible (supports `sort_by`, richer results). Use `List-Dashboards` when you need all dashboards without filtering.
+- Prefer the richer, sortable entity-search capability when you need
+  sorting or filtered results (title substring, most-recent timestamp).
+- Fall back to the plain dashboard-list capability when you just need
+  every board without filtering.
+- The list operation does not return report counts — read a board's full
+  layout to count report/text cells.
+
+## Reading layout for updates
+
+- Layout cell and row IDs are **opaque server-generated strings** — never
+  construct them. Read the board's full layout first to get real IDs, and
+  use temporary placeholder IDs only for newly-added rows/cells (the server
+  assigns the real ones).
+- Layout shape returned per board: rows, each carrying an ordered list of
+  cells; each cell reports its type (`report` or `text`) plus its content
+  (a report reference, or the text card's HTML). Preserve row grouping and
+  cell order when reconstructing a board so the rebuild matches the source.
