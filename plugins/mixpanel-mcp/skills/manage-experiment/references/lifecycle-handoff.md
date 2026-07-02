@@ -1,0 +1,41 @@
+# Lifecycle Hand-off
+
+How to conclude an experiment once the verdict is settled. This reference is **interpretation guidance** — the per-field schema of the decide action lives in the experiment-update tool description.
+
+---
+
+## Confirm before concluding — always
+
+Concluding an experiment is **irreversible**. Before invoking the decide action, surface the proposed parameters to the user (winning variant, success/fail, rationale message) and wait for explicit confirmation. A SHIP verdict is a recommendation, not an authorization.
+
+## The three pieces every decide call needs
+
+A decide call expresses three things:
+
+1. **Did the experiment succeed?** A win for one of the treatments, or a deliberate stop.
+2. **Which variant ships?** Required when success is true. Either a real variant key, or one of the two special choices below.
+3. **Why?** A rationale message — what metrics were evaluated, the polarity reading, the tradeoffs accepted. The platform requires this on every decide call; treat it as a one-paragraph decision record, not a placeholder.
+
+## Special variant choices for success
+
+When you have a winning result but no single variant to ship:
+
+- **Ship the change without picking a variant.** Use when the experiment validated a direction but the team will ship outside the experiment's variant set. (The decide action exposes a dedicated "ship without a variant" choice; the tool layer supplies the exact value.)
+- **Defer the variant decision.** Use when you want to lock in the success verdict but the variant choice needs more discussion. (The decide action exposes a "defer the variant decision" choice; the UI shows the experiment as deferred.)
+
+When the verdict is KILL — no winner — record success as false. No variant key is needed in that case.
+
+## Multi-variant experiments
+
+For a 3+ arm test, the decide action still names a single winning variant. If two treatments are roughly tied:
+
+- If both clear the practical-significance bar and shipping either is acceptable, pick on simplicity (smaller diff from control, lower implementation cost).
+- If the team genuinely cannot pick, use the defer-the-decision choice above — better than fabricating a winner.
+
+A multi-variant test where only one treatment is significantly different from control is a clean SHIP for that variant; the inconclusive arms are simply not the winner.
+
+## After concluding
+
+The decision record — the rationale message, the shipped variant, and the experiment's terminal status — becomes the durable artifact. If a follow-up question comes in about why this experiment was shipped, that record is the answer.
+
+Concluding (or archiving) the experiment does **not** clean up the backing feature flag that `create` auto-provisioned — it's left disabled, not archived. If the team wants the flag gone too, archive it separately via the `manage-feature-flags` skill; don't assume the experiment's terminal state removed it.

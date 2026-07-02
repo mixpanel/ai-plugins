@@ -1,0 +1,194 @@
+---
+name: manage-experiment
+description: >
+  Coach the user through any phase of a Mixpanel experiment — design (hypothesis
+  framing, metric selection, sizing, statistical-model choice, advanced features
+  like CUPED / Winsorization / multiple-testing correction), launch (pre-launch
+  readiness check and the irreversible launch), monitor (mid-flight safety: SRM,
+  sample pace, guardrail peeks, terminate-early calls), and interpret (read
+  results, decide ship / iterate / kill / wait, read health checks like SRM and
+  Retro A/A, break down by segment, use session replays). Use when the user
+  mentions an experiment or A/B test, a ship/kill decision, MDE, sample ratio
+  mismatch, CUPED, or statistical significance, or asks things like "set up an
+  experiment", "is my experiment SRM-ing", "should we ship", "what's my MDE", or
+  "audit my experiment". Do NOT use for plain feature-flag rollouts with no
+  measurement criterion — that belongs to the `manage-feature-flags` skill.
+license: Apache-2.0
+---
+
+# Manage Experiment
+
+This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella, picked by experiment phase (the state→command mapping lives in the **Canonical commands** section below).
+
+The skill runs as a single interactive session per experiment. Commands compose naturally across phases — designing produces a configuration that launching commits, monitoring watches for safety issues mid-flight, interpreting consumes the matured result — but they're rarely invoked in the same session (the lifecycle spans days to weeks).
+
+---
+
+# Components
+
+The pieces the skill is built from. The Steps section below tells you how to use them.
+
+## Canonical commands
+
+Each command lives in its own file under `commands/` and is loaded on demand. Match commands explicitly (user names them) or implicitly (message matches a trigger phrase below).
+
+| Command     | File                    | Match if message contains any of                                                                                                            |
+| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `design`    | `commands/design.md`    | design, set up, configure, plan, sanity-check, hypothesis, MDE, sizing, sequential vs frequentist, CUPED, Winsorization                     |
+| `launch`    | `commands/launch.md`    | launch, go live, start the experiment, ready to ship the experiment, pre-launch check, launch readiness                                     |
+| `monitor`   | `commands/monitor.md`   | monitor, mid-flight, is it safe, should I peek, SRM mid-flight, sample pace, guardrail wobble, terminate early                              |
+| `interpret` | `commands/interpret.md` | read results, ship, iterate, kill, wait, statsig, SRM, sample ratio mismatch, retro A/A, lift, polarity, segment breakdown, session replays |
+
+If a message could route to more than one, use the **phase-derived** rule based on experiment state:
+
+- `DRAFT`, configuration incomplete → `design`.
+- `DRAFT`, configuration complete and user is ready to go → `launch`.
+- `ACTIVE`, mid-flight (planned end not reached) → `monitor`.
+- `ACTIVE`, reached planned end, or `CONCLUDED` → `interpret`.
+
+If the experiment state is unknown or doesn't disambiguate (e.g. `DRAFT` could be either design or launch), ask the user.
+
+## Command menu
+
+Shown when no command was detected or inferred.
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Manage Experiment — [Project Name] ([project_id])
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  1. Design     — Hypothesis, metrics, sizing, statistical model, advanced features
+  2. Launch     — Pre-launch readiness check, then launch (irreversible)
+  3. Monitor    — Mid-flight safety: SRM, sample pace, guardrails, peeking discipline
+  4. Interpret  — Read results, ship / iterate / kill / wait
+  5. Exit
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+## Shared glossary
+
+Terms all four commands use without redefining. Phase-specific terms (hypothesis, polarity, SRM, peeking trap, etc.) live in their command files.
+
+- **Variant.** One arm of the experiment. The variant treated as the baseline is the **control**; the others are **treatments**. The platform marks which key is the control.
+- **Primary / Guardrail / Secondary metric.**
+  - **Primary** — drives the ship decision. Cap at 3; the platform applies multiple-testing correction across primaries when configured.
+  - **Guardrail** — must not regress; a guardrail regression vetoes a ship even when primaries win.
+  - **Secondary** — exploratory / diagnostic only, never decisional, no correction applied.
+- **Direction.** Whether bigger is better (`up`) or smaller is better (`down`). Set `down` explicitly for cancel / error / latency / abandon / refund metrics — the default `up` silently flips polarity at interpretation. Direction is a property of the saved metric, so a wrong polarity can be corrected after setup with the metric-update tool — no need to recreate the metric or the experiment.
+- **Lift.** `(treatment_mean − control_mean) / control_mean`. The sign is mechanical (up/down), not by itself a verdict.
+- **MDE (Minimum Detectable Effect).** The smallest lift the experiment is sized to detect. Set during design, enforced at interpretation.
+- **CUPED.** Variance reduction using a pre-exposure baseline; cuts required sample ~30–70% when the metric correlates with pre-exposure behaviour. Inert on new-user-only cohorts.
+- **Winsorization.** Outlier capping (pooled across variants) for heavy-tailed continuous metrics; meaningless on Bernoulli. The `percentile` field is the tail width per side (default `5` = 5% tails). The push-back rule (don't cap tails above ~20%) and full guidance live in [references/advanced-features.md](references/advanced-features.md).
+- **Multiple-testing correction.** Tightens the per-test threshold when several primaries or non-control variants are tested together. Default Benjamini-Hochberg (verify current); Bonferroni for strict family-wise control.
+
+## Reference files
+
+Each command file links into these on demand. The map is here so the skill has a single index of what `references/` contains.
+
+| File                                                                                             | Used by                      | Purpose                                                                                                                       |
+| ------------------------------------------------------------------------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| [references/routing-xp-vs-ff.md](references/routing-xp-vs-ff.md)                                 | design                       | Experiment vs Feature Flag disambiguation — when each is the right tool and the hand-off rules.                               |
+| [references/hypothesis-framing.md](references/hypothesis-framing.md)                             | design                       | The four properties of a good hypothesis, rubric, common misalignment patterns, worked good/bad examples.                     |
+| [references/metric-selection.md](references/metric-selection.md)                                 | design                       | Picking primaries, guardrails, and secondaries. Guardrails-by-domain table. Lagging-indicator and changed-denominator traps.  |
+| [references/sizing.md](references/sizing.md)                                                     | design + monitor + interpret | Sample-size and MDE formulas, Kohavi's inversion, baseline-by-rate lookup, the five remediations for underpowered tests.      |
+| [references/statistical-model.md](references/statistical-model.md)                               | design                       | Sequential vs frequentist, end-condition choice, confidence level, multiple-testing correction. Peeking-trap math.            |
+| [references/advanced-features.md](references/advanced-features.md)                               | design                       | When CUPED and Winsorization help, when each is wrong, and the common misconfigurations.                                      |
+| [references/prior-experiments.md](references/prior-experiments.md)                               | design                       | How to look up and fold-in prior experiments on the same feature.                                                             |
+| [references/pitfalls.md](references/pitfalls.md)                                                 | design + launch              | The pre-launch pitfall catalogue: blockers (stop launch), warnings (explain trade-off), fyi.                                  |
+| [references/health-check-interpretation.md](references/health-check-interpretation.md)           | monitor + interpret          | Reading SRM, Retro A/A, exposures-sufficient, and misconfiguration verdicts. The trustworthiness gate's remediation playbook. |
+| [references/per-metric-interpretation.md](references/per-metric-interpretation.md)               | interpret                    | Translating a single metric's lift / CI / p-value into a plain-language verdict, with the Twyman's Law guard.                 |
+| [references/why-no-statsig.md](references/why-no-statsig.md)                                     | interpret                    | Wait / extend / boost power / narrow / accept-null decision tree when nothing's significant.                                  |
+| [references/segment-of-interest-selection.md](references/segment-of-interest-selection.md)       | interpret                    | How to pick the 3–5 segments worth breaking results down on, before slicing every dimension.                                  |
+| [references/segment-breakdown-interpretation.md](references/segment-breakdown-interpretation.md) | interpret                    | Reading per-segment results: heterogeneity vs Simpson's paradox vs noise; the "ship to segment X" requirements.               |
+| [references/session-replay-analysis.md](references/session-replay-analysis.md)                   | interpret                    | Turning a quantitative experiment result into a behavior story using session replays.                                         |
+| [references/lifecycle-handoff.md](references/lifecycle-handoff.md)                               | interpret                    | The decide-action call shape, multi-variant ship semantics, special variant constants.                                        |
+
+## Cross-command policies
+
+Rules that apply across more than one command. Defined here once so all commands reference the same threshold and don't drift.
+
+### Guardrail hard-gate (5% relative regression)
+
+A **5% relative regression on any guardrail blocks ship**, even when the primary wins. The threshold lives here, not in any one command:
+
+- `design` warns if no guardrails are configured (the gate has nothing to enforce).
+- `launch` blocks-or-warns based on guardrail configuration in the readiness check.
+- `monitor` uses the threshold to decide when a mid-flight guardrail regression justifies termination.
+- `interpret` uses the threshold for the ITERATE vs SHIP decision.
+
+If a team agrees on a different threshold (3% for high-volume billing, 10% for early experiments), change it here and the commands inherit it.
+
+### Peek-safety table
+
+The **peeking trap**: stopping early on a favorable Frequentist peek inflates the false-positive rate because each look at the data is another chance to cross the significance threshold by chance. Sequential testing is built to make peeking safe (the stopping boundaries account for repeated looks); Frequentist testing is not.
+
+The table below is what's safe to look at mid-flight, and what isn't. Used by `monitor` directly; referenced from `design` (when picking sequential vs frequentist) and `interpret` (when deciding whether a mid-flight peek invalidates a verdict).
+
+| Signal                            | Safe to peek mid-flight? | Why                                                                                                                    |
+| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| SRM verdict                       | Yes                      | Bucketing health is independent of effect size. Detecting SRM early lets you stop before more exposure data is wasted. |
+| Sample pace                       | Yes                      | A pacing problem is operational, not statistical. Detecting it early gives time to remediate.                          |
+| Guardrail polarity                | Yes (with care)          | A guardrail regression mid-flight is a real safety signal. Stopping for a guardrail regression is not p-hacking.       |
+| Primary metric lift (Sequential)  | Yes                      | Sequential testing makes peeking part of the design. The platform's stopping boundaries account for it.                |
+| Primary metric lift (Frequentist) | **No**                   | Stopping early on a favorable Frequentist peek is the canonical peeking trap. The false-positive rate inflates fast.   |
+
+The rule users get wrong most often: thinking they can "just check" the primary mid-flight on a Frequentist test "without acting on it." If the look influences any decision — even the decision to wait — it's a peek.
+
+### Output emoji conventions
+
+All four commands use the same visual vocabulary so multi-command sessions read consistently:
+
+- ✅ — pass / ok / nothing to flag
+- ⚠️ — warning / attention needed (proceed if user accepts)
+- 🛑 — blocker / fail / stop (do not proceed)
+- ℹ️ — fyi / informational
+
+## Behaviour rules
+
+1. **Irreversible actions require explicit confirmation.** Creating an experiment (in `design`), launching one (in `launch`), terminating one mid-flight (in `monitor`), and concluding one (in `interpret`) are all irreversible. Show the proposed action, wait for the user to confirm with literal `CONFIRM` for the destructive ones.
+2. **If a command can't complete, explain why.** Tell the user what failed and what they can try. Don't fail silently. This includes a failed experiment lookup (e.g. the listing tool errors on a project where experiments aren't enabled) — surface the error and stop; don't proceed as if no experiments exist.
+3. **Editing settings is a full replace — read-merge-write.** The experiment-update tool's `settings` payload **replaces the entire settings object**; any field you omit is reset, silently dropping `srm`, `excludeQA`, `cuped`, `winsorization`, `preExperimentBias`, and `controlKey`. Before any settings edit, fetch the current experiment and re-send the **complete** settings object with your one change applied — never a partial `settings`. After the edit, re-verify `srm.enabled` and `excludeQA` survived. Losing `srm` (Kohavi's #1 trustworthiness check) to a one-field edit is the failure mode this rule exists to prevent.
+4. **Experiment switching.** If the user wants to operate on a different experiment mid-session, ask which one and reset experiment-scoped context.
+5. **Project switching.** If the user wants to operate on a different project mid-session, suggest starting a new conversation first. If they insist, resolve the new project and continue with that `project_id`.
+
+---
+
+# Steps
+
+Follow these steps in order.
+
+## 1. Set project
+
+Resolve which Mixpanel project the user wants to operate on.
+
+- **User named a project (name or ID):** list all projects in the workspace. Match by ID first, then by case-insensitive name. If one match → `✅ [Project Name] ([project_id])`, proceed.
+- **Multiple name matches:** show the matches in a numbered list, ask the user to pick.
+- **No match:** tell the user what wasn't found, offer to `list` (which re-fetches the project list and shows the table).
+- **User named nothing:** ask which project. `list` → fetch projects → show table.
+
+If the project listing fails with tool-not-found, tell the user to connect the Mixpanel MCP and stop.
+
+## 2. Set experiment (if one is named)
+
+If the user named an experiment, resolve it now — try ID first, then case-insensitive name match. Multiple matches → numbered picker. No match → tell the user what wasn't found.
+
+If the user is starting a new experiment from scratch (no existing experiment to name), skip this step — `design` will handle setup.
+
+## 3. Pick the command
+
+Apply in order, first match wins. The trigger phrases and the state→command mapping both live in the **Canonical commands** section — don't restate them here, just apply them.
+
+1. **Explicit or implicit match** → the matched command (Canonical commands table).
+2. **Phase-derived** (an experiment was resolved in step 2 and rules 1–2 didn't decide) → apply the state→command mapping. If `DRAFT` doesn't disambiguate design vs launch, ask: "Is the configuration final, or are you still iterating on it?"
+3. **Ambiguous verbs** ("audit", "check", "review") → phase-derived routing if an experiment is in context; otherwise the menu.
+4. **Otherwise** → show the Command menu, take the user's choice.
+
+## 4. Load and execute the command
+
+If the command file is not already in context, read `commands/[command].md`. Follow the instructions in that file. Reuse the project and experiment context resolved in steps 1–2 — never re-ask.
+
+## 5. Complete
+
+Print `✅ Done.` Return to step 3 if the user wants to chain another command. Typical chains:
+
+- Same session: `design` → `launch` (the user finalized the design and is ready to go live).
+- Across sessions: `launch` → (wait 24h+) → `monitor` → (wait to planned end) → `interpret`.
