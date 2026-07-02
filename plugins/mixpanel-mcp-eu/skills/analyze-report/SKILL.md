@@ -14,8 +14,8 @@ description: >
   report shows and flags notable patterns, but does not chase root
   causes. Do NOT trigger for building new charts, reviewing entire
   dashboards, or full root-cause diagnostic workflows (for "why did
-  this change" questions, use monitor-metrics). Requires Mixpanel MCP (EU).
-compatibility: "Requires Mixpanel MCP (EU). Works for any EU data-residency project the user has access to."
+  this change" questions, use monitor-metrics). Requires Mixpanel MCP.
+compatibility: "Requires Mixpanel MCP. Works for any project the user has access to."
 ---
 
 # Mixpanel Analyze Report
@@ -47,7 +47,7 @@ Three input modes. Detect which one applies from the customer's message:
 ### Mode A — Customer provides a URL or chart/report ID
 
 Most common. Mixpanel report URLs look like
-`https://eu.mixpanel.com/project/<project_id>/view/<board_id>/app/<chart>`
+`https://mixpanel.com/project/<project_id>/view/<board_id>/app/<chart>`
 or include `report_id=<id>`. Extract the ID(s).
 
 Fetch the report's saved configuration — the events, properties,
