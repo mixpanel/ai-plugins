@@ -13,15 +13,15 @@ description: >
   asks what's happening, or describes a metric in prose and wants to know if
   the movement is real. Do NOT trigger for portfolio health checks (use
   `weekly-pulse`) or adoption reports (use `gtm-customer-intelligence`).
-  Requires this plugin's Mixpanel MCP connector.
+  Requires the `mixpanel-mcp` connector (Mixpanel US).
 ---
 
 # Monitor Metrics
 
-> **Connector & tools:** This skill operates exclusively against this plugin's Mixpanel connector (whichever region the plugin is configured for). It does **not** hardcode tool names — MCP names change. Every Mixpanel action is written as a `cap:*` capability key and resolved to the live tool at runtime. **Before Step 0, run Step −1 in `references/tools.md`:** enumerate this plugin's Mixpanel connector's current tools once, build the capability → tool-name map for the session, and route every `cap:*` reference through that map. Never call another Mixpanel connector, and never type a literal Mixpanel tool name into a call plan — resolve the capability instead.
+> **Connector & tools:** This skill operates exclusively against the `mixpanel-mcp` connector (Mixpanel US region). It does **not** hardcode tool names — MCP names change. Every Mixpanel action is written as a `cap:*` capability key and resolved to the live tool at runtime. **Before Step 0, run Step −1 in `references/tools.md`:** enumerate the `mixpanel-mcp` connector's current tools once, build the capability → tool-name map for the session, and route every `cap:*` reference through that map. Never call another Mixpanel connector, and never type a literal Mixpanel tool name into a call plan — resolve the capability instead.
 
 A focused diagnostic skill for a single metric at a time. Works for any
-project the user has access to. Requires this plugin's Mixpanel MCP connector. Answers three
+project the user has access to. Requires the `mixpanel-mcp` connector (Mixpanel US). Answers three
 questions cleanly:
 
 1. **Is a recent point weird?** (anomaly detection — `metric-anomaly`)

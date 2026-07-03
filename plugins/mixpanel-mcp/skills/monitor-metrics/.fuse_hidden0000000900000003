@@ -18,7 +18,7 @@ description: >
 
 # Monitor Metrics
 
-> **Connector & tools:** This skill operates exclusively against this plugin's Mixpanel connector (whichever region the plugin is configured for). It does **not** hardcode tool names — MCP names change. Every Mixpanel action is written as a `cap:*` capability key and resolved to the live tool at runtime. **Before Step 0, run Step −1 in `references/tools.md`:** enumerate this plugin's Mixpanel connector's current tools once, build the capability → tool-name map for the session, and route every `cap:*` reference through that map. Never call another Mixpanel connector, and never type a literal Mixpanel tool name into a call plan — resolve the capability instead.
+> **Connector & tools:** This skill operates exclusively against this plugin's Mixpanel connector (whichever region the plugin is configured for). It does **not** hardcode tool names — MCP names change. Every Mixpanel action is written as a `cap:*` capability key and resolved to the live tool at runtime. **Before Step 0, run Step −1 in `references/tools.md`:** enumerate the `mixpanel-mcp` connector's current tools once, build the capability → tool-name map for the session, and route every `cap:*` reference through that map. Never call another Mixpanel connector, and never type a literal Mixpanel tool name into a call plan — resolve the capability instead.
 
 A focused diagnostic skill for a single metric at a time. Works for any
 project the user has access to. Requires this plugin's Mixpanel MCP connector. Answers three

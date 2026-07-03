@@ -9,10 +9,10 @@ Every `cap:*` token used anywhere in this skill (SKILL.md, execution.md, and
 the command files) is a capability key defined in the map below — not a literal
 tool name. Resolve it to a real tool via the session tool map before calling.
 
-> **Connector scope:** this skill operates exclusively against the Mixpanel India
-> connector (nickname `mixpanel-mcp-in`). Resolve every capability against that
-> connector's tools only — never another Mixpanel connector. `mixpanel-mcp-in` is
-> the connector to search, not a tool name.
+> **Connector scope:** this skill operates exclusively against this plugin's Mixpanel
+> connector (whichever region the plugin is configured for). Resolve every
+> capability against that connector's tools only — never another Mixpanel
+> connector.
 
 ---
 
@@ -20,8 +20,8 @@ tool name. Resolve it to a real tool via the session tool map before calling.
 
 Do this **once**, before Step 0, and cache the result for the whole session:
 
-1. **Enumerate the Mixpanel connector's tools once.** List every tool the
-   `mixpanel-mcp-in` connector currently exposes (e.g. via a tool search over that
+1. **Enumerate the Mixpanel connector's tools once.** List every tool this
+   plugin's Mixpanel connector currently exposes (e.g. via a tool search over that
    connector, or the client's tool listing). Do this in a single pass — do not
    search per call site. This gives the skill the latest, authoritative tool
    names in one shot.

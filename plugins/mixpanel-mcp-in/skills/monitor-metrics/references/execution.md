@@ -8,8 +8,7 @@ run after a command returns its payload. `metric-rca` does not re-run Steps 0,
 
 > **Connector & tools:** every action below is a `cap:*` capability key, not a
 > tool name. Resolve each against the session tool map built in Step −1 (see
-> `references/tools.md`), routed through the `mixpanel-mcp-in` connector (Mixpanel
-> India region) only. If the map isn't built yet, build it first.
+> `references/tools.md`), routed through this plugin's Mixpanel connector only. If the map isn't built yet, build it first.
 
 ## Contents
 

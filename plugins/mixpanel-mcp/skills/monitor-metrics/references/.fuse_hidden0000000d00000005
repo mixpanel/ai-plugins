@@ -20,8 +20,8 @@ tool name. Resolve it to a real tool via the session tool map before calling.
 
 Do this **once**, before Step 0, and cache the result for the whole session:
 
-1. **Enumerate the Mixpanel connector's tools once.** List every tool this
-   plugin's Mixpanel connector currently exposes (e.g. via a tool search over that
+1. **Enumerate the Mixpanel connector's tools once.** List every tool the
+   `mixpanel-mcp` connector currently exposes (e.g. via a tool search over that
    connector, or the client's tool listing). Do this in a single pass — do not
    search per call site. This gives the skill the latest, authoritative tool
    names in one shot.
