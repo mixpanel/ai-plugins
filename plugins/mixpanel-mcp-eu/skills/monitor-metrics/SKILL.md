@@ -3,9 +3,9 @@ name: monitor-metrics
 description: >
   Monitor and diagnose a Mixpanel metric for anomalies, drift, and root
   cause. Use whenever the user asks to investigate, debug, monitor, or
-  explain a change in a Mixpanel metric — a saved Metric, KPI, conversion
-  rate, retention, event count, funnel step, or anything tracked in a saved
-  report or dashboard. Trigger phrases: "monitor [metric]", "what's going on
+  explain a change in a metric tracked in Mixpanel — a saved Metric, KPI,
+  conversion rate, retention, event count, funnel step, or anything tracked
+  in a saved report or dashboard. Trigger phrases: "monitor [metric]", "what's going on
   with [metric]", "why did [metric] drop/spike", "diagnose this metric",
   "check for anomalies", "has [metric] drifted", "what's driving the drop",
   "where is the movement coming from", "run RCA on this metric". Also
@@ -90,19 +90,25 @@ this down", "run RCA", "is it a specific segment?". Requires a prior
 
 ## Choosing between the commands
 
-- **Ambiguous or exploratory ask** ("something looks off") → default to
-  `metric-anomaly` first. Anomaly is cheaper (2 queries) and catches
-  point-in-time issues that would contaminate a drift test.
-- **"Has this changed over the last month?"** → `metric-drift` directly.
-- **Both detection questions matter** → run `metric-anomaly` first, then
-  `metric-drift`. Drift will pick up any anomaly context if present and
-  downgrade confidence accordingly.
-- **User asks "why" or "where" after seeing a verdict** → `metric-rca`.
-- **User opens with "why did X drop"** → run `metric-anomaly` or
-  `metric-drift` first (whichever fits their framing better), then flow
-  into `metric-rca`. Do not run RCA cold — it needs the detection payload.
-  The description's "what's driving the drop" / "where is the movement
-  coming from" triggers route here **on purpose**: detection first, then RCA.
+Route by matching the user's ask to the first branch that applies:
+
+- **IF** the ask is ambiguous or exploratory ("something looks off")
+  **→** run `metric-anomaly` first. It is cheaper (2 queries) and catches
+  point-in-time issues that would otherwise contaminate a drift test.
+- **IF** the ask is about a trend or baseline change over time
+  (e.g. "has this changed over the last month?", "is the baseline
+  different now?") **→** run `metric-drift` directly.
+- **IF** both detection questions matter **→** run `metric-anomaly` first,
+  then `metric-drift`. Drift picks up any anomaly context if present and
+  downgrades confidence accordingly.
+- **IF** the user asks "why" or "where" **AND** a diagnosis payload already
+  exists **→** run `metric-rca`.
+- **IF** the user asks "why did X drop" (or "what's driving the drop",
+  "where is the movement coming from") **AND** no diagnosis payload exists
+  yet **→** run `metric-anomaly` or `metric-drift` first (whichever fits
+  their framing), then flow into `metric-rca`. Never run RCA cold — it
+  needs the detection payload. These triggers route here **on purpose**:
+  detection first, then RCA.
 
 ---
 
