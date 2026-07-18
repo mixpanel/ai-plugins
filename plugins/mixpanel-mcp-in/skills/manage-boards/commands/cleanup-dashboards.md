@@ -6,11 +6,23 @@ Staleness is a first-class signal here — a board with many reports that nobody
 
 ---
 
+## Contents
+
+- Phase 1 — Fetch all dashboards (with recency)
+- Phase 2 — Deep inspection
+- Phase 3 — Classification (structural + recency flags, duplicates)
+- Phase 4 — Report
+- Phase 5 — Action (interactive delete paths)
+- Output
+- Error Handling
+
+---
+
 ## Execution
 
 ### Phase 1 — Fetch all dashboards (with recency)
 
-1. Fetch the dashboard set per Global Rule 9 (sortable entity-search preferred,
+1. Fetch the dashboard set per the **Fetching the dashboard set** rule (sortable entity-search preferred,
    sorting on the most recent timestamp the API exposes; plain list as fallback).
 2. For each dashboard, extract whatever the response provides:
    - `id`, `title`, `description`
@@ -18,7 +30,7 @@ Staleness is a first-class signal here — a board with many reports that nobody
    - `creator` / `owner` (if available)
 3. Cache in `dashboard_list_cache`.
 
-**Recency field discovery (do this once, silently):** Inspect the first result object to see which timestamp fields are present. Prefer, in order: `last_viewed` → `last_modified`/`updated_at` → `created_at`. Record which field was used so the report can label it accurately. If NO timestamp field is present, skip the Stale classification entirely and tell the user in the report header: "Recency data not available from the API — staleness not assessed; showing structural flags only."
+**Recency field discovery (do this once, silently):** Scan the result set — not just the first object — to determine which timestamp fields the API populates, since field coverage can vary board to board. Choose the preferred field by coverage across boards, in priority order: `last_viewed` → `last_modified`/`updated_at` → `created_at`. Per board, if the chosen field is missing, fall back down the same order for that board and label its recency basis accordingly. Record the field(s) used so the report can label the column accurately. If NO board exposes any timestamp field, skip the Stale classification entirely and tell the user in the report header: "Recency data not available from the API — staleness not assessed; showing structural flags only."
 
 ### Phase 2 — Deep inspection
 
@@ -95,7 +107,9 @@ After showing the audit, ask what the user wants to do:
 
 **Option D: Skip — just wanted the audit** — return control to router.
 
-**Never auto-delete.** Always require explicit confirmation. Never propose deleting a 🔴 Stale board that still has 3+ reports without flagging that it may be a seasonal/quarterly board worth archiving rather than deleting.
+**Never auto-delete.** Every deletion path requires explicit user confirmation — no exceptions.
+
+**Protect high-value stale boards.** Never propose deleting a 🔴 Stale board that still has 3+ reports without flagging that it may be a seasonal/quarterly board worth archiving rather than deleting.
 
 **Verify deletions.** After running deletions, re-fetch the dashboard list (or attempt to read each deleted ID and expect a not-found) to confirm each target is actually gone before reporting the count. Report any ID that still resolves as a failed deletion rather than a success.
 

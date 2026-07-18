@@ -9,7 +9,6 @@ this file is only the knowledge those descriptions leave out.
 - Layout & structure limits
 - Content rules for text cards
 - Cross-project & duplication constraints
-- Listing dashboards
 - Reading layout for updates
 
 ---
@@ -34,19 +33,9 @@ this file is only the knowledge those descriptions leave out.
 ## Cross-project & duplication constraints
 
 - Duplication is **same-project only** — there is no target-project
-  parameter. Cross-project templating must *reconstruct* the board
-  (see `commands/template-dashboard.md`).
+  parameter. Cross-project templating must *reconstruct* the board.
 - A `query_id` is only valid in the project it was minted in. Re-mint
   queries per target project when templating.
-
-## Listing dashboards
-
-- Prefer the richer, sortable entity-search capability when you need
-  sorting or filtered results (title substring, most-recent timestamp).
-- Fall back to the plain dashboard-list capability when you just need
-  every board without filtering.
-- The list operation does not return report counts — read a board's full
-  layout to count report/text cells.
 
 ## Reading layout for updates
 
@@ -54,7 +43,5 @@ this file is only the knowledge those descriptions leave out.
   construct them. Read the board's full layout first to get real IDs, and
   use temporary placeholder IDs only for newly-added rows/cells (the server
   assigns the real ones).
-- Layout shape returned per board: rows, each carrying an ordered list of
-  cells; each cell reports its type (`report` or `text`) plus its content
-  (a report reference, or the text card's HTML). Preserve row grouping and
-  cell order when reconstructing a board so the rebuild matches the source.
+- Preserve row grouping and cell order when reconstructing a board so the
+  rebuild matches the source.

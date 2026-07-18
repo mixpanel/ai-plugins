@@ -4,6 +4,15 @@ Modifies an existing dashboard's metadata, rows, or cell layout. The most flexib
 
 ---
 
+## Contents
+
+- Intake
+- Execution (read layout → apply updates → confirm → execute & verify)
+- Output
+- Error Handling
+
+---
+
 ## Intake
 
 Required:
@@ -19,7 +28,7 @@ The user's intent determines the update path:
 - **Update a text card** → cell update with new HTML
 - **Bulk restructure** → a combination of the above
 
-If the user doesn't specify a dashboard, help them find it using `dashboard_list_cache` or by fetching the set (Global Rule 9).
+If the user doesn't specify a dashboard, help them find it using `dashboard_list_cache` or by fetching the set (per the **Fetching the dashboard set** rule).
 
 ---
 
@@ -46,22 +55,21 @@ this layout; use temporary placeholder IDs only for newly-added rows/cells (see
 ### Step 2 — Apply updates
 
 Submit a single update to the board carrying the operations the user's intent
-requires. The operation shapes:
+requires. Work at the level of intent — consult the update tool's own schema for
+the exact operand order and payload shape.
 
-| Intent | Operation(s) to submit |
-|--------|------------------------|
-| Rename / edit description | Set `title` and/or `description` on the board |
-| Add a new row | Row op: `["temp-row-1", "add"]` |
-| Add a text card to a new row | Row op `["temp-row-1", "add"]` + cell op `["temp-cell-1", "create", "text", {row_id: "temp-row-1", html_content: "<h2>New Section</h2>"}]` |
-| Add a report cell to a new row | First mint a `query_id` (run its query with results skipped), then row op `["temp-row-1", "add"]` + cell op `["temp-cell-1", "create", "report", {row_id: "temp-row-1", query_id: "...", name: "...", description: "..."}]` |
-| Delete a row | Row op: `["<real_row_id>", "delete"]` |
-| Delete a cell | Cell op: `["<real_cell_id>", "delete"]` |
-| Update a text card | Cell op: `["<real_cell_id>", "update", "text", {html_content: "<h2>Updated</h2>"}]` |
-| Update a report cell | Cell op: `["<real_cell_id>", "update", "report", {query_id: "<new>", name: "..."}]` |
-| Reorder rows | Set row order: `["row_id_3", "row_id_1", "row_id_2"]` |
+| Intent | What to submit |
+|--------|----------------|
+| Rename / edit description | Set the board's title and/or description. |
+| Add a new row | One add-row operation. |
+| Add a text card | An add-row operation plus a create-cell operation of type `text` carrying the card's HTML. |
+| Add a report cell | First mint a `query_id` (run its query with results skipped), then an add-row op plus a create-cell op of type `report` referencing that `query_id`. |
+| Delete a row or cell | A delete operation targeting the **real** server ID (read it from the layout first). |
+| Update a text or report cell | An update operation targeting the real cell ID with the new HTML or new `query_id`. |
+| Reorder rows | A set-row-order operation listing the real row IDs in the desired order. |
 
-Temp IDs are placeholders for new items; the server assigns the real ones.
-Text-card HTML must obey the tag whitelist and no-newline rule in
+New rows/cells use temporary placeholder IDs; the server assigns the real ones on
+write. Text-card HTML must obey the tag whitelist and no-newline rule in
 `references/mcp-tool-reference.md`.
 
 ### Step 3 — Confirm before applying
@@ -82,8 +90,9 @@ For simple renames or description updates, skip confirmation unless the user see
 ### Step 4 — Execute and verify
 
 Apply the update, then re-read the board's full layout to confirm the change took
-effect (Global Rule 8) and show the updated structure. If the readback diverges
-from intent, surface what landed vs. what was requested rather than reporting `✅`.
+effect (per the **Validate every write** rule) and show the updated structure. If
+the readback diverges from intent, surface what landed vs. what was requested
+rather than reporting `✅`.
 
 ---
 

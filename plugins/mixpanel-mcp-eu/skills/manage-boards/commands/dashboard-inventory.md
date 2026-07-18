@@ -8,7 +8,7 @@ Lists all dashboards in a project with report counts, ownership, and metadata. P
 
 ### Phase 1 — Fetch all dashboards
 
-Fetch the dashboard set per Global Rule 9, reusing `dashboard_list_cache` if it
+Fetch the dashboard set per the **Fetching the dashboard set** rule, reusing `dashboard_list_cache` if it
 is already populated (e.g. from a prior cleanup command). Only re-fetch if the
 cache is empty.
 

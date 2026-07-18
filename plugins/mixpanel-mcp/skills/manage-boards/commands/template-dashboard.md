@@ -6,6 +6,18 @@ Reproduces a reference dashboard in another project, renames it, and optionally 
 
 ---
 
+## Contents
+
+- Intake
+- Routing: same project vs. cross project
+- Path A — Same-project copy
+- Path B — Cross-project reconstruction (read → portability check → re-mint → build → verify)
+- Batch template (multiple target projects)
+- Output
+- Error Handling
+
+---
+
 ## Intake
 
 Required:
@@ -33,7 +45,7 @@ If the user doesn't provide source/target explicitly, ask. Use the session's pro
 
 1. **Validate source.** Read its full layout; preview title, description, report count, row count. If not found → error, stop.
 2. **Duplicate** within the source project, applying `title`/`description` overrides if provided.
-3. Verify (Global Rule 8) and report the new dashboard ID. Done.
+3. Verify (per the **Validate every write** rule) and report the new dashboard ID. Done.
 
 ---
 
@@ -84,7 +96,7 @@ For each report to carry over, its query must be re-run **against the target pro
 
 ### Step 5 — Verify
 
-Re-read the new board's full layout in the target project and confirm report/row counts match expectations (minus any reports the user chose to skip). See Global Rule 8.
+Re-read the new board's full layout in the target project and confirm report/row counts match expectations (minus any reports the user chose to skip). See the **Validate every write** rule.
 
 ---
 

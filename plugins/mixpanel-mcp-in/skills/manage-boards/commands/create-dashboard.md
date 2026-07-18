@@ -76,8 +76,8 @@ If the user specifies a date range, set a time filter. Common mappings:
    Access:  Shared | Private
 ```
 
-Then re-read the board to confirm the write landed (see Global Rule 8) before
-reporting `✅`. Return control to router.
+Then re-read the board to confirm the write landed (see the **Validate every
+write** rule) before reporting `✅`. Return control to router.
 
 ---
 

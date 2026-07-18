@@ -15,7 +15,7 @@ Optional:
 
 If the user doesn't provide a dashboard, help them find it:
 - If `dashboard_list_cache` is populated → show a quick picker from cache
-- Otherwise → fetch the dashboard set (Global Rule 9), show a table, let user pick
+- Otherwise → fetch the dashboard set (per the **Fetching the dashboard set** rule), show a table, let user pick
 
 ---
 
@@ -38,7 +38,7 @@ If the user doesn't provide a dashboard, help them find it:
    the title/description overrides cleanly, follow up with a metadata update on
    the new board to set them.
 
-5. **Verify** the new board per Global Rule 8 before reporting `✅`.
+5. **Verify** the new board per the **Validate every write** rule before reporting `✅`.
 
 ---
 
