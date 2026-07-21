@@ -17,7 +17,7 @@ For the org and (if a project is in scope) the project:
 
 ## Step 2 — Data layer (Lexicon)
 
-If a project is in scope and `manage-lexicon` is available, run its `score-lexicon` (or reuse `lexicon_score` if fresh this session) to get event-description, property-description, and tag coverage. If `manage-lexicon` is unavailable, mark the data layer "not measured" rather than guessing.
+If a project is in scope and `manage-lexicon` is available, ask it to score current coverage (or reuse `lexicon_score` if fresh this session) to get event-description, property-description, and tag coverage. If `manage-lexicon` is unavailable, mark the data layer "not measured" rather than guessing.
 
 ## Step 3 — Present one readout
 

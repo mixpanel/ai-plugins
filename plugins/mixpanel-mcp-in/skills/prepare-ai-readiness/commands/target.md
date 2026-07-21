@@ -20,10 +20,10 @@ Where should business context live?
 
 ## Validate permissions
 
-Check `caller_role` for the chosen target(s). If the user lacks write permission for a level, surface it and offer alternatives:
+Check `caller_role` for the chosen target(s) against SKILL.md's "Permissions gate writes" constraint (the canonical role matrix). If the user lacks write permission for a level, name the required role from that matrix and offer alternatives:
 
-- If they can't write to org: "You need org owner/admin to write org-level context. Want to target project only?"
-- If they can't write to project: "You need project owner/admin to write project context. Want to target org only, or export locally?"
+- Can't write to org → offer targeting project only.
+- Can't write to project → offer targeting org only, or exporting locally.
 
 ## Set and confirm
 
