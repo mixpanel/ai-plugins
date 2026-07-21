@@ -1,6 +1,6 @@
 ---
 name: mcp-guide
-description: Use this skill whenever the user asks about the Mixpanel MCP server, what it does, what it can answer, what tools are available, how to phrase questions, why to use it, or what value it provides. Trigger on phrases like "how do I use Mixpanel MCP", "what can I ask Mixpanel", "Mixpanel in Claude", "Mixpanel natural language", "connect Mixpanel", "Mixpanel through AI", "show me what Mixpanel MCP can do", or any open-ended question about Mixpanel's MCP capabilities. Also trigger when the user has just connected Mixpanel and is figuring out where to start, even if their question is vague (e.g. "what now?", "what should I try first?"). Do NOT skip this skill on the assumption a question is simple. The skill contains canonical tool names, prompt patterns, and known gotchas that are easy to get wrong from memory.
+description: Use this skill whenever the user asks about the Mixpanel MCP server, what it does, what it can answer, what tools are available, how to phrase questions, why to use it, or what value it provides. Trigger on phrases like "how do I use Mixpanel MCP", "what can I ask Mixpanel", "Mixpanel in Claude", "Mixpanel natural language", "connect Mixpanel", "Mixpanel through AI", "show me what Mixpanel MCP can do", or any open-ended question about Mixpanel's MCP capabilities. Also trigger when the user has just connected Mixpanel and is figuring out where to start, even if their question is vague (e.g. "what now?", "what should I try first?"). Always invoke this skill when the user asks about MCP capabilities, even if the question seems simple — it contains canonical tool names, prompt patterns, and known gotchas that are easy to get wrong from memory.
 license: Apache-2.0
 ---
 
@@ -41,7 +41,7 @@ If you ever find yourself about to send a module's concept, prompt, troubleshoot
 **Reference (open anytime):**
 - **Module 7:** Prompting principles and known limits
 
-Ask where they'd like to start. New to MCP? Start at Module 0.
+If you're new to MCP, start with Module 0. Reply with a module number to begin.
 
 ---
 
@@ -96,7 +96,7 @@ Show the contrast, then stop. The fix is to make the AI reason about your schema
 > "List the events that relate to checkout. For each, give the description and top three properties. Then suggest which combination best represents `purchase intent` based on how this project is actually instrumented."
 That version surfaces Lexicon gaps instead of assuming.
 
-#### → if it didn't work
+#### → if the user mentions "error", "didn't work", "empty", "no results", or "nothing came back"
 - **No projects returned** → project access isn't configured; check Mixpanel permissions.
 - **"MCP access is not enabled"** → an org admin enables it in Settings > Org > Overview; changes can take 15 minutes.
 - **Auth errors after it worked before** → cached token is stale; re-authenticate your MCP connection using your AI client's auth flow.
@@ -131,7 +131,7 @@ Show the contrast. The good version names all four parts:
 > "What's the conversion from `Sign Up` to `First Purchase` for users acquired through paid channels over the last 60 days? Show the trend week-over-week and flag any week the rate dropped more than 10%."
 Behavior (two events), population (paid-channel users), timeframe (60 days), shape (weekly trend with anomaly flags).
 
-#### → if it didn't work
+#### → if the user mentions "wrong events", "empty", "no data", "numbers feel off", or "doesn't look right"
 - **Wrong event names** → orient first; re-run a Module 1 prompt to confirm names.
 - **Breakdown returned empty** → the property may not exist on that event; verify with `Get-Properties` for the specific event, then retry.
 - **Numbers feel off** → check `Get-Issues` for data quality problems before trusting the output.
@@ -169,7 +169,7 @@ Flows isn't only a fallback. Even with Replay available, run Flows first to find
 Show the two-step contrast: identify the users via query, *then* drop into replays or Flows:
 > "Step 1: find 10 users who finished onboarding in the last 30 days but haven't been active in 14. Step 2: pull replays for 3 of them, focused on their last active sessions, and summarize what they did before going quiet."
 
-#### → if it didn't work
+#### → if the user mentions "no replays", "empty", "no data", "wrong paths", "no IDs", or "generic answer"
 - **No replay data** → Replay must be enabled and instrumented; confirm in project settings, or fall back to Flows.
 - **Replay metadata but no playable links** → replays may be outside your retention window.
 - **Flows came back empty, no error** → use the sankey chart type; the paths type can silently return nothing on a drop-off split.
@@ -211,7 +211,7 @@ Saved metrics (a behavior or a formula) write back to Mixpanel and can be reused
 > "Create a saved metric for [the core conversion or behavior we just analyzed]. Give it a clear name and base the definition on the events and filters from our analysis. Show me the definition before you save it."
 Same review discipline as Module 5: see the definition before it writes.
 
-#### → if it didn't work
+#### → if the user mentions "permission", "error", "can't create", "didn't save", or "charts missing"
 - **Permission error** → dashboard creation requires Project Owner or Admin.
 - **Name conflict** → rename and retry, or duplicate-and-rename to preserve the existing one.
 - **Charts didn't carry over** → the AI lost context; re-run the underlying queries and try again.
@@ -261,7 +261,7 @@ This uses `Get-Issues`. These are problems in the data itself, distinct from the
 Show the contrast. Scoped, names the input, defers the write:
 > "Find all events without a Lexicon description. For each, suggest a description from the event name and top three properties. Show me the suggestions before applying anything."
 
-#### → if a write failed or a check returned too much
+#### → if the user mentions "permission", "blocked", "too many results", "empty", "hangs", or "wrong suggestions"
 - **Write blocked (permission error)** → your role or data view access doesn't allow Lexicon writes on this project. Common on shared or company-wide projects. Run the audit there, apply fixes where you have write access.
 - **Findings overwhelming** → narrow by tag or group, or filter hidden and dropped first.
 - **Stale query hangs or comes back empty** → confirm it used `$all_events` and `$event_name`, and prefer the count over the full list.
@@ -282,8 +282,10 @@ The user can run the read-only health check, drill into a finding, and resolve a
 
 **Concept:** The highest-leverage thing MCP does is combine Mixpanel with your other connected tools (error monitoring, trackers, CRM, feedback) for synthesis that used to take a week of manual coordination. The discipline that makes it work: decompose into one tool per turn, quantitative first, qualitative last.
 
-**Try this:**
-> Pick one tool besides Mixpanel that you have connected. Run a 2-step chain: get a Mixpanel finding first, then a follow-up that pulls from the second tool to deepen it.
+**Try this (follow these steps in order):**
+> 1. Run a Mixpanel analysis that surfaces a finding worth investigating (a drop-off, an anomaly, a segment difference).
+> 2. Pick one other tool you have connected (error monitoring, CRM, issue tracker, feedback tool).
+> 3. Run a follow-up query against that second tool to deepen the Mixpanel finding — e.g. correlate the drop-off with error spikes, or look up churned accounts in CRM.
 
 **↑ Complete first message. Send nothing below until the user replies, asks, or errors.**
 
@@ -301,7 +303,7 @@ A feature shipped 3 weeks ago; leadership wants to know if it landed. Run these 
 #### → if the user asks why decomposition matters
 A single mega-prompt naming all five tools at once produces worse synthesis than walked steps. The AI needs each result before it can plan the next ask. Order matters too: reverse quantitative-first and you get reasoning in search of data.
 
-#### → if it didn't work
+#### → if the user mentions "not connected", "error", "auth", "can't access", or "tried everything at once"
 - **Second tool not connected** → confirm both servers are connected and authorized in the same client.
 - **Auth expired** → re-authorize the failing connector and retry.
 - **AI tried to plan all steps at once** → break it down further; one ask per turn.
