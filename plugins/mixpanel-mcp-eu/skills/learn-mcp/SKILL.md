@@ -1,5 +1,5 @@
 ---
-name: mcp-guide
+name: learn-mcp
 description: >
   Onboard users to the Mixpanel MCP server through guided, interactive modules.
   Use when the user asks "how do I use MCP", "what can I ask", "what should I
