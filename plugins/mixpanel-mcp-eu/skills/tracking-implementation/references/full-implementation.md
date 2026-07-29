@@ -321,20 +321,20 @@ Owner: <team or email>
 
 **Token injection:** Use the real project tokens collected in Phase 2 -- never write `'YOUR_PROJECT_TOKEN'` if the tokens are already in hand. If a dev/prod split exists, emit both initializations with the correct token for each environment.
 
-**Then surface the relevant SDK section(s) from `reference.md Section Phase 8 -- SDK Implementation Guide`:**
+**Then surface the relevant SDK section(s) from `sdk-snippets.md` (Full SDK Lifecycle Guide):**
 
 | Platform | Reference Section |
 |---|---|
-| JavaScript (Browser) | `reference.md Section JavaScript (Browser)` |
-| Python (server) | `reference.md Section Python (Server-Side)` |
-| Node.js (server) | `reference.md Section Node.js (Server-Side)` |
-| React Native | `reference.md Section React Native` |
-| iOS Swift | `reference.md Section iOS (Swift)` |
-| Android Kotlin | `reference.md Section Android (Kotlin)` |
-| Flutter | `reference.md Section Flutter` |
-| HTTP API | `reference.md Section HTTP API (Language-Agnostic)` |
+| JavaScript (Browser) | `sdk-snippets.md Section JavaScript (Browser)` |
+| Python (server) | `sdk-snippets.md Section Python (Server-Side)` |
+| Node.js (server) | `sdk-snippets.md Section Node.js (Server-Side)` |
+| React Native | `sdk-snippets.md Section React Native` |
+| iOS Swift | `sdk-snippets.md Section iOS (Swift)` |
+| Android Kotlin | `sdk-snippets.md Section Android (Kotlin)` |
+| Flutter | `sdk-snippets.md Section Flutter` |
+| HTTP API | `sdk-snippets.md Section HTTP API (Language-Agnostic)` |
 
-Each SDK section in reference.md covers the full lifecycle: install -> init -> track event -> super properties -> user profile -> identify -> reset.
+Each SDK section in sdk-snippets.md covers the full lifecycle: install -> init -> track event -> super properties -> user profile -> identify -> reset. For a platform not in the table, check https://docs.mixpanel.com/docs/tracking-methods/sdks.md for the full SDK list; if no SDK exists for the language, use the HTTP API.
 
 **If a codebase scan was run (Pre-Flight):** Do not produce generic code snippets. Write implementation code directly into the specific files identified during the scan:
 
