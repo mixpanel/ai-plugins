@@ -315,8 +315,7 @@ Key sections:
 - **Phase 2** -- Project setup steps, token-switching code, role permissions
 - **Phase 3** -- Full data model, property types, Group Analytics code
 - **Phase 4** -- Tracking plan methodology, vertical-specific events, template links
-- **Phase 5** -- Codebase Access Check
-- **Phase 6** -- SDK selection and CDP/warehouse integration; all per-SDK code (JS, Python, Node.js, React Native, iOS Swift, Android, Flutter, HTTP API) is in [sdk-snippets.md](references/sdk-snippets.md)
-- **Phase 7** -- Full identity flows (client-side and server-side), QA checklist
-- **Phase 8** -- Governance framework, pitfalls table, tracking plan column schema
+- **Phase 5** -- Tracking method selection, SDK detection, consent patterns, CDP/warehouse integration; all per-SDK code (JS, Python, Node.js, React Native, iOS Swift, Android, Flutter, HTTP API) is in [sdk-snippets.md](references/sdk-snippets.md)
+- **Phase 6** -- Full identity flows (client-side and server-side), QA checklist
+- **Phase 7** -- Governance framework, pitfalls table, tracking plan column schema
 - **Reference table** -- All key Mixpanel documentation URLs
