@@ -8,6 +8,8 @@ For any reference to `agents.md.template`, use this resource: [agents.md.templat
 
 For any reference to `reference.md`, use this resource: [reference.md](references/reference.md).
 
+For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](references/sdk-snippets.md).
+
 # Mixpanel Implementation
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
@@ -29,7 +31,7 @@ The sections below tell you what to ask, in what order, and what to do with the 
 
 ---
 
-Full guidance, all SDK code snippets, vertical-specific event examples, and governance detail are in [reference.md](references/reference.md). Read specific sections on demand as you work through each mode.
+Full guidance, vertical-specific event examples, and governance detail are in [reference.md](references/reference.md). All per-language SDK code snippets are in [sdk-snippets.md](references/sdk-snippets.md). Read specific sections on demand as you work through each mode.
 
 ---
 
@@ -307,14 +309,13 @@ All detailed guidance is in [reference.md](references/reference.md), organized b
 
 Key sections:
 
-- **Quick Start Reference** -- Minimal SDK snippets (init + track + identify/reset) for each platform
+- **Quick Start Reference** -- Points to [sdk-snippets.md](references/sdk-snippets.md) for minimal SDK snippets (init + track + identify/reset) for each platform
 - **Phase 0** -- Discovery questions and gate logic
 - **Phase 1** -- Full RAE Framework, Value Moment formula, 5M filter, KPI tables
 - **Phase 2** -- Project setup steps, token-switching code, role permissions
 - **Phase 3** -- Full data model, property types, Group Analytics code
 - **Phase 4** -- Tracking plan methodology, vertical-specific events, template links
-- **Phase 5** -- Codebase Access Check
-- **Phase 6** -- All SDK code (JS, Python, Node.js, React Native, iOS Swift, Android, HTTP API), CDP/warehouse integration
-- **Phase 7** -- Full identity flows (client-side and server-side), QA checklist
-- **Phase 8** -- Governance framework, pitfalls table, tracking plan column schema
+- **Phase 5** -- Tracking method selection, SDK detection, consent patterns, CDP/warehouse integration; all per-SDK code (JS, Python, Node.js, React Native, iOS Swift, Android, Flutter, HTTP API) is in [sdk-snippets.md](references/sdk-snippets.md)
+- **Phase 6** -- Full identity flows (client-side and server-side), QA checklist
+- **Phase 7** -- Governance framework, pitfalls table, tracking plan column schema
 - **Reference table** -- All key Mixpanel documentation URLs

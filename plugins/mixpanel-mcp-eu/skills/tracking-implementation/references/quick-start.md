@@ -209,7 +209,7 @@ mixpanel.init('YOUR_TOKEN', {
 });
 ```
 
-**Use the Quick Start Reference section at the top of `reference.md`** for minimal SDK snippets (init + track + identify/reset) for each platform. These provide the fastest path to working code without navigating the full SDK lifecycle guide.
+**Use the Quick Start Snippets section of `sdk-snippets.md`** for minimal SDK snippets (init + track + identify/reset) for each platform. These provide the fastest path to working code without navigating the full SDK lifecycle guide. For a language not listed there, check https://docs.mixpanel.com/docs/tracking-methods/sdks.md for the full SDK list, or fall back to the HTTP API section in `sdk-snippets.md`.
 
 **Token injection:** Use the real project token from Step 4 -- never write `'YOUR_PROJECT_TOKEN'` if the token is in hand.
 

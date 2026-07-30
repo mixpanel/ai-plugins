@@ -306,9 +306,9 @@ Owner: <team or email>
 
 **Decision gate (from Phase 0 and Phase 2 answers):**
 
-- Customer uses Segment/Rudderstack/mParticle -> use CDP integration, no new SDK -> see `reference.md Section Phase 8 -- Integration Pointers`
-- Customer uses Snowflake/BigQuery -> see `reference.md Section Phase 8 -- Warehouse Connectors`
-- EU or CA users flagged in Phase 2 -> surface the consent pattern from `reference.md Section Phase 8 -- Consent and Opt-In Tracking` before writing any initialization code
+- Customer uses Segment/Rudderstack/mParticle -> use CDP integration, no new SDK -> see `reference.md Section Integration Pointers (CDP / Existing Infrastructure)`
+- Customer uses Snowflake/BigQuery -> see `reference.md Section Warehouse Connectors (Snowflake / BigQuery)`
+- EU or CA users flagged in Phase 2 -> surface the consent pattern from `reference.md Section Consent and Opt-In Tracking` before writing any initialization code
 - Otherwise, ask: "Do you want to track from the server (backend), browser/app (client), or both?" -- or skip this question if the codebase scan already made the answer obvious
 
 **Tracking method recommendation:**
@@ -321,20 +321,20 @@ Owner: <team or email>
 
 **Token injection:** Use the real project tokens collected in Phase 2 -- never write `'YOUR_PROJECT_TOKEN'` if the tokens are already in hand. If a dev/prod split exists, emit both initializations with the correct token for each environment.
 
-**Then surface the relevant SDK section(s) from `reference.md Section Phase 8 -- SDK Implementation Guide`:**
+**Then surface the relevant SDK section(s) from `sdk-snippets.md` (Full SDK Lifecycle Guide):**
 
 | Platform | Reference Section |
 |---|---|
-| JavaScript (Browser) | `reference.md Section JavaScript (Browser)` |
-| Python (server) | `reference.md Section Python (Server-Side)` |
-| Node.js (server) | `reference.md Section Node.js (Server-Side)` |
-| React Native | `reference.md Section React Native` |
-| iOS Swift | `reference.md Section iOS (Swift)` |
-| Android Kotlin | `reference.md Section Android (Kotlin)` |
-| Flutter | `reference.md Section Flutter` |
-| HTTP API | `reference.md Section HTTP API (Language-Agnostic)` |
+| JavaScript (Browser) | `sdk-snippets.md Section JavaScript (Browser)` |
+| Python (server) | `sdk-snippets.md Section Python (Server-Side)` |
+| Node.js (server) | `sdk-snippets.md Section Node.js (Server-Side)` |
+| React Native | `sdk-snippets.md Section React Native` |
+| iOS Swift | `sdk-snippets.md Section iOS (Swift)` |
+| Android Kotlin | `sdk-snippets.md Section Android (Kotlin)` |
+| Flutter | `sdk-snippets.md Section Flutter` |
+| HTTP API | `sdk-snippets.md Section HTTP API (Language-Agnostic)` |
 
-Each SDK section in reference.md covers the full lifecycle: install -> init -> track event -> super properties -> user profile -> identify -> reset.
+Each SDK section in sdk-snippets.md covers the full lifecycle: install -> init -> track event -> super properties -> user profile -> identify -> reset. For a platform not in the table, check https://docs.mixpanel.com/docs/tracking-methods/sdks.md for the full SDK list; if no SDK exists for the language, use the HTTP API.
 
 **If a codebase scan was run (Pre-Flight):** Do not produce generic code snippets. Write implementation code directly into the specific files identified during the scan:
 
@@ -369,7 +369,7 @@ mixpanel.init('YOUR_TOKEN', {
 
 If Session Replay is enabled, add a verification step to the QA gate below: after deploying to dev, open Mixpanel -> Session Replay and confirm at least one session appears.
 
-**Post-deploy verification (after each new event or batch):** Beyond Live View, confirm the event appears in Reports for the expected date range (e.g. run a segmentation or Insights query filtered by the event name and today's date). Check that key properties are populating with expected values. Event and property names are case-sensitive -- zero results often mean a typo or casing mismatch. See `reference.md Section Phase 8 -- Post-Deploy Verification` for details.
+**Post-deploy verification (after each new event or batch):** Beyond Live View, confirm the event appears in Reports for the expected date range (e.g. run a segmentation or Insights query filtered by the event name and today's date). Check that key properties are populating with expected values. Event and property names are case-sensitive -- zero results often mean a typo or casing mismatch. See `reference.md Section Post-Deploy Verification` for details.
 
 **Output of this phase:** All tracking and initialization code written and placed in the codebase. At least one event confirmed arriving in Mixpanel Live View. Customer ready to wire up identity calls.
 
@@ -403,13 +403,13 @@ On logout              -> mixpanel.reset()
 4. Update super properties via `.register()`
 5. Track `sign_up_completed` event (AFTER identify -- so it's attributed correctly)
 
-**Server-side identity:** SDKs do not auto-generate `$device_id`. Store a UUID in a cookie. Pass `$device_id` on every pre-login event. Pass both `$device_id` and `$user_id` on the first post-login event. See `reference.md Section Phase 8 -- Server-Side Identity Flow` for full Python example.
+**Server-side identity:** SDKs do not auto-generate `$device_id`. Store a UUID in a cookie. Pass `$device_id` on every pre-login event. Pass both `$device_id` and `$user_id` on the first post-login event. See `reference.md Section Server-Side Identity Flow` for full Python example.
 
-**Full client-side flow** (signup -> logout -> re-open) is in `reference.md Section Phase 8 -- Client-Side Identity Flow`.
+**Full client-side flow** (signup -> logout -> re-open) is in `reference.md Section Client-Side Identity Flow`.
 
-**Identity checklist (quick validation):** Before proceeding, confirm: `identify()` was called on login/signup; profile attributes use `people.set()` not `track()`; `identify()` on re-open when already logged in (not every page load); stable unique ID (not email/device). Full checklist and QA: `reference.md Section Phase 8`.
+**Identity checklist (quick validation):** Before proceeding, confirm: `identify()` was called on login/signup; profile attributes use `people.set()` not `track()`; `identify()` on re-open when already logged in (not every page load); stable unique ID (not email/device). Full checklist and QA: `reference.md Section Phase 6 -- Identity Management`.
 
-**QA before production:** Run the ID Management QA Checklist from `reference.md Section Phase 8`.
+**QA before production:** Run the ID Management QA Checklist from `reference.md Section ID Management QA Checklist`.
 
 **Output of this phase:** Identity calls (`identify`, `reset`) placed in the correct locations. ID Management QA checklist passed in dev before any production deployment. Required before Phase 8.
 
@@ -504,7 +504,7 @@ For every event shipped, add: Description (one sentence: what triggers it, what 
 
 **Quarterly review:** Audit zero-volume events, check for missing Lexicon descriptions, validate naming conventions on new events.
 
-See `reference.md Section Phase 8` for: governance pitfalls table, tracking plan column schema, naming change management process.
+See `reference.md Section Phase 7 -- Data Governance` for: governance pitfalls table, tracking plan column schema, naming change management process.
 
 **Close:** After Phase 8, summarize the full implementation.
 
