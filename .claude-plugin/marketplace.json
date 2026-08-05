@@ -1,12 +1,29 @@
 {
   "name": "mixpanel",
+  "description": "Official Mixpanel plugins — engine-agnostic skills for analytics, dashboards, experiments, lexicon, and tracking implementation.",
   "owner": {
     "name": "Mixpanel"
   },
   "plugins": [
-    { "name": "mixpanel", "source": "./plugins/mixpanel", "description": "Mixpanel skills, engine-agnostic (MCP or headless SDK). Recommended." },
-    { "name": "mixpanel-mcp", "source": "./plugins/mixpanel-mcp" },
-    { "name": "mixpanel-mcp-eu", "source": "./plugins/mixpanel-mcp-eu" },
-    { "name": "mixpanel-mcp-in", "source": "./plugins/mixpanel-mcp-in" }
+    {
+      "name": "mixpanel",
+      "source": "./plugins/mixpanel",
+      "description": "Mixpanel skills, engine-agnostic (MCP or headless SDK). Recommended."
+    },
+    {
+      "name": "mixpanel-mcp",
+      "source": "./plugins/mixpanel-mcp",
+      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the US MCP server; frozen at v0.1.1."
+    },
+    {
+      "name": "mixpanel-mcp-eu",
+      "source": "./plugins/mixpanel-mcp-eu",
+      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the EU MCP server; frozen at v0.1.1."
+    },
+    {
+      "name": "mixpanel-mcp-in",
+      "source": "./plugins/mixpanel-mcp-in",
+      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the India MCP server; frozen at v0.1.1."
+    }
   ]
 }
