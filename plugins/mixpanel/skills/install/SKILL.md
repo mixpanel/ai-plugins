@@ -31,11 +31,11 @@ The bundled references defer to the live Mixpanel docs they cite — on any conf
 
 ## Step 0 — Detect existing state
 
-Run the detection from ENGINE.md:
+Run the detection from ENGINE.md — if Mixpanel MCP tools are already listed in this session that's the answer; otherwise run the plugin's `scripts/detect-engine.sh` (one command):
 
-1. A Mixpanel MCP server already connected (or registered in the client's MCP config) → tell the user the MCP engine is already set up (name the region from the server URL) and ask whether to keep it or switch. If they keep it, stop here.
-2. Otherwise, `mixpanel-headless` importable in the project's Python → same: report it and ask keep-or-switch.
-3. Nothing detected → continue to Step 1.
+1. `engine=mcp` → tell the user the MCP engine is already set up (name the region) and ask whether to keep it or switch. If they keep it, stop here.
+2. `engine=headless` → same: report it and ask keep-or-switch.
+3. `engine=none` → continue to Step 1.
 
 ## Step 1 — Choose an engine
 
@@ -53,8 +53,9 @@ Ask with the client's multiple-choice question UI (one question, three options):
 
 ## Step 2b — Headless path
 
-1. Verify the Python environment, install the SDK, and set up service-account authentication following [`references/headless-setup.md`](references/headless-setup.md). Credentials go in environment variables — never in tracked files.
-2. **Verify** with a trivial SDK call (import + a minimal authenticated operation). On failure, surface the exact error and fix auth before persisting.
+1. Run the one-line availability check from [`references/headless-setup.md`](references/headless-setup.md); install the SDK if it's missing.
+2. Authenticate per the reference: `mp login` picks the right flow from the environment (browser OAuth when interactive; service-account or bearer-token env vars when not). Credentials never go in tracked files.
+3. **Verify** with `mp account test`. On failure, surface the exact error and fix auth before wrapping up.
 
 ## Step 2c — Own-integration path
 
@@ -63,4 +64,4 @@ Nothing to install and nothing to interrogate — assume the user provides the c
 ## Step 3 — Confirm and wrap up
 
 1. Re-run the verification for the chosen path and summarize what was installed (engine, region, where it lives — e.g. the repo's `.mcp.json` or the Python environment). Nothing else is persisted; the other skills detect this installation directly.
-2. Suggest a next step: try a skill like `analyze-report`, `deep-research`, or `tracking-implementation`.
+2. Suggest a next step: try a skill like `analyze-report`, `deep-research`, or `tracking-implementation`. If the headless engine was installed, also mention the SDK's companion plugin (see [`references/headless-setup.md`](references/headless-setup.md)).

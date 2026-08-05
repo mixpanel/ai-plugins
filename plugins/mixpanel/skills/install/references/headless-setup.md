@@ -4,8 +4,14 @@ Source: **https://docs.mixpanel.com/docs/mixpanel-headless** and the quickstart 
 
 ## Documentation
 
+- **Base instructions ship with the SDK**: every installation bundles agent instructions at `mixpanel_headless/CLAUDE.md` — the auth model, entry points, and full method catalog, always matching the installed version. Read them before your first call:
+
+  ```bash
+  python3 -c "import mixpanel_headless, pathlib; print((pathlib.Path(mixpanel_headless.__file__).parent / 'CLAUDE.md').read_text())"
+  ```
+
 - Web: https://docs.mixpanel.com/docs/mixpanel-headless (overview) and https://mixpanel.github.io/mixpanel-headless/ (full docs: getting started, API reference, CLI reference, user guide).
-- Built-in: the SDK is self-documenting — the `mp` CLI has comprehensive `--help` on every command (start with `mp --help`), and every Python method carries a complete docstring (`help()` on any object). Prefer these over guessing an API surface.
+- Also self-documenting: the `mp` CLI has comprehensive `--help` on every command, and every Python method carries a complete docstring (`help()` on any object). Prefer these over guessing an API surface.
 
 ## What it is
 
@@ -13,34 +19,53 @@ An open-source Python SDK that exposes the full Mixpanel platform — every quer
 
 ## Install
 
-1. Verify the environment:
-   ```bash
-   python3 --version   # 3.9+
-   pip3 --version
-   ```
-2. Install into the project's existing Python environment (venv/poetry/uv if the project has one):
-   ```bash
-   pip install mixpanel-headless
-   ```
-
-## Authenticate
-
-Follow the quickstart linked from the docs page. Authentication uses Mixpanel **service-account credentials** supplied via environment variables — set them in the user's shell profile or the project's untracked env file (e.g. `.env`, confirmed gitignored). **Never** write credentials into any tracked file.
-
-The user creates a service account in Mixpanel: Organization Settings → Service Accounts (they need admin/owner rights, or should ask an admin).
-
-## Verify
-
-Run a trivial call to prove import + auth work, e.g.:
+One command tells you whether it's already available — no other environment probing needed:
 
 ```bash
 python3 -c "import mixpanel_headless as mh; print(mh.__version__)"
 ```
 
-then a minimal authenticated operation per the quickstart (e.g. listing projects). On failure:
+If it prints a version, the SDK is installed — skip to Authenticate. Otherwise install it into the project's existing Python environment (venv/poetry/uv if the project has one; requires Python 3.9+):
 
-- `ImportError` → wrong interpreter/venv; confirm which `python3` the project uses and reinstall there.
-- Auth error → credentials missing/typoed in env vars, or the service account lacks access to the target project.
+```bash
+pip install mixpanel-headless
+```
+
+## Authenticate
+
+One command handles every auth path — `mp login` reads the environment and picks the right flow:
+
+```bash
+mp login
+```
+
+- `MP_USERNAME` + `MP_SECRET` set → service account, no browser (region auto-probes us → eu → in).
+- `MP_OAUTH_TOKEN` set → static bearer token, no browser (the CI/agent mode).
+- Neither → browser OAuth (PKCE), with guided region/project/name resolution. Region defaults to **US** — pass `--region eu|in` for other clusters. This path is interactive: have the user run it themselves (in Claude Code, typing `! mp login` runs it in-session).
+
+Credentials and tokens live under `~/.mp/` — nothing touches the project. For non-interactive use, the user sets the env vars first (service account from Mixpanel → Organization Settings → Service Accounts, plus `MP_PROJECT_ID` and `MP_REGION`) in their shell profile or an untracked env file (e.g. `.env`, confirmed gitignored). **Never** write credentials into any tracked file.
+
+## Verify
+
+```bash
+mp account test
+```
+
+(one command; add the account name if there are several). On failure:
+
+- `ImportError` / `mp: command not found` → wrong interpreter/venv; confirm which `python3` the project uses and reinstall there.
+- Auth error → OAuth: re-run `mp login`. Service account: env vars missing/typoed, or the account lacks access to the target project.
+
+## Companion plugin
+
+The SDK ships its own Claude Code plugin with deeper code-driven analysis skills (`mixpanelyst`, `dashboard-expert`, `setup`) that write Python using `mixpanel_headless` + pandas:
+
+```bash
+claude plugin marketplace add mixpanel/mixpanel-headless
+claude plugin install mixpanel-headless
+```
+
+Optional — suggest it to users who want in-depth data-analyst workflows on top of this engine.
 
 ## Rate limits
 
