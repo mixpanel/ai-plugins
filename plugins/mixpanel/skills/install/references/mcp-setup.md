@@ -1,6 +1,6 @@
 # Mixpanel MCP server setup
 
-Source: **https://docs.mixpanel.com/docs/mcp** (per-client connection instructions, regional URLs, OAuth and service-account auth, available tools, rate limits).
+Documentation: **https://docs.mixpanel.com/docs/mcp** — the single source for the MCP server (per-client connection instructions, regional URLs, OAuth and service-account auth, available tools, rate limits). The connected server's tools also self-describe: their descriptions and parameters are the API reference.
 
 ## Regional URLs
 

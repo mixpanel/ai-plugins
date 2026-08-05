@@ -27,7 +27,7 @@ Both windows are computed from Q1-daily. The weekly test uses 8 vs 8 weeks — t
 
 ## Phase 1 — Fetch series (2 queries, parallel)
 
-Fire both `cap:run-query` calls simultaneously (resolve `cap:run-query` via the session tool map — see `references/tools.md`):
+Fire both queries simultaneously:
 
 | Query     | Window        | Granularity | Comparison                     |
 | --------- | ------------- | ----------- | ------------------------------ |

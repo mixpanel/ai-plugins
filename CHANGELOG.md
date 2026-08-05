@@ -5,12 +5,12 @@
 New general-purpose plugin: **`mixpanel`**.
 
 - One plugin for all regions and access methods. The engine — Mixpanel MCP
-  server (US/EU/India) or the `mixpanel-headless` Python SDK — is set up per
-  project with the new `install` skill; skills detect the installed engine,
+  server (US/EU/India), the `mixpanel-headless` Python SDK, or the user's
+  own integration — is set up per project with the new `install` skill; skills detect the installed engine,
   no config file needed.
-- New `ENGINE.md` convention: skills express Mixpanel actions as `cap:*`
-  capabilities resolved against the configured engine; no hardcoded tool
-  names or URLs.
+- New `ENGINE.md` convention: skills describe Mixpanel actions in plain
+  language, executed through the detected engine; no hardcoded tool names
+  or URLs.
 - All 11 skills migrated from `mixpanel-mcp` and decoupled from any specific
   engine.
 - Legacy plugins `mixpanel-mcp`, `mixpanel-mcp-eu`, `mixpanel-mcp-in` are

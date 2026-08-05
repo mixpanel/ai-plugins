@@ -2,6 +2,11 @@
 
 Source: **https://docs.mixpanel.com/docs/mixpanel-headless** and the quickstart it links on GitHub.
 
+## Documentation
+
+- Web: https://docs.mixpanel.com/docs/mixpanel-headless (overview) and https://mixpanel.github.io/mixpanel-headless/ (full docs: getting started, API reference, CLI reference, user guide).
+- Built-in: the SDK is self-documenting — the `mp` CLI has comprehensive `--help` on every command (start with `mp --help`), and every Python method carries a complete docstring (`help()` on any object). Prefer these over guessing an API surface.
+
 ## What it is
 
 An open-source Python SDK that exposes the full Mixpanel platform — every query engine, report type, and configuration — as a single Python object. Built for coding agents and developers: anything that writes or generates Python to call Mixpanel. Distinct from the MCP server (which serves conversational clients).

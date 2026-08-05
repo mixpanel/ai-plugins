@@ -18,7 +18,7 @@ Classify the metric per the `metric_type` table in `SKILL.md` and store `metric_
 
 ## Phase 1 — Fetch series (2 queries, parallel)
 
-Fire both `cap:run-query` calls simultaneously (resolve `cap:run-query` via the session tool map — see `references/tools.md`):
+Fire both queries simultaneously:
 
 | Query | Window | Granularity | Purpose |
 | --- | --- | --- | --- |
@@ -27,7 +27,7 @@ Fire both `cap:run-query` calls simultaneously (resolve `cap:run-query` via the 
 
 Use the `query_template` from the metric object; override only `dateRange` and `unit` (granularity). Do not re-apply filters — they're already baked in.
 
-Build the `cap:run-query` body from `query_template` with only `dateRange` and `unit` (granularity) overridden. Use `timeComparison` when a single call can cover both windows.
+Build the query body from `query_template` with only `dateRange` and `unit` (granularity) overridden. Use `timeComparison` when a single call can cover both windows.
 
 ---
 

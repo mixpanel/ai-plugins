@@ -20,7 +20,7 @@ metadata:
 
 # Monitor Metrics
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`. Every Mixpanel action in this skill is a `cap:*` capability key — resolve it through the session capability map (ENGINE.md), never a literal tool name.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 A focused diagnostic skill for a single metric at a time. Works for any project the user has access to. Requires a configured Mixpanel engine. Answers three questions cleanly:
 
@@ -108,16 +108,15 @@ Never output a wall of tables or raw query results. The CSA is the audience, and
 
 ## Execution steps
 
-The tool-resolution convention lives in `references/tools.md`; the shared setup and board-handoff steps live in `references/execution.md`:
+The shared setup and board-handoff steps live in `references/execution.md`:
 
-- **Step −1** — Build the session capability map (once per session; per the plugin's `ENGINE.md`)
 - **Step 0** — Input validation (project + metric resolution)
 - **Step 1** — Metric ingestion (Paths A/B, normalized metric series object)
 - **Step 1.5** — Project profile resolution (filter + instrumentation checks)
 - **Step 2** — Post-diagnosis handoff and board creation
 - **Step 3** — Post-RCA board append
 
-Step −1 (tool map) runs once per session before anything else. Steps 0, 1, and 1.5 run for `metric-anomaly` and `metric-drift` before any detection query. `metric-rca` does not re-run them — it consumes the diagnosis payload. Read `references/tools.md` and `references/execution.md` before running a command.
+Steps 0, 1, and 1.5 run for `metric-anomaly` and `metric-drift` before any detection query. `metric-rca` does not re-run them — it consumes the diagnosis payload. Read `references/execution.md` before running a command.
 
 ---
 
@@ -136,7 +135,6 @@ This skill is deliberately narrow: one metric, one diagnosis, one attribution pa
 
 ## Files
 
-- `references/tools.md` — pointer to the plugin's `ENGINE.md`: capability keys + the once-per-session capability map (Step −1)
 - `references/execution.md` — shared setup and board handoff (Steps 0, 1, 1.5, 2, 3)
 - `commands/metric-anomaly.md` — point-in-time anomaly detection (additive seasonal baseline + robust residual; 2 queries; 7-day hourly + 30-day daily views)
 - `commands/metric-drift.md` — trend-level drift detection (mean shift + variance ratio; 2 queries; 60-day daily + 16-week weekly views; owns shape classification)

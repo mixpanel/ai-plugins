@@ -45,7 +45,7 @@ If both payloads exist in the session (user ran anomaly then drift), prefer the 
 | **Branch 4 — Cohort comparison** | Run the metric filtered to the cohorts the user names to find concentration in named user segments | The user named one or more cohorts (or referenced a cohort in their ask) |
 | **Branch 5 — Calendar context** | Check whether flagged dates line up with festivals, launches, category events in `business_context` | `business_context` provided |
 
-Run all selected branches **in parallel** via concurrent `cap:run-query` calls (resolve `cap:run-query` and every other `cap:*` here via the session tool map — see `references/tools.md`). Each branch can issue multiple queries; batch within a branch sequentially if one query's result informs the next (Branch 2's second level depends on the first).
+Run all selected branches **in parallel** via concurrent queries. Each branch can issue multiple queries; batch within a branch sequentially if one query's result informs the next (Branch 2's second level depends on the first).
 
 ---
 
@@ -53,7 +53,7 @@ Run all selected branches **in parallel** via concurrent `cap:run-query` calls (
 
 Only runs for `ratio`, `funnel`, and `retention` metrics. The question: _is the movement in the numerator, the denominator, or a specific step?_
 
-**If the metric came from a saved Mixpanel Metric** (`metric_id` is set on the payload), read the component events, formula, and filters straight from the `cap:get-metric` definition rather than re-deriving them — the definition is authoritative and avoids guessing the numerator/denominator. Fall back to the derivation below only when no saved-Metric definition is available.
+**If the metric came from a saved Mixpanel Metric** (`metric_id` is set on the payload), read the component events, formula, and filters straight from the saved Metric definition rather than re-deriving them — the definition is authoritative and avoids guessing the numerator/denominator. Fall back to the derivation below only when no saved-Metric definition is available.
 
 ### For `ratio`
 
@@ -65,7 +65,7 @@ Only runs for `ratio`, `funnel`, and `retention` metrics. The question: _is the 
 
 ### For `funnel`
 
-1. Run the **same funnel definition** twice as `report_type=funnels` via `cap:run-query`: once for the recent (drift/anomaly) window, once for the baseline window. The native funnels response returns step conversion rates and absolute counts per step.
+1. Run the **same funnel definition** twice as `report_type=funnels`: once for the recent (drift/anomaly) window, once for the baseline window. The native funnels response returns step conversion rates and absolute counts per step.
 2. For each step pair, compute the conversion-rate delta between recent and baseline.
 3. Flag the **specific step pair** with the largest absolute conversion drop. One step usually owns the drop; surface that pair as the headline finding.
 4. If the funnel has step-level filters (e.g. property filters on individual steps), do not decompose into standalone event counts — the filters change the meaning. The native funnels query is the only faithful comparison.
@@ -162,7 +162,7 @@ If the top 5 users account for >30% of the movement → strong user-driven outli
 
 If the top 3 distinct_ids each account for ≥10% of the movement individually, offer the user a follow-up: _"Top user(s) `<distinct_id>` drove [X]% of the flagged window. Want me to pull their session replays from that window so you can see what they did?"_
 
-If the user says yes, call `cap:session-replays` for each flagged distinct_id with `from_date` and `to_date` set to the flagged window. Cap at 3 distinct_ids and 5 replays per user. Surface the replay URLs + timestamps in the findings card under the Branch 3 section.
+If the user says yes, fetch session replays for each flagged distinct_id with `from_date` and `to_date` set to the flagged window. Cap at 3 distinct_ids and 5 replays per user. Surface the replay URLs + timestamps in the findings card under the Branch 3 section.
 
 This is **opt-in only** — do not pull replays automatically. Replays add value when the customer wants the "what did they actually do" answer, but they're noisy if Session Replay isn't widely enabled in the project. Ask once, run if confirmed, skip if declined.
 
@@ -174,12 +174,12 @@ Goal: is the movement concentrated in a specific user cohort the customer alread
 
 ### Step 1 — Identify candidate cohorts
 
-Branch 4 needs a cohort-listing capability to auto-discover cohorts. If the session tool map (Step −1) resolved no such capability, do not attempt auto-discovery — source cohorts from the user instead:
+Branch 4 needs to list the project's cohorts to auto-discover them. If the engine offers no way to list cohorts, do not attempt auto-discovery — source cohorts from the user instead:
 
 1. If the user named cohorts in their original ask (e.g. "is this happening in our power users?"), use those.
 2. Otherwise, ask once: _"Want me to compare against any saved cohorts? If so, name them (or share their cohort IDs) and I'll filter the metric to each."_
 
-If the user names no cohorts (or declines) → record _"Branch 4 skipped — no cohorts named; no cohort-listing capability resolved for auto-discovery."_ and continue.
+If the user names no cohorts (or declines) → record _"Branch 4 skipped — no cohorts named; engine cannot list cohorts for auto-discovery."_ and continue.
 
 ### Step 2 — Resolve the named cohorts
 
@@ -189,9 +189,9 @@ Surface the cohort names in the findings — the customer recognizes their own c
 
 ### Step 3 — Run the metric filtered by each cohort
 
-For each selected cohort, run the same `query_template` as the headline metric, with one cohort-membership filter added. Resolve the exact filter shape from `cap:query-schema`. If the schema exposes cohort membership as a filter (typically on `distinct_id` referencing the cohort_id), use it; if it doesn't, skip the branch and note that cohort filtering isn't supported by the current query schema.
+For each selected cohort, run the same `query_template` as the headline metric, with one cohort-membership filter added. Resolve the exact filter shape from the query schema. If the schema exposes cohort membership as a filter (typically on `distinct_id` referencing the cohort_id), use it; if it doesn't, skip the branch and note that cohort filtering isn't supported by the current query schema.
 
-Run all cohort queries in parallel via concurrent `cap:run-query` calls. Each query covers the same date window the source command used (drift window or anomaly window).
+Run all cohort queries in parallel. Each query covers the same date window the source command used (drift window or anomaly window).
 
 ### Step 4 — Score and rank
 
@@ -207,7 +207,7 @@ A cohort is **important** if either:
 | Situation | Response |
 | --- | --- |
 | User names no cohorts | Skip branch, record reason. |
-| A cohort filter fails in `cap:run-query` (cohort schema mismatch) | Retry once. If still failing, skip that cohort, continue others, note in branch coverage. |
+| A cohort query fails (cohort schema mismatch) | Retry once. If still failing, skip that cohort, continue others, note in branch coverage. |
 | All cohort queries fail | Skip branch, note "Branch 4 skipped — cohort filtering failed across all cohorts." |
 
 ---

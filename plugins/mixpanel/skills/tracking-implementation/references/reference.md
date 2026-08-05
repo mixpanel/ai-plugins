@@ -1333,7 +1333,7 @@ After deploying a new event (or batch), verify it is flowing correctly beyond a 
 1. **Confirm the event in Reports** -- In the dev project, run an Insights or Segmentation report filtered by the exact event name and a date range that includes the deploy (e.g. today). Zero results usually mean the event is not firing, or there is a typo or casing mismatch (Mixpanel event names are case-sensitive).
 2. **Validate property values** -- In Lexicon or Reports, check that key properties on the event are populating with expected values. If a property is missing or shows unexpected values, the trigger or property names may be wrong (property names are also case-sensitive).
 
-If the detected engine provides query capabilities (`cap:run-query`, `cap:property-values` per the plugin's ENGINE.md), use them to confirm event volume and property value distribution. Otherwise, direct the customer to Mixpanel Reports and Lexicon to run these checks.
+If a Mixpanel engine is detected (per the plugin's ENGINE.md), use it to confirm event volume and property value distribution. Otherwise, direct the customer to Mixpanel Reports and Lexicon to run these checks.
 
 ---
 
