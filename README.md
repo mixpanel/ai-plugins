@@ -55,8 +55,6 @@ The original region-specific plugins — `mixpanel-mcp`, `mixpanel-mcp-eu`, and 
 claude plugin marketplace add mixpanel/ai-plugins@v0.1.1
 ```
 
-Never move or delete the `v0.1.1` tag — it is the pinned home of the legacy plugins.
-
 ## Contributing
 
 To propose a plugin, open a pull request — we prefer **one plugin per PR** so reviews stay focused, and we'll merge them as they're ready rather than batching.
