@@ -14,11 +14,13 @@ description: >
   "audit my experiment". Do NOT use for plain feature-flag rollouts with no
   measurement criterion — that belongs to the `manage-feature-flags` skill.
 license: Apache-2.0
+metadata:
+  engine-required: "true"
 ---
 
 # Manage Experiment
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella, picked by experiment phase (the state→command mapping lives in the **Canonical commands** section below).
 

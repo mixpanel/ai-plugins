@@ -10,25 +10,29 @@ capability map.
 A skill's only mode concern is **interactive vs non-interactive** (can it ask the
 user questions right now?). Engine differences end at capability resolution.
 
-## Skill marker convention (CI-enforced)
+## Skill tag convention (CI-enforced)
 
-Every SKILL.md in this plugin must declare its engine dependency with exactly
-one of these markers in the first 40 lines (right under the title):
+Every SKILL.md in this plugin declares whether it needs an engine, in
+frontmatter (the `metadata` field is part of the Agent Skills spec):
 
-```markdown
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+```yaml
+metadata:
+  engine-required: "true"   # or "false" for skills that never touch Mixpanel data
 ```
 
-or, for skills that never touch Mixpanel data:
+When `"true"`, the body must also carry a one-line pointer right under the
+title — frontmatter metadata is never loaded into model context, so the body
+line is what the model actually follows:
 
 ```markdown
-> **No Mixpanel engine required.**
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 ```
 
-Skills may append short skill-specific notes to the marker line (e.g.
+Skills may append short skill-specific notes to that line (e.g.
 monitor-metrics adds its `cap:*` rule). `scripts/check-engine-markers.sh`
-enforces this in CI — a skill with neither marker fails, so a new skill can't
-ship without engine resolution.
+enforces both in CI — a skill without the tag fails, so a new skill can't
+ship without deciding, and an engine skill whose body forgets the pointer
+fails too.
 
 ---
 

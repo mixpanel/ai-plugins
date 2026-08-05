@@ -13,11 +13,13 @@ description: >
   `manage-lexicon`). Requires a configured Mixpanel engine — run
   /mixpanel:install if not set up.
 compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). No other connectors required."
+metadata:
+  engine-required: "true"
 ---
 
 # Manage Boards
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 Top-level router: validate project → route command → handle return.
 

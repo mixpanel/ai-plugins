@@ -10,11 +10,13 @@ description: >
   queries, tracking setup, experiment analysis, or Lexicon management — use
   the dedicated skills for those tasks.
 license: Apache-2.0
+metadata:
+  engine-required: "true"
 ---
 
 # Mixpanel MCP Guide
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) — if none is configured, direct the user to `/mixpanel:install` first. This skill applies only when the engine is `mcp`: for `headless`, point the user to https://docs.mixpanel.com/docs/mixpanel-headless and exit; for `custom`, their own integration docs apply.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md); if unconfigured, run `/mixpanel:install` first. MCP engine only: for `headless`, point the user to https://docs.mixpanel.com/docs/mixpanel-headless and exit; for `custom`, their own integration docs apply.
 
 Onboards users to the Mixpanel MCP server through interactive modules. One concept, one prompt, one result at a time.
 

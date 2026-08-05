@@ -82,10 +82,10 @@ All skill development happens in **`plugins/mixpanel/skills/`**.
 - Skills must stay **engine-agnostic**: no hardcoded MCP tool names or URLs.
   Express Mixpanel actions as capabilities and follow the conventions in
   [`plugins/mixpanel/ENGINE.md`](plugins/mixpanel/ENGINE.md).
-- Every skill must declare an **engine marker** right under its title —
-  `> **Requires a Mixpanel engine.** …` or `> **No Mixpanel engine required.**`
-  (exact wording in ENGINE.md). CI runs `scripts/check-engine-markers.sh` and
-  fails skills that declare neither.
+- Every skill must declare `engine-required: "true"|"false"` in its
+  frontmatter `metadata`, and engine skills carry a one-line ENGINE.md pointer
+  under the title (details in ENGINE.md). CI runs
+  `scripts/check-engine-markers.sh` and fails skills that skip either.
 
 ### Before opening the PR
 

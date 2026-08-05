@@ -15,11 +15,13 @@ description: >
   Do NOT use for: deleting event data or user profiles; dashboard cleanup;
   cohort tagging; customer health scoring. Requires a configured
   Mixpanel engine — run /mixpanel:install if not set up.
+metadata:
+  engine-required: "true"
 ---
 
 # Manage Lexicon
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 This skill manages a Mixpanel project's Lexicon — the registry of tracked events and properties. It scores metadata quality, bulk-enriches missing descriptions / display names / tags, resets metadata, triages data quality issues, and renames or deletes tags. It runs as a single interactive session per project; do not invoke in parallel for the same project.
 

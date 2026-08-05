@@ -14,11 +14,13 @@ description: >
   the movement is real. Do NOT trigger for portfolio health checks (use
   `weekly-pulse`) or adoption reports (use `gtm-customer-intelligence`).
   Requires a configured Mixpanel engine — run /mixpanel:install if not set up.
+metadata:
+  engine-required: "true"
 ---
 
 # Monitor Metrics
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`. Every Mixpanel action in this skill is a `cap:*` capability key — resolve it through the session capability map (ENGINE.md), never a literal tool name.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`. Every Mixpanel action in this skill is a `cap:*` capability key — resolve it through the session capability map (ENGINE.md), never a literal tool name.
 
 A focused diagnostic skill for a single metric at a time. Works for any
 project the user has access to. Requires a configured Mixpanel engine. Answers three

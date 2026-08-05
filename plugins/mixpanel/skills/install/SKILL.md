@@ -14,11 +14,13 @@ description: >
   queries. Interactive — asks the user to choose; do not run in
   non-interactive sessions.
 compatibility: "Works in any project. Configures the engine all other Mixpanel skills use."
+metadata:
+  engine-required: "false"
 ---
 
 # Mixpanel Install
 
-> **No Mixpanel engine required.** This skill is what *configures* the engine.
+> **No engine required** — this skill is what *configures* the engine.
 
 Configure how this project talks to Mixpanel. The choice — the **engine** — is
 written to `.claude/mixpanel.json` at the project root; every other skill in

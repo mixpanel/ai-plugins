@@ -2,11 +2,13 @@
 name: create-dashboard
 description: Creates a well-designed Mixpanel dashboard. Use when the user asks you to build, create, or design a dashboard, or when you need to present findings from an investigation as a live dashboard. Handles layout, text cards, report validation, and narrative structure.
 license: Apache-2.0
+metadata:
+  engine-required: "true"
 ---
 
 # Dashboard Creation
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 Your job is to design a coherent analytical narrative, not just drop reports into rows.
 

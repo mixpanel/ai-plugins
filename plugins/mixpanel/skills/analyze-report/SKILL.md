@@ -17,11 +17,13 @@ description: >
   this change" questions, use monitor-metrics). Requires a configured
   Mixpanel engine — run /mixpanel:install if not set up.
 compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). Works for any project the user has access to."
+metadata:
+  engine-required: "true"
 ---
 
 # Mixpanel Analyze Report
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 Take a Mixpanel report or chart that already exists (or just got built)
 and turn it into a one-screen summary the customer can act on. The skill

@@ -7,11 +7,13 @@ description: >
   AI-readiness: "set us up for Mixpanel AI", "how ready are we for the agent".
   Not for dashboards or metrics. Requires a configured Mixpanel
   engine — run /mixpanel:install if not set up.
+metadata:
+  engine-required: "true"
 ---
 
 # Mixpanel AI Readiness
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 This skill gets a customer's Mixpanel setup ready for AI assistants (the in-product agent and MCP clients). "Ready" means two layers are in place:
 

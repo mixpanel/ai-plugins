@@ -2,11 +2,13 @@
 name: deep-research
 description: Conducts a structured metric investigation in Mixpanel. Use when the user asks why a metric changed, what's driving a trend, requests a "deep dive" or "root cause," or wants to understand a phenomenon in their data. Walks through project / event / property scoping, plan confirmation, and an iterative query → interpret → hypothesise loop.
 license: Apache-2.0
+metadata:
+  engine-required: "true"
 ---
 
 # Deep Research / Metric Investigation
 
-> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
 
 This skill is a structured investigation, not a one-shot answer.
 
