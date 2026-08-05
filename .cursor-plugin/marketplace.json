@@ -9,21 +9,11 @@
       "name": "mixpanel",
       "source": "./plugins/mixpanel",
       "description": "Mixpanel skills, engine-agnostic (MCP or headless SDK). Recommended."
-    },
-    {
-      "name": "mixpanel-mcp",
-      "source": "./plugins/mixpanel-mcp",
-      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the US MCP server; frozen at v0.1.1."
-    },
-    {
-      "name": "mixpanel-mcp-eu",
-      "source": "./plugins/mixpanel-mcp-eu",
-      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the EU MCP server; frozen at v0.1.1."
-    },
-    {
-      "name": "mixpanel-mcp-in",
-      "source": "./plugins/mixpanel-mcp-in",
-      "description": "DEPRECATED — install 'mixpanel' instead. Legacy plugin bundling the India MCP server; frozen at v0.1.1."
     }
-  ]
+  ],
+  "renames": {
+    "mixpanel-mcp": "mixpanel",
+    "mixpanel-mcp-eu": "mixpanel",
+    "mixpanel-mcp-in": "mixpanel"
+  }
 }

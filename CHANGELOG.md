@@ -13,9 +13,11 @@ New general-purpose plugin: **`mixpanel`** (engine-agnostic).
   names or URLs.
 - All 11 skills migrated from `mixpanel-mcp` and made engine-agnostic.
 - Legacy plugins `mixpanel-mcp`, `mixpanel-mcp-eu`, `mixpanel-mcp-in` are
-  **deprecated** and frozen at tag `v0.1.1`. They keep working; pin the
-  marketplace with `claude plugin marketplace add mixpanel/ai-plugins@v0.1.1`
-  to stay on the pre-restructure state.
+  **retired**: removed from the marketplace and auto-migrated to `mixpanel`
+  via the `renames` map (Claude Code ≥ 2.1.193). Their source lives at tag
+  `v0.1.1`; pin the marketplace with
+  `claude plugin marketplace add mixpanel/ai-plugins@v0.1.1` to stay on the
+  pre-restructure state.
 
 ## v0.1.1 — 2025-2026 (legacy, frozen)
 

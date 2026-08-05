@@ -49,52 +49,39 @@ Once installed, skills appear in **Cursor Settings → Rules** under the **Agent
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`review-skill`](.claude/skills/review-skill/) | Reviews a skill against a weighted quality rubric (8 dimensions, 27 checks) and produces a score with actionable issues. Run `/review-skill <skill-name>` before requesting a code review. |
 
-## Legacy plugins (deprecated)
+## Legacy plugins (retired)
 
 The original region-specific plugins — `mixpanel-mcp`, `mixpanel-mcp-eu`, and
-`mixpanel-mcp-in` — are deprecated in favor of `mixpanel`, where region is a
-configuration choice instead of a separate plugin. They still install and work,
-and are **frozen at version 0.1.1** (tag [`v0.1.1`](https://github.com/mixpanel/ai-plugins/releases/tag/v0.1.1)):
-existing installs will never receive breaking changes. To pin your marketplace
-to the pre-restructure state entirely:
+`mixpanel-mcp-in` — are retired in favor of `mixpanel`, where region is a
+configuration choice instead of a separate plugin.
+
+- **Existing installs migrate automatically**: the marketplace maps the old
+  names to `mixpanel` (via `renames`, Claude Code ≥ 2.1.193). On your next
+  marketplace update you'll see a one-line rename notice; then run
+  `/mixpanel:install` once to configure your engine and region.
+- **To stay on the old plugins**, pin your marketplace to the pre-restructure
+  state (tag [`v0.1.1`](https://github.com/mixpanel/ai-plugins/releases/tag/v0.1.1)):
 
 ```bash
 claude plugin marketplace add mixpanel/ai-plugins@v0.1.1
 ```
 
-After switching to `mixpanel`, uninstall the legacy plugin — running both
-installs duplicate skills that can double-trigger.
+Never move or delete the `v0.1.1` tag — it is the pinned home of the legacy
+plugins.
 
 ## Contributing
 
 To propose a plugin, open a pull request — we prefer **one plugin per PR** so reviews stay focused, and we'll merge them as they're ready rather than batching.
 
-### Setup
-
-After cloning, enable the git hooks:
-
-```bash
-make setup
-```
-
-This configures a pre-commit hook that blocks changes to the frozen legacy plugins.
-
 ### Editing skills
 
 All skill development happens in **`plugins/mixpanel/skills/`**.
 
-- The legacy plugin directories (`plugins/mixpanel-mcp*`) are frozen at tag
-  `v0.1.1` — CI fails any PR that touches them (`make check-legacy-frozen`
-  runs the same check locally). Never move or delete the `v0.1.1` tag; the
-  freeze check diffs against it.
-- The marketplace `name` field (`mixpanel`) must never change — existing
-  installs are keyed against it.
+- The marketplace `name` field (`mixpanel`) must never change, and the
+  `renames` map is append-only — existing installs are keyed against them.
 - Skills must stay **engine-agnostic**: no hardcoded MCP tool names or URLs.
   Express Mixpanel actions as capabilities and follow the conventions in
   [`plugins/mixpanel/ENGINE.md`](plugins/mixpanel/ENGINE.md).
-- When the legacy plugins are eventually retired, do it via the marketplace
-  `renames` field (`{"mixpanel-mcp": "mixpanel", ...}`) so existing users
-  migrate automatically.
 
 ### Before opening the PR
 

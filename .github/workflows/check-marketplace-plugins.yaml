@@ -55,16 +55,11 @@ jobs:
 
           echo "All plugin directories are registered in both marketplace manifests."
 
-      - name: Verify legacy plugins are frozen at v0.1.1
+      - name: Verify marketplace manifests are identical
         run: |
-          git fetch origin tag v0.1.1 --no-tags
+          if ! diff .claude-plugin/marketplace.json .cursor-plugin/marketplace.json; then
+            echo "::error::.claude-plugin/marketplace.json and .cursor-plugin/marketplace.json must stay identical"
+            exit 1
+          fi
 
-          for plugin in mixpanel-mcp mixpanel-mcp-eu mixpanel-mcp-in; do
-            if ! git diff --quiet v0.1.1 HEAD -- "plugins/${plugin}/"; then
-              echo "::error::plugins/${plugin}/ is frozen at v0.1.1; changes belong in plugins/mixpanel/"
-              git diff --stat v0.1.1 HEAD -- "plugins/${plugin}/"
-              exit 1
-            fi
-          done
-
-          echo "All legacy plugins are frozen at v0.1.1."
+          echo "Marketplace manifests are identical."
