@@ -55,14 +55,16 @@ jobs:
 
           echo "All plugin directories are registered in both marketplace manifests."
 
-      - name: Verify EU/IN skills are in sync with US
+      - name: Verify legacy plugins are frozen at v0.1.1
         run: |
-          for region in eu in; do
-            if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-${region}/skills/"; then
-              echo "::error::plugins/mixpanel-mcp-${region}/skills/ is out of sync with plugins/mixpanel-mcp/skills/"
-              echo "Run 'make sync-skills' to fix."
+          git fetch origin tag v0.1.1 --no-tags
+
+          for plugin in mixpanel-mcp mixpanel-mcp-eu mixpanel-mcp-in; do
+            if ! git diff --quiet v0.1.1 HEAD -- "plugins/${plugin}/"; then
+              echo "::error::plugins/${plugin}/ is frozen at v0.1.1; changes belong in plugins/mixpanel/"
+              git diff --stat v0.1.1 HEAD -- "plugins/${plugin}/"
               exit 1
             fi
           done
 
-          echo "All regional skills are in sync."
+          echo "All legacy plugins are frozen at v0.1.1."
