@@ -21,7 +21,7 @@ metadata:
 
 > **No engine required** — this skill is what _configures_ the engine.
 
-Set up how this project talks to Mixpanel. No config file is written — the installation itself is the memory: every other skill in this plugin detects the installed engine (a registered Mixpanel MCP server, or the `mixpanel-headless` SDK in the project's Python environment) and routes all Mixpanel actions through it. The shared convention (detection and per-engine rules) lives in [`../../ENGINE.md`](../../ENGINE.md) — read it before starting.
+Set up how this project talks to Mixpanel. Every other skill in this plugin detects the installed engine (a registered Mixpanel MCP server, or the `mixpanel-headless` SDK in the project's Python environment) and routes all Mixpanel actions through it. The shared convention (detection and per-engine rules) lives in [`../../ENGINE.md`](../../ENGINE.md) — read it before starting.
 
 This skill is **interactive**: it asks the user to choose. If the session can't ask questions (non-interactive/CI run), stop and tell the user to run `/mixpanel:install` in an interactive session instead.
 
