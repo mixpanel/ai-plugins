@@ -4,6 +4,7 @@
     "name": "Mixpanel"
   },
   "plugins": [
+    { "name": "mixpanel", "source": "./plugins/mixpanel", "description": "Mixpanel skills, engine-agnostic (MCP or headless SDK). Recommended." },
     { "name": "mixpanel-mcp", "source": "./plugins/mixpanel-mcp" },
     { "name": "mixpanel-mcp-eu", "source": "./plugins/mixpanel-mcp-eu" },
     { "name": "mixpanel-mcp-in", "source": "./plugins/mixpanel-mcp-in" }
