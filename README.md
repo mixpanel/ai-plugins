@@ -3,10 +3,10 @@
 Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](https://agentskills.io) open standard.
 
 The `mixpanel` plugin is **engine-agnostic**: its skills work through whichever
-engine you configure — the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp)
-(any region), the [`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless)
-Python SDK, or your own integration. You pick once with the `install` skill;
-the choice is saved to `.claude/mixpanel.json` in your project.
+engine you install — the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp)
+(any region) or the [`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless)
+Python SDK. You set it up once with the `install` skill; no config file is
+written — skills detect the installed engine directly.
 
 ## Getting Started
 
@@ -30,7 +30,7 @@ Once installed, skills appear in **Cursor Settings → Rules** under the **Agent
 
 | Skill                                                                         | Description                                                                                                                                                                                                                                                                                                  |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`install`](plugins/mixpanel/skills/install/)                                 | Configures the Mixpanel engine for a project — MCP server (US/EU/India), mixpanel-headless SDK, or your own integration — and persists the choice to `.claude/mixpanel.json`.                                                                                                                                |
+| [`install`](plugins/mixpanel/skills/install/)                                 | Sets up the Mixpanel engine for a project — MCP server (US/EU/India) or mixpanel-headless SDK. The other skills detect whichever one is installed.                                                                                                                                                          |
 | [`analyze-report`](plugins/mixpanel/skills/analyze-report/)                   | Reads and explains an existing Mixpanel report or chart — what it shows, what's notable, and what's worth a closer look.                                                                                                                                                                                     |
 | [`create-dashboard`](plugins/mixpanel/skills/create-dashboard/)               | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout.                                                                                                                                                                                                            |
 | [`deep-research`](plugins/mixpanel/skills/deep-research/)                     | Conducts a structured metric investigation in Mixpanel. Use when a user asks _why_ a metric changed, what's driving a trend, or requests a deep dive or root cause analysis.                                                                                                                                 |

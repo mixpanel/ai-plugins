@@ -20,7 +20,7 @@ metadata:
 
 # Manage Experiment
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella, picked by experiment phase (the state→command mapping lives in the **Canonical commands** section below).
 
@@ -36,11 +36,11 @@ The pieces the skill is built from. The Steps section below tells you how to use
 
 Each command lives in its own file under `commands/` and is loaded on demand. Match commands explicitly (user names them) or implicitly (message matches a trigger phrase below).
 
-| Command     | File                    | Match if message contains any of                                                                                                            |
-| ----------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `design`    | `commands/design.md`    | design, set up, configure, plan, sanity-check, hypothesis, MDE, sizing, sequential vs frequentist, CUPED, Winsorization                     |
-| `launch`    | `commands/launch.md`    | launch, go live, start the experiment, ready to ship the experiment, pre-launch check, launch readiness                                     |
-| `monitor`   | `commands/monitor.md`   | monitor, mid-flight, is it safe, should I peek, SRM mid-flight, sample pace, guardrail wobble, terminate early                              |
+| Command | File | Match if message contains any of |
+| --- | --- | --- |
+| `design` | `commands/design.md` | design, set up, configure, plan, sanity-check, hypothesis, MDE, sizing, sequential vs frequentist, CUPED, Winsorization |
+| `launch` | `commands/launch.md` | launch, go live, start the experiment, ready to ship the experiment, pre-launch check, launch readiness |
+| `monitor` | `commands/monitor.md` | monitor, mid-flight, is it safe, should I peek, SRM mid-flight, sample pace, guardrail wobble, terminate early |
 | `interpret` | `commands/interpret.md` | read results, ship, iterate, kill, wait, statsig, SRM, sample ratio mismatch, retro A/A, lift, polarity, segment breakdown, session replays |
 
 If a message could route to more than one, use the **phase-derived** rule based on experiment state:
@@ -88,23 +88,23 @@ Terms all four commands use without redefining. Phase-specific terms (hypothesis
 
 Each command file links into these on demand. The map is here so the skill has a single index of what `references/` contains.
 
-| File                                                                                             | Used by                      | Purpose                                                                                                                       |
-| ------------------------------------------------------------------------------------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| [references/routing-xp-vs-ff.md](references/routing-xp-vs-ff.md)                                 | design                       | Experiment vs Feature Flag disambiguation — when each is the right tool and the hand-off rules.                               |
-| [references/hypothesis-framing.md](references/hypothesis-framing.md)                             | design                       | The four properties of a good hypothesis, rubric, common misalignment patterns, worked good/bad examples.                     |
-| [references/metric-selection.md](references/metric-selection.md)                                 | design                       | Picking primaries, guardrails, and secondaries. Guardrails-by-domain table. Lagging-indicator and changed-denominator traps.  |
-| [references/sizing.md](references/sizing.md)                                                     | design + monitor + interpret | Sample-size and MDE formulas, Kohavi's inversion, baseline-by-rate lookup, the five remediations for underpowered tests.      |
-| [references/statistical-model.md](references/statistical-model.md)                               | design                       | Sequential vs frequentist, end-condition choice, confidence level, multiple-testing correction. Peeking-trap math.            |
-| [references/advanced-features.md](references/advanced-features.md)                               | design                       | When CUPED and Winsorization help, when each is wrong, and the common misconfigurations.                                      |
-| [references/prior-experiments.md](references/prior-experiments.md)                               | design                       | How to look up and fold-in prior experiments on the same feature.                                                             |
-| [references/pitfalls.md](references/pitfalls.md)                                                 | design + launch              | The pre-launch pitfall catalogue: blockers (stop launch), warnings (explain trade-off), fyi.                                  |
-| [references/health-check-interpretation.md](references/health-check-interpretation.md)           | monitor + interpret          | Reading SRM, Retro A/A, exposures-sufficient, and misconfiguration verdicts. The trustworthiness gate's remediation playbook. |
-| [references/per-metric-interpretation.md](references/per-metric-interpretation.md)               | interpret                    | Translating a single metric's lift / CI / p-value into a plain-language verdict, with the Twyman's Law guard.                 |
-| [references/why-no-statsig.md](references/why-no-statsig.md)                                     | interpret                    | Wait / extend / boost power / narrow / accept-null decision tree when nothing's significant.                                  |
-| [references/segment-of-interest-selection.md](references/segment-of-interest-selection.md)       | interpret                    | How to pick the 3–5 segments worth breaking results down on, before slicing every dimension.                                  |
-| [references/segment-breakdown-interpretation.md](references/segment-breakdown-interpretation.md) | interpret                    | Reading per-segment results: heterogeneity vs Simpson's paradox vs noise; the "ship to segment X" requirements.               |
-| [references/session-replay-analysis.md](references/session-replay-analysis.md)                   | interpret                    | Turning a quantitative experiment result into a behavior story using session replays.                                         |
-| [references/lifecycle-handoff.md](references/lifecycle-handoff.md)                               | interpret                    | The decide-action call shape, multi-variant ship semantics, special variant constants.                                        |
+| File | Used by | Purpose |
+| --- | --- | --- |
+| [references/routing-xp-vs-ff.md](references/routing-xp-vs-ff.md) | design | Experiment vs Feature Flag disambiguation — when each is the right tool and the hand-off rules. |
+| [references/hypothesis-framing.md](references/hypothesis-framing.md) | design | The four properties of a good hypothesis, rubric, common misalignment patterns, worked good/bad examples. |
+| [references/metric-selection.md](references/metric-selection.md) | design | Picking primaries, guardrails, and secondaries. Guardrails-by-domain table. Lagging-indicator and changed-denominator traps. |
+| [references/sizing.md](references/sizing.md) | design + monitor + interpret | Sample-size and MDE formulas, Kohavi's inversion, baseline-by-rate lookup, the five remediations for underpowered tests. |
+| [references/statistical-model.md](references/statistical-model.md) | design | Sequential vs frequentist, end-condition choice, confidence level, multiple-testing correction. Peeking-trap math. |
+| [references/advanced-features.md](references/advanced-features.md) | design | When CUPED and Winsorization help, when each is wrong, and the common misconfigurations. |
+| [references/prior-experiments.md](references/prior-experiments.md) | design | How to look up and fold-in prior experiments on the same feature. |
+| [references/pitfalls.md](references/pitfalls.md) | design + launch | The pre-launch pitfall catalogue: blockers (stop launch), warnings (explain trade-off), fyi. |
+| [references/health-check-interpretation.md](references/health-check-interpretation.md) | monitor + interpret | Reading SRM, Retro A/A, exposures-sufficient, and misconfiguration verdicts. The trustworthiness gate's remediation playbook. |
+| [references/per-metric-interpretation.md](references/per-metric-interpretation.md) | interpret | Translating a single metric's lift / CI / p-value into a plain-language verdict, with the Twyman's Law guard. |
+| [references/why-no-statsig.md](references/why-no-statsig.md) | interpret | Wait / extend / boost power / narrow / accept-null decision tree when nothing's significant. |
+| [references/segment-of-interest-selection.md](references/segment-of-interest-selection.md) | interpret | How to pick the 3–5 segments worth breaking results down on, before slicing every dimension. |
+| [references/segment-breakdown-interpretation.md](references/segment-breakdown-interpretation.md) | interpret | Reading per-segment results: heterogeneity vs Simpson's paradox vs noise; the "ship to segment X" requirements. |
+| [references/session-replay-analysis.md](references/session-replay-analysis.md) | interpret | Turning a quantitative experiment result into a behavior story using session replays. |
+| [references/lifecycle-handoff.md](references/lifecycle-handoff.md) | interpret | The decide-action call shape, multi-variant ship semantics, special variant constants. |
 
 ## Cross-command policies
 
@@ -127,13 +127,13 @@ The **peeking trap**: stopping early on a favorable Frequentist peek inflates th
 
 The table below is what's safe to look at mid-flight, and what isn't. Used by `monitor` directly; referenced from `design` (when picking sequential vs frequentist) and `interpret` (when deciding whether a mid-flight peek invalidates a verdict).
 
-| Signal                            | Safe to peek mid-flight? | Why                                                                                                                    |
-| --------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| SRM verdict                       | Yes                      | Bucketing health is independent of effect size. Detecting SRM early lets you stop before more exposure data is wasted. |
-| Sample pace                       | Yes                      | A pacing problem is operational, not statistical. Detecting it early gives time to remediate.                          |
-| Guardrail polarity                | Yes (with care)          | A guardrail regression mid-flight is a real safety signal. Stopping for a guardrail regression is not p-hacking.       |
-| Primary metric lift (Sequential)  | Yes                      | Sequential testing makes peeking part of the design. The platform's stopping boundaries account for it.                |
-| Primary metric lift (Frequentist) | **No**                   | Stopping early on a favorable Frequentist peek is the canonical peeking trap. The false-positive rate inflates fast.   |
+| Signal | Safe to peek mid-flight? | Why |
+| --- | --- | --- |
+| SRM verdict | Yes | Bucketing health is independent of effect size. Detecting SRM early lets you stop before more exposure data is wasted. |
+| Sample pace | Yes | A pacing problem is operational, not statistical. Detecting it early gives time to remediate. |
+| Guardrail polarity | Yes (with care) | A guardrail regression mid-flight is a real safety signal. Stopping for a guardrail regression is not p-hacking. |
+| Primary metric lift (Sequential) | Yes | Sequential testing makes peeking part of the design. The platform's stopping boundaries account for it. |
+| Primary metric lift (Frequentist) | **No** | Stopping early on a favorable Frequentist peek is the canonical peeking trap. The false-positive rate inflates fast. |
 
 The rule users get wrong most often: thinking they can "just check" the primary mid-flight on a Frequentist test "without acting on it." If the look influences any decision — even the decision to wait — it's a peek.
 

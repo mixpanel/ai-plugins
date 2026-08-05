@@ -1,13 +1,13 @@
 # Import Mapping
 
-How to turn an arbitrary source document into template-conformant context. The source is *input*; the output is always the fixed template — per SKILL.md's "Imported content is mapped, never passed through raw" constraint.
+How to turn an arbitrary source document into template-conformant context. The source is _input_; the output is always the fixed template — per SKILL.md's "Imported content is mapped, never passed through raw" constraint.
 
 ## Mapping table (source → template section)
 
-Section names are the literal `references/context-template.md` headings — use them verbatim, never a paraphrase. One annotation is allowed in Map-to cells: an "— bullet …" suffix names a bullet *inside* the section and is not part of the heading. ("(this project)" carries no such caveat — it *is* part of the literal project-level heading.)
+Section names are the literal `references/context-template.md` headings — use them verbatim, never a paraphrase. One annotation is allowed in Map-to cells: an "— bullet …" suffix names a bullet _inside_ the section and is not part of the heading. ("(this project)" carries no such caveat — it _is_ part of the literal project-level heading.)
 
 | If the source has… | Map to | Level |
-|---|---|---|
+| --- | --- | --- |
 | "About us", company overview, what we do/sell | Business | org |
 | Product/surface description, what events represent, who the tracked end-user is | Domain & Vocabulary | project |
 | North star, primary KPI, "the one metric", success criteria | North Star & Key Metrics | org |

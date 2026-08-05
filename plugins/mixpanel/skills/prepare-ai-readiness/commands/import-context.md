@@ -1,9 +1,8 @@
 # Command: import-context
 
-Pull business knowledge the customer has already written down and turn it into template-conformant context, then write on `CONFIRM`. This is the preferred starting path — most customers have *something* already, and adapting it beats a cold interview.
+Pull business knowledge the customer has already written down and turn it into template-conformant context, then write on `CONFIRM`. This is the preferred starting path — most customers have _something_ already, and adapting it beats a cold interview.
 
-**Session reads:** `org_id`, `target_level`, `project_id`, `caller_role`, `existing_context`, `schema_facts`
-**Session writes:** `imported_source`, `interview_answers` (for gaps), `draft_context`
+**Session reads:** `org_id`, `target_level`, `project_id`, `caller_role`, `existing_context`, `schema_facts` **Session writes:** `imported_source`, `interview_answers` (for gaps), `draft_context`
 
 ---
 

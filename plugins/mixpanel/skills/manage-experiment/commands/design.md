@@ -148,16 +148,16 @@ If the user hasn't named a specific feature or surface, ask before fetching base
 
 ## Going deeper
 
-| User asks about…                                                              | Open                                                                       |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| "Is this an experiment or just a feature flag?"                               | [../references/routing-xp-vs-ff.md](../references/routing-xp-vs-ff.md)     |
-| "Help me write the hypothesis" / "Is this hypothesis good?"                   | [../references/hypothesis-framing.md](../references/hypothesis-framing.md) |
-| "Which metrics should I pick?" / "Primary vs guardrail vs secondary?"         | [../references/metric-selection.md](../references/metric-selection.md)     |
-| "What sample size do I need?" / "What MDE can I detect?" / "How long to run?" | [../references/sizing.md](../references/sizing.md)                         |
-| "Sequential vs frequentist?" / "Confidence level?" / "Correction method?"     | [../references/statistical-model.md](../references/statistical-model.md)   |
-| "Should I enable CUPED / Winsorization?"                                      | [../references/advanced-features.md](../references/advanced-features.md)   |
-| "Was anything similar tested before?"                                         | [../references/prior-experiments.md](../references/prior-experiments.md)   |
-| "What can go wrong before launch?" / "Run the pre-launch check"               | [../references/pitfalls.md](../references/pitfalls.md)                     |
+| User asks about… | Open |
+| --- | --- |
+| "Is this an experiment or just a feature flag?" | [../references/routing-xp-vs-ff.md](../references/routing-xp-vs-ff.md) |
+| "Help me write the hypothesis" / "Is this hypothesis good?" | [../references/hypothesis-framing.md](../references/hypothesis-framing.md) |
+| "Which metrics should I pick?" / "Primary vs guardrail vs secondary?" | [../references/metric-selection.md](../references/metric-selection.md) |
+| "What sample size do I need?" / "What MDE can I detect?" / "How long to run?" | [../references/sizing.md](../references/sizing.md) |
+| "Sequential vs frequentist?" / "Confidence level?" / "Correction method?" | [../references/statistical-model.md](../references/statistical-model.md) |
+| "Should I enable CUPED / Winsorization?" | [../references/advanced-features.md](../references/advanced-features.md) |
+| "Was anything similar tested before?" | [../references/prior-experiments.md](../references/prior-experiments.md) |
+| "What can go wrong before launch?" / "Run the pre-launch check" | [../references/pitfalls.md](../references/pitfalls.md) |
 
 ---
 

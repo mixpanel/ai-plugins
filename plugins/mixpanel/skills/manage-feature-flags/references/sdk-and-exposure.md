@@ -40,11 +40,11 @@ First rule out ingestion lag: exposure events are not instant. They usually surf
 
 ## SDK convention summary
 
-| Concern                             | Right answer                                                                                  |
-| ----------------------------------- | --------------------------------------------------------------------------------------------- |
-| Which entry point returns what?     | One returns the variant value; one returns the full variant (key + value). No key-only path.  |
-| Fallback semantics                  | Pick a fallback that means "feature off" — covers offline, failure, and not-in-rollout.       |
-| Sticky bucketing                    | By `distinct_id` by default; changing the bucketing key re-buckets users.                     |
-| Track every evaluation?             | Use the tracking entry point. Use the non-tracking variant only when you don't want exposure. |
-| Verify exposures match rollout?     | Group exposure events by variant and compare to the configured rollout.                       |
-| Missing exposures diagnostic order? | Flag state → tracking entry point → SDK init → cohort/property bucket.                        |
+| Concern | Right answer |
+| --- | --- |
+| Which entry point returns what? | One returns the variant value; one returns the full variant (key + value). No key-only path. |
+| Fallback semantics | Pick a fallback that means "feature off" — covers offline, failure, and not-in-rollout. |
+| Sticky bucketing | By `distinct_id` by default; changing the bucketing key re-buckets users. |
+| Track every evaluation? | Use the tracking entry point. Use the non-tracking variant only when you don't want exposure. |
+| Verify exposures match rollout? | Group exposure events by variant and compare to the configured rollout. |
+| Missing exposures diagnostic order? | Flag state → tracking entry point → SDK init → cohort/property bucket. |

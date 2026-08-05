@@ -1,7 +1,6 @@
 # Command — Manage Tags
 
-> **Session reads:** `event_list`, `event_details_cache`
-> **Session writes:** `event_details_cache`, `existing_tags`
+> **Session reads:** `event_list`, `event_details_cache` **Session writes:** `event_details_cache`, `existing_tags`
 
 Rename or delete existing Lexicon tags. Execute silently.
 

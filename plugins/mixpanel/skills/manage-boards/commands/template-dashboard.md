@@ -2,7 +2,7 @@
 
 Reproduces a reference dashboard in another project, renames it, and optionally updates the description. This is the core enabler for standardized onboarding dashboard templates across accounts.
 
-**Key API fact:** duplication only copies *within the source project* — it has no target-project parameter. So genuine cross-project templating cannot be done by duplicating. It is done by **reconstructing** the board in the target project: read the source layout, re-mint each report's query in the target project, then create the board there. This command does that.
+**Key API fact:** duplication only copies _within the source project_ — it has no target-project parameter. So genuine cross-project templating cannot be done by duplicating. It is done by **reconstructing** the board in the target project: read the source layout, re-mint each report's query in the target project, then create the board there. This command does that.
 
 ---
 
@@ -21,14 +21,12 @@ Reproduces a reference dashboard in another project, renames it, and optionally 
 ## Intake
 
 Required:
+
 1. **Source dashboard ID** — the reference board to clone
 2. **Source project ID** — where the reference lives (may differ from session `project_id`)
 3. **Target project ID(s)** — where the clone(s) should land
 
-Optional:
-4. **New title** — defaults to "[Original Title]"
-5. **New description** — defaults to original description with a "[Templated from [source]]" note appended
-6. **Batch mode** — template to multiple target projects at once
+Optional: 4. **New title** — defaults to "[Original Title]" 5. **New description** — defaults to original description with a "[Templated from [source]]" note appended 6. **Batch mode** — template to multiple target projects at once
 
 If the user doesn't provide source/target explicitly, ask. Use the session's projects list to help them pick. Accept projects and boards by name or ID.
 
@@ -85,13 +83,8 @@ For each report to carry over, its query must be re-run **against the target pro
 
 ### Step 4 — Build the board in the target project
 
-1. Assemble the rows preserving the source's grouping — report cells referencing
-   their fresh target `query_id` and original name/description, text cells carrying
-   their original HTML. Observe the layout limits and content rules in
-   `references/mcp-tool-reference.md`.
-2. Create the board in the target project with the new title, the new description
-   plus a templated-from note, and the assembled rows (carry over the source's
-   time filter if it had one).
+1. Assemble the rows preserving the source's grouping — report cells referencing their fresh target `query_id` and original name/description, text cells carrying their original HTML. Observe the layout limits and content rules in `references/mcp-tool-reference.md`.
+2. Create the board in the target project with the new title, the new description plus a templated-from note, and the assembled rows (carry over the source's time filter if it had one).
 3. Capture the new dashboard ID.
 
 ### Step 5 — Verify
@@ -136,7 +129,7 @@ Return control to router.
 ## Error Handling
 
 | Situation | Action |
-|-----------|--------|
+| --- | --- |
 | Source dashboard not found | Error, ask user to re-check ID |
 | Target project not accessible | Error, list available projects |
 | Same source & target project | Use Path A instead |

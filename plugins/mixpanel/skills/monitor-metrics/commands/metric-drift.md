@@ -1,25 +1,18 @@
 # Command: metric-drift
 
-Detect trend-level drift in a single metric — whether the baseline itself has
-shifted over recent weeks. Produces a verdict on *whether* the metric is in a
-new regime. Does **not** test for point-in-time anomalies (run `metric-anomaly`
-for that).
+Detect trend-level drift in a single metric — whether the baseline itself has shifted over recent weeks. Produces a verdict on _whether_ the metric is in a new regime. Does **not** test for point-in-time anomalies (run `metric-anomaly` for that).
 
 ---
 
 ## Prerequisites
 
-Before this command runs, Steps 0, 1, and 1.5 from `references/execution.md`
-must have completed — input validation, normalized metric series object, and
-project profile resolution. If any of those haven't happened, do them first.
+Before this command runs, Steps 0, 1, and 1.5 from `references/execution.md` must have completed — input validation, normalized metric series object, and project profile resolution. If any of those haven't happened, do them first.
 
-If the user's input is a saved report but the metric is a **funnel** or
-**retention** report, see the "Special cases" section at the bottom.
+If the user's input is a saved report but the metric is a **funnel** or **retention** report, see the "Special cases" section at the bottom.
 
 ### Prerequisite — classify `metric_type`
 
-Classify the metric per the `metric_type` table in `SKILL.md` and store
-`metric_type` on the series object before firing any queries.
+Classify the metric per the `metric_type` table in `SKILL.md` and store `metric_type` on the series object before firing any queries.
 
 ### Prerequisite — name the drift and baseline windows
 
@@ -28,9 +21,7 @@ The naming convention used throughout this command's output:
 - **`drift_window`** — the **recent** 30 days (most recent 30 days ending today).
 - **`baseline_window`** — the **prior** 30 days (30 days ending 30 days before today).
 
-Both windows are computed from Q1-daily. The weekly test uses 8 vs 8 weeks —
-those windows are reported alongside but are secondary to the daily windows
-for headline purposes.
+Both windows are computed from Q1-daily. The weekly test uses 8 vs 8 weeks — those windows are reported alongside but are secondary to the daily windows for headline purposes.
 
 ---
 
@@ -38,17 +29,14 @@ for headline purposes.
 
 Fire both `cap:run-query` calls simultaneously (resolve `cap:run-query` via the session tool map — see `references/tools.md`):
 
-| Query | Window | Granularity | Comparison |
-|---|---|---|---|
-| Q1-daily | Last 60 days | `day` | Last 30 days vs. prior 30 days |
-| Q1-weekly | Last 16 weeks | `week` | Last 8 weeks vs. prior 8 weeks |
+| Query     | Window        | Granularity | Comparison                     |
+| --------- | ------------- | ----------- | ------------------------------ |
+| Q1-daily  | Last 60 days  | `day`       | Last 30 days vs. prior 30 days |
+| Q1-weekly | Last 16 weeks | `week`      | Last 8 weeks vs. prior 8 weeks |
 
-The 60-day daily view catches medium-term drift. The 16-week weekly view
-catches slow drift that the daily window would miss because daily noise
-drowns the signal. Running both is cheap and they answer different questions.
+The 60-day daily view catches medium-term drift. The 16-week weekly view catches slow drift that the daily window would miss because daily noise drowns the signal. Running both is cheap and they answer different questions.
 
-Use the `query_template` from the metric object; override only `dateRange`
-and `unit` (granularity). Do not re-apply filters — they're already baked in.
+Use the `query_template` from the metric object; override only `dateRange` and `unit` (granularity). Do not re-apply filters — they're already baked in.
 
 ---
 
@@ -58,21 +46,13 @@ and `unit` (granularity). Do not re-apply filters — they're already baked in.
 
 For each series, split into `recent` and `prior` halves (no overlap).
 
-**Lightweight anomaly contamination check** (important because this command
-can run standalone without `metric-anomaly` having run first):
+**Lightweight anomaly contamination check** (important because this command can run standalone without `metric-anomaly` having run first):
 
-Scan the `recent` window for obvious outliers using a simple rule — any point
-more than 3σ from the window mean. If ≥20% of points in the `recent` window
-qualify → flag **"drift test potentially contaminated by outliers in the
-recent window"** and mark all drift findings as low-confidence. Recommend the
-user run `metric-anomaly` first.
+Scan the `recent` window for obvious outliers using a simple rule — any point more than 3σ from the window mean. If ≥20% of points in the `recent` window qualify → flag **"drift test potentially contaminated by outliers in the recent window"** and mark all drift findings as low-confidence. Recommend the user run `metric-anomaly` first.
 
-If 0–20% of points qualify, proceed normally but note the count in the
-verdict card's contamination section.
+If 0–20% of points qualify, proceed normally but note the count in the verdict card's contamination section.
 
-This is deliberately lighter than `metric-anomaly`'s full additive-baseline
-test — its job here is only to flag contamination risk, not to produce a
-publishable anomaly verdict.
+This is deliberately lighter than `metric-anomaly`'s full additive-baseline test — its job here is only to flag contamination risk, not to produce a publishable anomaly verdict.
 
 ### Test 1 — Mean shift (level drift)
 
@@ -83,13 +63,12 @@ level_delta  = (mean_recent − mean_prior) / mean_prior    # signed %
 ```
 
 Flag thresholds:
+
 - `|level_delta| < 5%` → no meaningful shift
 - `5% ≤ |level_delta| < 15%` → moderate drift
 - `|level_delta| ≥ 15%` → significant drift
 
-Additionally compute a Welch's t-test on the two windows. If p < 0.05 and
-`level_delta ≥ 5%`, drift is statistically supported. If p ≥ 0.05, note the
-shift is observational but not statistically distinguishable from noise.
+Additionally compute a Welch's t-test on the two windows. If p < 0.05 and `level_delta ≥ 5%`, drift is statistically supported. If p ≥ 0.05, note the shift is observational but not statistically distinguishable from noise.
 
 ### Test 2 — Variance ratio (volatility drift)
 
@@ -98,34 +77,29 @@ var_ratio = variance(recent_window) / variance(prior_window)
 ```
 
 Flag thresholds:
+
 - `0.67 ≤ var_ratio ≤ 1.5` → variance stable
 - `var_ratio > 1.5` → metric got noisier (investigate instrumentation, cohort mix)
 - `var_ratio < 0.67` → metric got smoother (often a sign of flatlining or saturation)
 
-Variance drift without level drift is an under-appreciated signal — the
-headline number looks fine but something structural changed. Always surface
-it separately.
+Variance drift without level drift is an under-appreciated signal — the headline number looks fine but something structural changed. Always surface it separately.
 
-Distribution-shape tests (KS, PSI) are intentionally **not** part of this
-battery. They require per-user or per-segment values, which Mixpanel's query
-surface does not return at practical cost.
+Distribution-shape tests (KS, PSI) are intentionally **not** part of this battery. They require per-user or per-segment values, which Mixpanel's query surface does not return at practical cost.
 
 ### Combine into a per-series verdict
 
-| Verdict | When |
-|---|---|
-| **No drift** | Level stable AND variance stable |
-| **Level drift** | Level shifted ≥5%, variance stable |
+| Verdict            | When                                          |
+| ------------------ | --------------------------------------------- |
+| **No drift**       | Level stable AND variance stable              |
+| **Level drift**    | Level shifted ≥5%, variance stable            |
 | **Variance drift** | Level stable, variance ratio outside 0.67–1.5 |
-| **Compound drift** | Both |
+| **Compound drift** | Both                                          |
 
-Also report **direction** (up / down) and **magnitude** (% for level, ratio
-for variance).
+Also report **direction** (up / down) and **magnitude** (% for level, ratio for variance).
 
 ### Reconcile the two series
 
-The 60-day-daily and 16-week-weekly views should agree on direction. If they
-disagree:
+The 60-day-daily and 16-week-weekly views should agree on direction. If they disagree:
 
 - **Weekly says drift, daily says none** → slow drift that daily noise hides. Trust the weekly.
 - **Daily says drift, weekly says none** → recent movement that hasn't accumulated into the weekly window yet. Could be the leading edge of real drift, or a contained incident. Trust the daily but note the weekly hasn't confirmed.
@@ -133,19 +107,16 @@ disagree:
 
 ### Classify drift shape
 
-If drift is flagged, classify its shape using the daily series for use in
-the verdict card:
+If drift is flagged, classify its shape using the daily series for use in the verdict card:
 
 | Condition | `verdict_shape` value |
-|---|---|
+| --- | --- |
 | Single-day change point where mean shift before vs after explains ≥60% of variance, and before/after segments are each <20% within-segment variance | `step` (record the change-point date) |
 | Linear regression fit to the full 60-day series has R² ≥ 0.5 and non-zero slope | `slope` |
 | 7-day autocorrelation on residuals ≥ 0.5, and periodicity strength differs between drift and baseline windows | `oscillating` |
 | None of the above fit cleanly | `unclassified` |
 
-**Shape precedence**: if multiple shapes fit, use this priority:
-`step` > `slope` > `oscillating` > `unclassified`. (Step changes are the
-most actionable; surface them first when ambiguous.)
+**Shape precedence**: if multiple shapes fit, use this priority: `step` > `slope` > `oscillating` > `unclassified`. (Step changes are the most actionable; surface them first when ambiguous.)
 
 If no drift was flagged, skip shape classification entirely.
 
@@ -157,15 +128,14 @@ Produces **three things**, in order:
 
 1. **A single visualizer widget with two charts stacked vertically**
 2. **A compact verdict card**
-3. **A diagnosis payload** handed back to the skill-level flow (Step 2 in
-   `references/execution.md`) for the board prompt and `metric-rca` caching
+3. **A diagnosis payload** handed back to the skill-level flow (Step 2 in `references/execution.md`) for the board prompt and `metric-rca` caching
 
 ### The charts — always rendered
 
-Both charts render regardless of whether drift was detected. A stable chart
-is the visual proof of stability.
+Both charts render regardless of whether drift was detected. A stable chart is the visual proof of stability.
 
 **Top chart: 60-day daily view** (Q1-daily series)
+
 - Line for the daily series.
 - **Shaded band** for the prior 30-day baseline window (subtle grey fill).
 - **Shaded band** for the recent 30-day drift window — red-tinted fill if drift is `down`, green-tinted if `up`, amber-tinted if `mixed`, grey if no drift.
@@ -175,20 +145,18 @@ is the visual proof of stability.
 - Title: `<metric_name> — last 60 days, daily`.
 
 **Bottom chart: 16-week weekly view** (Q1-weekly series)
+
 - Line for the weekly series.
 - **Shaded band** for the prior 8-week baseline window (subtle grey fill).
 - **Shaded band** for the recent 8-week drift window — same direction-based coloring as above.
 - Horizontal lines for `mean_prior_weekly` (dashed grey) and `mean_recent_weekly` (dashed, colored).
 - Title: `<metric_name> — last 16 weeks, weekly`.
 
-Both charts share x-axis type (date) and consistent y-axis formatting.
-Render as two separate plots in one widget, stacked.
+Both charts share x-axis type (date) and consistent y-axis formatting. Render as two separate plots in one widget, stacked.
 
-Before generating, read `visualize:read_me` with `modules: ["chart"]` once if
-not already loaded this session. Do not narrate the read_me call to the user.
+Before generating, read `visualize:read_me` with `modules: ["chart"]` once if not already loaded this session. Do not narrate the read_me call to the user.
 
-If chart generation fails, fall back to card-only output with the note
-"Chart unavailable — card below." Do not block on the chart.
+If chart generation fails, fall back to card-only output with the note "Chart unavailable — card below." Do not block on the chart.
 
 ### The compact verdict card
 
@@ -231,8 +199,7 @@ Never lead with a confidence hedge. State the finding, then qualify it.
 
 ### The diagnosis payload
 
-After rendering the charts and verdict card, assemble the payload defined
-in `references/execution.md` Step 2 and hand it back to the skill-level flow:
+After rendering the charts and verdict card, assemble the payload defined in `references/execution.md` Step 2 and hand it back to the skill-level flow:
 
 ```
 {
@@ -256,35 +223,24 @@ in `references/execution.md` Step 2 and hand it back to the skill-level flow:
 }
 ```
 
-Hand the payload to the skill-level flow. The board prompt and
-`metric-rca` caching are handled there — see `references/execution.md`
-Step 2. Do not ask the board question from inside this command.
+Hand the payload to the skill-level flow. The board prompt and `metric-rca` caching are handled there — see `references/execution.md` Step 2. Do not ask the board question from inside this command.
 
 ---
 
 ## Special cases
 
-**Funnel metrics:** Phase 1 and Phase 2 work as-is for multi-step funnels
-— the overall conversion series is what drifts. No special handling needed.
+**Funnel metrics:** Phase 1 and Phase 2 work as-is for multi-step funnels — the overall conversion series is what drifts. No special handling needed.
 
-**Retention metrics:** Retention is a rolling cohort metric — "drift" on a
-retention curve means cohort-over-cohort degradation. Replace the 60-day
-daily and 16-week weekly splits with a cohort-over-cohort comparison: last
-8 cohorts vs. prior 8 cohorts on the same retention day (D1, D7, D30). Flag
-which retention day shifted. Note in the verdict card: "Retention
-cohort-over-cohort comparison used in place of daily/weekly split."
+**Retention metrics:** Retention is a rolling cohort metric — "drift" on a retention curve means cohort-over-cohort degradation. Replace the 60-day daily and 16-week weekly splits with a cohort-over-cohort comparison: last 8 cohorts vs. prior 8 cohorts on the same retention day (D1, D7, D30). Flag which retention day shifted. Note in the verdict card: "Retention cohort-over-cohort comparison used in place of daily/weekly split."
 
-**Very low-volume metrics (<100 events/day):** The tests still apply but
-statistical confidence drops sharply. Downgrade confidence to `low` regardless
-of `level_delta` magnitude and note: "Low-volume metric — drift signal may be
-Poisson noise."
+**Very low-volume metrics (<100 events/day):** The tests still apply but statistical confidence drops sharply. Downgrade confidence to `low` regardless of `level_delta` magnitude and note: "Low-volume metric — drift signal may be Poisson noise."
 
 ---
 
 ## Error handling
 
 | Situation | Response |
-|---|---|
+| --- | --- |
 | Either query fails | Retry once. If still failing, mark that series partial, continue the other, note in output. |
 | Both queries fail | Stop. Report the failure and ask the user to verify project access. |
 | Project requires a filter the user didn't provide | Ask once, then proceed. Don't guess. |
@@ -298,5 +254,4 @@ Poisson noise."
 - **Does not attribute cause.** Root-cause investigation is handled by `metric-rca` after detection.
 - **Does not produce recommendations beyond "run anomaly first" / "run RCA".** The verdict is the product.
 
-Keep the surface narrow. A clean drift verdict in under 60 seconds is more
-useful than a sprawling analysis that tries to do everything.
+Keep the surface narrow. A clean drift verdict in under 60 seconds is more useful than a sprawling analysis that tries to do everything.

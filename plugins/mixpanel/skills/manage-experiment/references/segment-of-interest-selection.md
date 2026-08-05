@@ -43,15 +43,15 @@ These are not exploratory; they're the variables the team committed to test.
 
 The hypothesis names _what_ the change is and (ideally) _why_ it should work. The "why" tells you which user attributes plausibly moderate the effect:
 
-| Hypothesis mechanism                              | Segments likely to moderate the effect             |
-| ------------------------------------------------- | -------------------------------------------------- |
-| "Reduces first-time friction in onboarding"       | New vs returning; signup source; locale            |
-| "Improves discoverability of feature X"           | Users who previously used X vs not; tenure         |
-| "Speeds up a slow flow"                           | Platform (mobile slower than web); connection type |
-| "Lowers payment friction"                         | Plan tier; payment-method type; geography          |
-| "Replaces a confusing UI element"                 | New vs returning (returning users habituated)      |
-| "Surfaces a feature only relevant to power users" | Engagement-tier cohorts; tenure                    |
-| "Localized copy / pricing change"                 | Country / language                                 |
+| Hypothesis mechanism | Segments likely to moderate the effect |
+| --- | --- |
+| "Reduces first-time friction in onboarding" | New vs returning; signup source; locale |
+| "Improves discoverability of feature X" | Users who previously used X vs not; tenure |
+| "Speeds up a slow flow" | Platform (mobile slower than web); connection type |
+| "Lowers payment friction" | Plan tier; payment-method type; geography |
+| "Replaces a confusing UI element" | New vs returning (returning users habituated) |
+| "Surfaces a feature only relevant to power users" | Engagement-tier cohorts; tenure |
+| "Localized copy / pricing change" | Country / language |
 
 If you can't articulate _why_ a segment should respond differently, it's not a hypothesis-driven slice. Demote it.
 
@@ -100,11 +100,11 @@ For each segment you want to break down on:
 
 ## How many slices to commit to
 
-| Situation                                                         | Number of slices                |
-| ----------------------------------------------------------------- | ------------------------------- |
-| Hypothesis-driven, well-powered, decisional                       | 3–5 segments, named upfront     |
+| Situation | Number of slices |
+| --- | --- |
+| Hypothesis-driven, well-powered, decisional | 3–5 segments, named upfront |
 | Exploratory ("anything weird?"), flagged as hypothesis-generating | Up to ~10, with explicit caveat |
-| Diagnostic (chasing a failing SRM or strange overall result)      | Whatever helps localize the bug |
+| Diagnostic (chasing a failing SRM or strange overall result) | Whatever helps localize the bug |
 
 If the user wants to "just look at everything", push back: pick the top 3–5 with reasoning, then offer a separate exploratory pass that won't be used for the ship decision.
 

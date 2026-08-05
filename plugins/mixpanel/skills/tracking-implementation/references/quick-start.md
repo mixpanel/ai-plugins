@@ -1,6 +1,7 @@
 ## Quick Start Flow
 
 **Success criteria:** A Quick Start session is successful when:
+
 - Two events (`sign_up_completed` + Value Moment) are defined with a mini tracking plan
 - Tracking code is written and placed
 - At least one event is confirmed in Live View
@@ -12,6 +13,7 @@
 In Quick Start mode:
 
 **Do not require before implementation:**
+
 - Company name or URL research
 - Deep external research (Crunchbase, job listings, G2, etc.)
 - Business model synthesis
@@ -24,6 +26,7 @@ In Quick Start mode:
 - Full data model education
 
 **Do require before implementation:**
+
 - Platform confirmation (one-way door: wrong SDK = rewrite)
 - CDP/warehouse status (one-way door: SDK when CDP exists = duplication)
 - EU/CA consent status (one-way door: events before consent = compliance violation)
@@ -32,11 +35,13 @@ In Quick Start mode:
 - One valid project token
 
 **Do include during implementation:**
+
 - Consent gate if EU/CA users (before SDK init)
 - Basic identity (identify on login/signup, reset on logout)
 - Live View verification
 
 **Surface after implementation (as next steps, not gates):**
+
 - Expanded tracking plan
 - Full identity QA (especially if complexity flags raised)
 - Dev/prod project split
@@ -64,20 +69,23 @@ Maintain this minimal context during Quick Start:
 
 Ask only the questions where a wrong assumption creates irreversible rework:
 
-**Question 1: "What platform are you building on?"**
-(web, iOS, Android, React Native, Flutter, server-side, combination)
+**Question 1: "What platform are you building on?"** (web, iOS, Android, React Native, Flutter, server-side, combination)
+
 - **Why mandatory:** Determines SDK selection. Wrong SDK = rewrite.
 - **Can be inferred from Pre-Flight:** Yes -- skip if codebase scan already answered this.
 
 **Question 2: "Are you sending data through a CDP or warehouse tool already?" (Segment, Rudderstack, mParticle, Snowflake, BigQuery)**
+
 - **Why mandatory:** If yes, the entire implementation path changes. SDK installation gets skipped; routing goes through the integration. Building direct SDK when a CDP exists = duplication and architectural mismatch.
 - **Can be inferred from Pre-Flight:** Sometimes (package.json may reveal Segment/Rudderstack).
 
 **Question 3: "Do you have users in the EU or California?"**
+
 - **Why mandatory:** If yes, consent must gate SDK initialization. Shipping events before consent = compliance violation that requires data deletion.
 - **Can be inferred from Pre-Flight:** No -- this is a business/legal fact, not a code fact.
 
 **Question 4: "What's the most important action a user takes in your product?"**
+
 - **Why mandatory:** This names the Value Moment event. Without it, we don't know what to track.
 - **Can be inferred from Pre-Flight:** Partially -- the agent can propose candidates from route/controller analysis, but the user confirms.
 
@@ -86,25 +94,27 @@ That's it. Four questions maximum (fewer if Pre-Flight answers some).
 **What about Group Analytics and identity complexity?** These are important but not one-way doors in the Quick Start context:
 
 - **Group Analytics:** Can be added later without rework. The events tracked in Quick Start don't become invalid if Group Analytics is added afterward. Defer to "what's next" recommendations.
-- **Identity complexity:** Basic identify/reset is correct for both simple and complex cases. The risk is that complex cases need *more* identity work -- but the basic work isn't *wrong*. Surface it as a flag, not a gate (see Step 6 identity section below).
+- **Identity complexity:** Basic identify/reset is correct for both simple and complex cases. The risk is that complex cases need _more_ identity work -- but the basic work isn't _wrong_. Surface it as a flag, not a gate (see Step 6 identity section below).
 
 ### Step 2 -- Context Gathering (Research or Pre-Flight)
 
 The agent uses whatever input is available, in priority order:
 
 | Available input | What the agent does | Time budget |
-|---|---|---|
+| --- | --- | --- |
 | **Codebase access** | Pre-Flight scan (unchanged). Extracts tech stack, candidate events, auth flow, existing analytics. | No time limit -- this is the highest-value accelerator |
 | **Company URL** | Light Research: homepage + pricing page + login/signup page. Extract product type, B2B/B2C signal, candidate Value Moment, sign_up_method values. Cap at 3 pages, under 2 minutes. | 2 minutes max |
 | **Neither** | Skip research entirely. Use the 4 mandatory questions above. | 0 minutes |
 
 **Rules for Light Research:**
+
 - Stop as soon as the agent can confidently fill: product type, platform confirmation, B2B vs B2C, candidate Value Moment
 - Do NOT research: Crunchbase, job listings, G2/Capterra, blog, LinkedIn, TechCrunch
 - Do NOT require company name or URL before proceeding -- if the user doesn't offer one, skip research and ask the questions
 - If the homepage and pricing page answer everything, stop there
 
 **After context gathering, present assumptions:**
+
 > "Based on [what I found / what you told me], here's what I'm working with: [platform], [tracking method], [Value Moment candidate]. Sound right?"
 
 One confirmation, then move on.
@@ -114,6 +124,7 @@ One confirmation, then move on.
 For each of the two events, capture:
 
 **Event 1: `sign_up_completed`**
+
 ```
 Event name:    sign_up_completed
 Trigger:       User completes account creation (after DB write, after identify)
@@ -127,6 +138,7 @@ Duplication notes: Do not fire on social auth redirect -- only on final account 
 ```
 
 **Event 2: [Value Moment event]**
+
 ```
 Event name:    [inferred from Step 1, e.g. report_generated]
 Trigger:       [specific user action]
@@ -143,12 +155,14 @@ Present both to the user for confirmation. This is a lightweight review, not a f
 ### Step 4 -- Project Setup (Minimal)
 
 For Quick Start:
+
 - Confirm the user has one Mixpanel project with a token
 - If they can't find it: direct them to mixpanel.com -> Project Settings -> Project Token
 - Store the token in the Context Block
 - Move on
 
 **Do NOT require for Quick Start:**
+
 - Dev/prod project split (recommend as follow-up)
 - Simplified ID Merge verification (it's the default since April 2024)
 - Role assignment
@@ -164,12 +178,14 @@ For Quick Start:
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+
 - Confirm to the user: > "Step 5 done -- codebase access confirmed. Moving on to Step 6: Implementation."
 - Proceed with Step 6 (Implementation + Identity)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+
 - Confirm to the user: > "Step 5 done -- no codebase access right now. Skipping direct implementation (Steps 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Step 7)
 - Collect any remaining technical details:
@@ -184,6 +200,7 @@ For Quick Start:
 This is the core of Quick Start. The agent writes real code, placed in specific files if Pre-Flight was run.
 
 **Implementation covers:**
+
 1. SDK initialization (with real token from Step 4)
 2. Consent gate if EU/CA users flagged in Step 1
 3. `sign_up_completed` event call
@@ -202,6 +219,7 @@ If the platform confirmed in Step 1 is JavaScript (web), ask:
 - **Neither / non-web platform:** Skip this check and note `disabled` in the Context Block.
 
 Example init with both enabled:
+
 ```js
 mixpanel.init('YOUR_TOKEN', {
   autocapture: true,
@@ -225,18 +243,19 @@ On login:   identify(user.id)
 On logout:  reset()
 ```
 
-This is correct for all complexity levels. It doesn't become *wrong* if complexity is high -- it just becomes *incomplete*.
+This is correct for all complexity levels. It doesn't become _wrong_ if complexity is high -- it just becomes _incomplete_.
 
 **The escalation flag:** After wiring basic identity, the agent checks for complexity signals (from Pre-Flight or conversation):
 
 | Signal | What it means |
-|---|---|
+| --- | --- |
 | Anonymous browsing exists before login | Anonymous-to-authenticated bridging needed |
 | Multi-device or multi-platform usage | Cross-device identity testing needed |
 | Shared devices or account switching | Reset logic needs careful placement |
 | SSO with multiple identity providers | Identity source needs to be stable |
 
 If any signals are present, the agent says:
+
 > "Your basic identity is wired and will work correctly. But I noticed [signal] -- that means there are edge cases we should test before production. Want to do a full identity QA pass now, or come back to it?"
 
 This is an offer, not a gate. The user decides.
@@ -258,6 +277,7 @@ This is an offer, not a gate. The user decides.
 **Generate:** `MIXPANEL_IMPLEMENTATION_SPEC.md` using the template in `reference.md Section Developer Handoff Specification Template`.
 
 **Required content (from Quick Start Context Block):**
+
 - All context gathered during Steps 1-4
 - Platform, SDK, tracking method, CDP, consent requirements
 - Complete tracking plan: `sign_up_completed` + Value Moment event with full property schemas
@@ -270,6 +290,7 @@ This is an offer, not a gate. The user decides.
 - Troubleshooting section for common issues
 
 **Fill in the template with:**
+
 - Actual project token (from Step 4)
 - Real event names and properties (from Step 3)
 - Complete SDK initialization code with platform-specific syntax
@@ -280,7 +301,9 @@ This is an offer, not a gate. The user decides.
 **Save to:** User's current working directory (or ~/Downloads if working directory is unclear).
 
 **Presentation:**
+
 > "I've created a complete implementation specification at [absolute path]. This contains:
+>
 > - Complete, copy-paste ready code with your actual project token
 > - Step-by-step testing instructions with expected Live View results
 > - Business context explaining why [Value Moment] matters
@@ -289,10 +312,12 @@ This is an offer, not a gate. The user decides.
 > Share this with your developer -- they won't need any context from our conversation. The spec includes everything needed to implement in 2-4 hours."
 
 **Optional additional artifacts:**
+
 - CSV export of tracking plan (for product managers who prefer spreadsheets)
 - Code-only snippets file (for quick reference)
 
 **After generating spec:**
+
 - Skip Step 7 (Verify in Live View) -- developer will do this after implementation
 - Skip AGENTS.md creation in Step 8 (it's included in the handoff spec as a template)
 - Present next steps modified for handoff context: "After your developer implements this..."
@@ -302,6 +327,7 @@ This is an offer, not a gate. The user decides.
 **If codebase access was available (normal implementation path):**
 
 Summarize what was shipped:
+
 > "You now have two events live in Mixpanel -- `sign_up_completed` and `[Value Moment]` -- with basic identity wired in."
 
 **Add Mixpanel tracking guidance to `AGENTS.md` in the project root.** Check if an `AGENTS.md` already exists. If it does, append the Mixpanel analytics section from `AGENTS.md.template` -- do not overwrite existing content from other tools or conventions. If no `AGENTS.md` exists, create one using the full template. In either case, fill in actual values from this session (platform, SDK, token location, events, identity file paths, consent status). This ensures future AI agents know that Mixpanel is the analytics tool and how to add tracking correctly.
@@ -317,6 +343,7 @@ Present prioritized next steps:
 **If Developer Handoff Spec was generated (no codebase access path):**
 
 Confirm the spec location:
+
 > "Your implementation specification is saved at [absolute path]."
 
 Offer additional support:
@@ -347,4 +374,3 @@ Present prioritized next steps (modified for handoff context):
 Each next step maps to content that already exists in the Full Implementation flow. The user can come back for any of them.
 
 ---
-

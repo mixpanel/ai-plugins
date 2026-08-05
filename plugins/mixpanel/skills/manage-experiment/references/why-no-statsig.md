@@ -109,15 +109,15 @@ Never change traffic allocation mid-Frequentist test — it invalidates the SRM 
 
 Most experiments trip one or two of the five reasons, not all five. Don't hand back the whole list — collapse to the single most-likely blocker using this precedence (highest firing rule wins) and tell the user _that one_, with numbers.
 
-| Most-likely blocker (priority order)                                                             | What to tell the user                                                                                                                                                                                                                                          |
-| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Exposures aren't flowing** (reason 5)                                                          | "You're capturing `<actual>` of an expected `<planned>` exposures — the pipeline isn't delivering most eligible users. Fix the flag / SDK emission before judging significance." Confirm with a query on the exposure event.                                   |
-| **Traffic split is silently skewed** (reason 4, no SRM failure)                                  | "Your smallest arm has only `<n>` exposures (vs `<expected>`), so the test is sample-bound by that arm. Rebalance the rollout (pause + restart, not mid-experiment) before adding time."                                                                       |
-| **Effect is real but below the detection floor** (reason 2 AND sample at/above target)           | "You have enough traffic for the MDE this was sized for, but the observed lift (~`<x>%`) is below the achievable MDE (~`<y>%`). Detecting `<x>%` needs ~`<n>`/arm — about `<multiplier>`× your current sample — or lower the MDE / accept the smaller effect." |
-| **Underpowered for the configured MDE** (reason 1)                                               | "You're sized for a `<MDE>%` lift but only have `<n>`/`<n_required>` of the required per-arm sample. Extend ~`<days>` days, raise allocation, or enable CUPED / Winsorization to claw back power."                                                             |
-| **Variance inflated, reduction off, _and_ another blocker fires** (reason 3 + any of 1/2/4/5)    | "Variance reduction is leaving power on the table — enabling Winsorization (default 5/95) or CUPED would tighten the CI before adding exposures." Stack this on the primary blocker; don't offer it alone.                                                     |
-| **Variance reduction is the only lever** (reason 3 only; 1/2/4/5 clear)                          | "The experiment is well-sized and well-allocated, but variance reduction is off — enabling Winsorization (default 5/95) or CUPED could resolve the borderline result without more data. Try that before accepting the null."                                   |
-| **None of the above** — well-sized, well-allocated, exposures flowing, reduction on/NA, lift ≈ 0 | "Well-powered for the MDE that matters and the effect is genuinely near zero — this is a real null. Accept the null and ship the decision, or iterate on a stronger hypothesis." Quote the achievable-MDE numbers so the conclusion is trusted.                |
+| Most-likely blocker (priority order) | What to tell the user |
+| --- | --- |
+| **Exposures aren't flowing** (reason 5) | "You're capturing `<actual>` of an expected `<planned>` exposures — the pipeline isn't delivering most eligible users. Fix the flag / SDK emission before judging significance." Confirm with a query on the exposure event. |
+| **Traffic split is silently skewed** (reason 4, no SRM failure) | "Your smallest arm has only `<n>` exposures (vs `<expected>`), so the test is sample-bound by that arm. Rebalance the rollout (pause + restart, not mid-experiment) before adding time." |
+| **Effect is real but below the detection floor** (reason 2 AND sample at/above target) | "You have enough traffic for the MDE this was sized for, but the observed lift (~~`<x>%`) is below the achievable MDE (~~`<y>%`). Detecting `<x>%` needs ~`<n>`/arm — about `<multiplier>`× your current sample — or lower the MDE / accept the smaller effect." |
+| **Underpowered for the configured MDE** (reason 1) | "You're sized for a `<MDE>%` lift but only have `<n>`/`<n_required>` of the required per-arm sample. Extend ~`<days>` days, raise allocation, or enable CUPED / Winsorization to claw back power." |
+| **Variance inflated, reduction off, _and_ another blocker fires** (reason 3 + any of 1/2/4/5) | "Variance reduction is leaving power on the table — enabling Winsorization (default 5/95) or CUPED would tighten the CI before adding exposures." Stack this on the primary blocker; don't offer it alone. |
+| **Variance reduction is the only lever** (reason 3 only; 1/2/4/5 clear) | "The experiment is well-sized and well-allocated, but variance reduction is off — enabling Winsorization (default 5/95) or CUPED could resolve the borderline result without more data. Try that before accepting the null." |
+| **None of the above** — well-sized, well-allocated, exposures flowing, reduction on/NA, lift ≈ 0 | "Well-powered for the MDE that matters and the effect is genuinely near zero — this is a real null. Accept the null and ship the decision, or iterate on a stronger hypothesis." Quote the achievable-MDE numbers so the conclusion is trusted. |
 
 **Always quote the numbers** — "12k of 58k required per arm," "smallest arm 4.1k vs 8.2k expected," "~3× more exposures." Vague advice ("collect more data") is the failure mode this playbook exists to prevent.
 
@@ -127,15 +127,15 @@ Most experiments trip one or two of the five reasons, not all five. Don't hand b
 
 Once you know which reason fits, the recommendation almost picks itself.
 
-| Reason                                 | Recommendation                                                                                               |
-| -------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| Not enough sample yet, still ACTIVE    | **WAIT.** Show projected end date based on observed traffic.                                                 |
-| Not enough sample yet, concluded early | **EXTEND** (Frequentist: relaunch with longer planned duration; Sequential: resume if possible).             |
-| Effect << MDE                          | **ACCEPT NULL** if the planned MDE is the smallest ship-worthy effect; otherwise **BOOST POWER** and re-run. |
-| Variance too high                      | **BOOST POWER**: enable CUPED, enable Winsorization, switch to a less noisy metric proxy.                    |
-| Variant starved by traffic split       | **EXTEND** (if remaining time is enough) or restart with rebalanced split.                                   |
-| Exposure config is filtering           | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample.               |
-| Experiment finished, well-powered      | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters.       |
+| Reason | Recommendation |
+| --- | --- |
+| Not enough sample yet, still ACTIVE | **WAIT.** Show projected end date based on observed traffic. |
+| Not enough sample yet, concluded early | **EXTEND** (Frequentist: relaunch with longer planned duration; Sequential: resume if possible). |
+| Effect << MDE | **ACCEPT NULL** if the planned MDE is the smallest ship-worthy effect; otherwise **BOOST POWER** and re-run. |
+| Variance too high | **BOOST POWER**: enable CUPED, enable Winsorization, switch to a less noisy metric proxy. |
+| Variant starved by traffic split | **EXTEND** (if remaining time is enough) or restart with rebalanced split. |
+| Exposure config is filtering | **NARROW the hypothesis** to the triggered cohort, or **EXTEND** to grow the triggered sample. |
+| Experiment finished, well-powered | **ACCEPT NULL.** "No effect" is a real finding when the experiment was sized for the MDE that matters. |
 
 When recommending EXTEND on an active experiment, the action is to update the experiment's end target (duration or sample size, whichever it was configured for). Don't fabricate the target number — derive it from the experiment's existing config, or use the power math in the sizing reference.
 

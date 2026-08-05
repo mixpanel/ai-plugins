@@ -1,19 +1,12 @@
 # Engine resolution — one convention for every skill in this plugin
 
-Skills in this plugin are **engine-agnostic**: they describe *what* to do against
-Mixpanel, never *how* to reach it. The "how" — the **engine** — is chosen once per
-project with `/mixpanel:install` and persisted in `.claude/mixpanel.json`. Every
-skill carries a short inline preamble with the resolution steps; this file holds
-the shared detail: the config schema, the per-engine execution rules, and the
-capability map.
+Skills in this plugin describe _what_ to do against Mixpanel, never _how_ to reach it. The "how" — the **engine** — is set up once per project with `/mixpanel:install`. There is **no config file**: the installation itself is the memory, and skills detect it (a registered Mixpanel MCP server, or an installed `mixpanel-headless` SDK). Every skill carries a short inline preamble with the resolution steps; this file holds the shared detail: the detection rules, the per-engine execution rules, and the capability map.
 
-A skill's only mode concern is **interactive vs non-interactive** (can it ask the
-user questions right now?). Engine differences end at capability resolution.
+A skill's only mode concern is **interactive vs non-interactive** (can it ask the user questions right now?). Engine differences end at capability resolution.
 
 ## Skill tag convention (CI-enforced)
 
-Every SKILL.md in this plugin declares whether it needs an engine, in
-frontmatter (the `metadata` field is part of the Agent Skills spec):
+Every SKILL.md in this plugin declares whether it needs an engine, in frontmatter (the `metadata` field is part of the Agent Skills spec):
 
 ```yaml
 metadata:
@@ -21,102 +14,47 @@ metadata:
 ```
 
 - `required` — the core flow queries or writes Mixpanel data; no engine → stop.
-- `optional` — the core flow works without an engine; engine-enhanced steps
-  use it when configured and fall back gracefully when not (never stop).
+- `optional` — the core flow works without an engine; engine-enhanced steps use it when one is detected and fall back gracefully when not (never stop).
 - `none` — the skill never touches live Mixpanel data.
 
-The tag is always explicit — omitting it fails CI, so a forgotten tag can
-never be mistaken for a deliberate `none`.
+The tag is always explicit — omitting it fails CI, so a forgotten tag can never be mistaken for a deliberate `none`.
 
-When `required` (or `optional`), the body must also carry a one-line pointer right under the
-title — frontmatter metadata is never loaded into model context, so the body
-line is what the model actually follows:
+When `required` (or `optional`), the body must also carry a one-line pointer right under the title — frontmatter metadata is never loaded into model context, so the body line is what the model actually follows:
 
 ```markdown
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 ```
 
-Skills may append short skill-specific notes to that line (e.g.
-monitor-metrics adds its `cap:*` rule). `scripts/check-engine-markers.sh`
-enforces both in CI — a skill without the tag fails, so a new skill can't
-ship without deciding, and an engine skill whose body forgets the pointer
-fails too.
+Skills may append short skill-specific notes to that line (e.g. monitor-metrics adds its `cap:*` rule). `scripts/check-engine-markers.sh` enforces both in CI — a skill without the tag fails, so a new skill can't ship without deciding, and an engine skill whose body forgets the pointer fails too.
 
 ---
 
-## Config file: `.claude/mixpanel.json`
-
-Lives at the root of the user's project. Written by `/mixpanel:install`. Safe to
-commit — it never contains credentials (those live in the MCP server's auth or in
-environment variables).
-
-```json
-{
-  "version": 1,
-  "engine": "mcp",
-  "region": "us",
-  "mcp": { "serverName": "mixpanel", "scope": "project", "url": "https://mcp.mixpanel.com/mcp" },
-  "headless": { "python": "python3", "package": "mixpanel-headless" },
-  "custom": { "instructions": "" }
-}
-```
-
-- Required: `version` (currently `1`), `engine` (`"mcp"` | `"headless"` | `"custom"`),
-  `region` (`"us"` | `"eu"` | `"in"`), plus the block matching the chosen engine.
-- Region → MCP URL map: `us` → `https://mcp.mixpanel.com/mcp`,
-  `eu` → `https://mcp-eu.mixpanel.com/mcp`, `in` → `https://mcp-in.mixpanel.com/mcp`.
-
-## Resolution algorithm
+## Resolution algorithm (detection, not configuration)
 
 Do this **once per session**, before any skill's Step 0, and cache the result:
 
-1. Read `.claude/mixpanel.json` from the project root.
-2. **Present and valid** → use its `engine`. Done.
-3. **Missing or unparseable** → if a Mixpanel MCP server is visibly connected in
-   this session (its tools are listed), use `engine: mcp` for now and offer to
-   persist that choice to `.claude/mixpanel.json`.
-4. Otherwise **STOP**. Tell the user Mixpanel isn't configured for this project
-   and direct them to run `/mixpanel:install`. Never guess an engine, never
-   hardcode a tool name or URL to work around a missing config.
+1. **MCP server connected?** If a Mixpanel MCP server is visible in this session (its tools are listed, or it is registered in the client's MCP config, e.g. the project's `.mcp.json`), the engine is **`mcp`**. The **region** comes from the server's URL: `mcp.mixpanel.com` → US, `mcp-eu.mixpanel.com` → EU, `mcp-in.mixpanel.com` → India.
+2. **Headless SDK installed?** Otherwise, if `mixpanel-headless` is importable in the project's Python environment (`python3 -c "import mixpanel_headless"` succeeds), the engine is **`headless`**. Auth and region come from the SDK's own configuration (service-account environment variables — see the SDK docs).
+3. Otherwise **STOP**. Tell the user Mixpanel isn't set up for this project and direct them to run `/mixpanel:install`. Never guess an engine, never hardcode a tool name or hand-build an API call to work around a missing setup.
+
+If both are present, prefer `mcp` unless the user says otherwise.
 
 ## Execution rules per engine
 
 ### `mcp`
 
-Build a **session tool map** once: enumerate the configured Mixpanel MCP server's
-tools in a single pass (tool search or the client's tool listing), then match each
-capability key below to a live tool **by what the tool does** (description and
-parameters), not by exact name — the "MCP hint" column is advisory only, names
-change. Cache the map for the session. If a required capability has no matching
-tool, stop and tell the user which capability is missing rather than guessing.
-Resolve only against the server named in `mcp.serverName` — never another
-Mixpanel connector.
+Build a **session tool map** once: enumerate the detected Mixpanel MCP server's tools in a single pass (tool search or the client's tool listing), then match each capability key below to a live tool **by what the tool does** (description and parameters), not by exact name — the "MCP hint" column is advisory only, names change. Cache the map for the session. If a required capability has no matching tool, stop and tell the user which capability is missing rather than guessing. Resolve only against the detected Mixpanel server — never another Mixpanel connector.
 
 ### `headless`
 
-Capabilities resolve to Python calls against the
-[`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless) SDK,
-executed via the shell (`headless.python` from config). Introspect the SDK
-surface once per session (e.g. `python3 -c "import mixpanel_headless; help(...)"`
-or the package's own discovery affordances) and map capability keys to SDK
-calls. On `ImportError` or an auth failure, stop and direct the user to
-`/mixpanel:install`. Prefer the live docs over any bundled notes if they
-conflict.
-
-### `custom`
-
-The user brought their own integration. Follow `custom.instructions` from the
-config verbatim; it describes how to perform Mixpanel actions in this project.
-If an action can't be expressed through those instructions, say so — don't fall
-back to another engine without asking.
+Capabilities resolve to Python calls against the [`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless) SDK, executed via the shell using the project's Python environment. Introspect the SDK surface once per session (e.g. `python3 -c "import mixpanel_headless; help(...)"` or the package's own discovery affordances) and map capability keys to SDK calls. On `ImportError` or an auth failure, stop and direct the user to `/mixpanel:install`. Prefer the live docs over any bundled notes if they conflict.
 
 ## Capability map
 
-Skills refer to actions by `cap:*` keys — never literal tool names. Hints are
-last-known names, advisory only.
+Skills refer to actions by `cap:*` keys — never literal tool names. Hints are last-known names, advisory only.
 
 | Capability key | Action it performs | MCP hint | Headless hint |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `cap:business-context` | Fetch org vocabulary / business context (project nicknames, acronyms, conventions) | `Get-Business-Context` | SDK context/metadata accessor |
 | `cap:update-business-context` | Update org/project business context | `Update-Business-Context` | SDK context/metadata writer |
 | `cap:list-projects` | List projects the user can access; resolve project id ↔ name | `Get-Projects` | SDK project listing |
@@ -145,7 +83,4 @@ last-known names, advisory only.
 | `cap:session-replays` | Fetch session replay data for given distinct_ids and window | `Get-User-Replays-Data` | SDK replay accessor |
 | `web-search` | External web search (not a Mixpanel capability) | runtime-provided | runtime-provided |
 
-When a skill says "run the query via `cap:run-query`", it means: perform that
-action through whatever this session's engine resolved the capability to. If you
-find yourself typing a literal Mixpanel tool name or hand-built API call into a
-plan, stop and resolve the capability instead.
+When a skill says "run the query via `cap:run-query`", it means: perform that action through whatever this session's engine resolved the capability to. If you find yourself typing a literal Mixpanel tool name or hand-built API call into a plan, stop and resolve the capability instead.

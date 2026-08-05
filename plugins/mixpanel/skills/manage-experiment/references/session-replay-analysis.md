@@ -17,15 +17,15 @@ Turn a quantitative experiment result into a behavior story using session replay
 
 ## When replays help, when they don't
 
-| Question                                                                                 | Replays help?                                                                         |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| "Why is conversion lower in treatment?"                                                  | Yes — behavior diff is observable.                                                    |
+| Question | Replays help? |
+| --- | --- |
+| "Why is conversion lower in treatment?" | Yes — behavior diff is observable. |
 | "Why is `Checkout Screen Viewed` 10× higher in treatment?" (changed-denominator suspect) | Yes — replays show whether users are _bouncing_ or _converting_ after they get there. |
-| "Why is `time_on_page` higher in treatment?"                                             | Yes — distinguishes engaged reading vs confused dwell.                                |
-| "Is the treatment shipping a regression on iOS only?"                                    | Sometimes — better answered first by segment breakdown.                               |
-| "Why is SRM failing?"                                                                    | No — replays don't show bucketing. Go to health checks.                               |
-| "What's the lift?"                                                                       | No — replays are qualitative; they explain _why_, not what.                           |
-| "Why hasn't this hit statsig yet?"                                                       | No — that's a sample/power question, not a behavior question.                         |
+| "Why is `time_on_page` higher in treatment?" | Yes — distinguishes engaged reading vs confused dwell. |
+| "Is the treatment shipping a regression on iOS only?" | Sometimes — better answered first by segment breakdown. |
+| "Why is SRM failing?" | No — replays don't show bucketing. Go to health checks. |
+| "What's the lift?" | No — replays are qualitative; they explain _why_, not what. |
+| "Why hasn't this hit statsig yet?" | No — that's a sample/power question, not a behavior question. |
 
 A useful heuristic: replays answer _behavioral_ questions. If the question isn't behavioral, replays will burn time without adding signal.
 
@@ -35,13 +35,13 @@ A useful heuristic: replays answer _behavioral_ questions. If the question isn't
 
 You're looking for **paired contrast**, not a random sample. Pick the cohort that maximizes signal for the specific question.
 
-| Question                                                             | Cohort A (replays to pull)                                 | Cohort B (replays to pull)                                  |
-| -------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------- |
-| Why is primary metric down in treatment?                             | Treatment users who **failed** the primary action          | Control users who **succeeded** at the primary action       |
-| Why is a guardrail regression appearing?                             | Treatment users who **triggered** the guardrail negatively | Control users who did NOT trigger it                        |
-| Why does treatment have a huge lift in `Screen Viewed` (denom shift) | Treatment users who reached the screen                     | Same users, looking at whether they completed the next step |
-| Why is engagement higher / lower in a specific segment?              | Treatment users in that segment                            | Control users in the same segment                           |
-| What does the new UI look like in practice?                          | Any treatment users who saw the change                     | Any control users to confirm the baseline UI                |
+| Question | Cohort A (replays to pull) | Cohort B (replays to pull) |
+| --- | --- | --- |
+| Why is primary metric down in treatment? | Treatment users who **failed** the primary action | Control users who **succeeded** at the primary action |
+| Why is a guardrail regression appearing? | Treatment users who **triggered** the guardrail negatively | Control users who did NOT trigger it |
+| Why does treatment have a huge lift in `Screen Viewed` (denom shift) | Treatment users who reached the screen | Same users, looking at whether they completed the next step |
+| Why is engagement higher / lower in a specific segment? | Treatment users in that segment | Control users in the same segment |
+| What does the new UI look like in practice? | Any treatment users who saw the change | Any control users to confirm the baseline UI |
 
 **Aim for ~5 replays per cohort.** Fewer and you're anecdote-shopping; many more and you'll just confirm what the first 5 already showed. If the first 5 are inconclusive or contradictory, pull 5 more before changing tactics.
 

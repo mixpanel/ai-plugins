@@ -21,7 +21,7 @@ metadata:
 
 # Manage Lexicon
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 This skill manages a Mixpanel project's Lexicon — the registry of tracked events and properties. It scores metadata quality, bulk-enriches missing descriptions / display names / tags, resets metadata, triages data quality issues, and renames or deletes tags. It runs as a single interactive session per project; do not invoke in parallel for the same project.
 
@@ -36,7 +36,7 @@ The skill is built from a small set of abstractions. The Execution section below
 Each command lives in its own file under `commands/` and is loaded on demand. Match commands explicitly (user names them) or implicitly (message matches a trigger phrase below).
 
 | Command | File | Match if message contains any of |
-|---|---|---|
+| --- | --- | --- |
 | `score-lexicon` | `commands/score-lexicon.md` | score, audit, health, grade |
 | `enrich-and-tag` | `commands/enrich-and-tag.md` | enrich, fill, auto-tag, generate descriptions |
 | `reset-lexicon` | `commands/reset-lexicon.md` | reset, wipe, clear metadata, clear tags |
@@ -67,7 +67,7 @@ Shown when no command was detected or inferred.
 The skill maintains a typed vocabulary of session state that persists across commands within a single session. Each command declares which keys it reads and writes at the top of its file (`Session reads:` / `Session writes:`). Commands check the session first and only fetch what's missing — never re-fetch what already exists.
 
 | Key | Shape | Description |
-|---|---|---|
+| --- | --- | --- |
 | `project_id`, `project_name` | string | Active project (set in Step 1). |
 | `event_list` | `string[]` | Event names in the project's Lexicon, post-exclusions. |
 | `event_details_cache` | map | `event_name → full metadata` (description, display_name, verified, tags, hidden, dropped). |
@@ -82,10 +82,12 @@ The skill maintains a typed vocabulary of session state that persists across com
 Always-on filters. Apply before building any working set, gap list, or write payload — excluded entities are never read, scored, or written.
 
 **Ignored events**
+
 - `$ae_first_open`, `$ae_updated`, `$ae_session`, `$ae_iap`, `$ae_crashed` — legacy auto-tracked mobile SDK events. Mixpanel-managed; customers cannot edit metadata.
 - `$session_start`, `$session_end` — virtual events (project session definitions). No Lexicon row.
 
 **Ignored properties**
+
 - Any property name starting with `mp_` — Mixpanel-managed reserved namespace.
 - Any property name starting with `$` — Mixpanel system properties.
 

@@ -2,8 +2,7 @@
 
 Set up the Lexicon metadata the agent needs to understand the data itself: event descriptions, property descriptions, and tags. This command **delegates to the `manage-lexicon` skill** run inline — it does not reimplement enrichment. Its job is to hand off cleanly and capture the result for the unified readiness status.
 
-**Session reads:** `org_id`, `project_id`, `project_name`, `caller_role`
-**Session writes:** `lexicon_score`
+**Session reads:** `org_id`, `project_id`, `project_name`, `caller_role` **Session writes:** `lexicon_score`
 
 ---
 

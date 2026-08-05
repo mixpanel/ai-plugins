@@ -13,7 +13,7 @@ metadata:
 
 # Mixpanel AI Readiness
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 This skill gets a customer's Mixpanel setup ready for AI assistants (the in-product agent and MCP clients). "Ready" means two layers are in place:
 
@@ -33,7 +33,7 @@ The skill is import-first: if the customer already has their business knowledge 
 Loaded on demand from `commands/`.
 
 | Command | File | Match if message contains any of |
-|---|---|---|
+| --- | --- | --- |
 | `status` | `commands/status.md` | how ready, ai-ready, score, audit, what's missing, check our setup |
 | `import-context` | `commands/import-context.md` | import, we already have, pull from, from notion/doc/drive, paste |
 | `setup-context` | `commands/setup-context.md` | set up context, configure context, interview, create context |
@@ -62,7 +62,7 @@ If a message matches more than one, show the Command menu. The natural full-onbo
 ## Session vocabulary
 
 | Key | Shape | Description |
-|---|---|---|
+| --- | --- | --- |
 | `org_id`, `org_name` | string | Active organization. |
 | `target_level` | `"org"`\|`"project"`\|`"both"` | Where context is written. |
 | `project_id`, `project_name` | string | Active project, when in scope. |
@@ -111,11 +111,11 @@ The shared tail of `setup-context` and `import-context`, and the canonical defin
 
 Properties of the underlying APIs, not preferences — every constraint below can change as Mixpanel's product evolves; verify current behavior, limits, and role requirements against Mixpanel docs before relying on the specifics.
 
-1. **Writing business context is full-replace.** No append/merge — the business-context write tool replaces the *entire* context at the target level. Because of this, the skill MUST read existing context, merge in memory, and run the Write flow (full diff + `CONFIRM`) before every write. Never write a partial document.
-2. **Permissions gate writes.** Org context needs org owner/admin; project context needs project owner/admin. Lexicon writes need project owner/admin. Anyone with project access can *read*. Check the caller's role for each target **before** doing work the user can't save.
+1. **Writing business context is full-replace.** No append/merge — the business-context write tool replaces the _entire_ context at the target level. Because of this, the skill MUST read existing context, merge in memory, and run the Write flow (full diff + `CONFIRM`) before every write. Never write a partial document.
+2. **Permissions gate writes.** Org context needs org owner/admin; project context needs project owner/admin. Lexicon writes need project owner/admin. Anyone with project access can _read_. Check the caller's role for each target **before** doing work the user can't save.
 3. **Markdown only, 50,000-char cap per context level.** Links/images/structured data in context are not fetched by the agent. If a draft nears the cap, trim the Schema Snapshot first.
-4. **Imported content is mapped, never passed through raw.** An existing doc is a *source*, not the output. Read it, map onto the fixed template, show what mapped and what's still empty, then confirm. Do not paste a customer's raw doc into business context.
-5. **Structure is fixed; source, content, and target are flexible.** The user chooses where context comes *from* (any connector or a file) and where it lives (org / project / both). The user never freehands the section structure.
+4. **Imported content is mapped, never passed through raw.** An existing doc is a _source_, not the output. Read it, map onto the fixed template, show what mapped and what's still empty, then confirm. Do not paste a customer's raw doc into business context.
+5. **Structure is fixed; source, content, and target are flexible.** The user chooses where context comes _from_ (any connector or a file) and where it lives (org / project / both). The user never freehands the section structure.
 6. **`manage-lexicon` can be unavailable.** Enrichment runs through it, per the "Delegate Lexicon, surface its result" behaviour rule. If the skill is unavailable, say so and let the user proceed with the business-context layer only — do not silently reimplement enrichment.
 
 ---
@@ -123,18 +123,23 @@ Properties of the underlying APIs, not preferences — every constraint below ca
 # Execution
 
 ## 1. Resolve organization and target
+
 Identify the org. Determine `target_level` (infer from the request, else ask: org / project / both). Resolve `project_id` if project is in scope. If no Mixpanel engine is available, direct the user to run `/mixpanel:install` and stop.
 
 ## 2. Permission pre-check
+
 Resolve `caller_role` for each target. Surface any level the user can't edit up front; adjust target or offer `EXPORT`.
 
 ## 3. Read existing context
+
 Populate `existing_context` for each target — mandatory before composing, per the "Read before write, always" rule.
 
 ## 3.5. Offer import-context first (if context is empty or thin)
+
 **BEFORE the command menu**, if the existing context for the target level is empty or minimal (< 500 chars):
 
 **Always ask first:**
+
 ```
 Your [org/project] context is currently [empty/minimal].
 
@@ -149,9 +154,11 @@ Where should I look? (or type 'interview' to skip import)
 Only proceed to `setup-context` or the menu if the user explicitly declines to import — types "interview" / "skip" / "scratch" — or explicitly invoked `setup-context` by name (asking to interview from scratch is itself a decline). This ensures most customers start with import-context (the preferred path per the "Import before interview" behaviour rule) without asking twice when the user already said which path they want.
 
 ## 4. Command loop
+
 Choose command (explicit → implicit → menu), load `commands/[command].md`, execute reusing session state, print `✅ Done.`, write the audit entry if the command wrote anything (per the "Audit trail" rule — read-only commands like `status` skip it), return to selection. Honour follow-on offers (Status → Import/Setup/Enrich; Import → Setup for gaps → Enrich).
 
 ## Reference files
+
 - `references/context-template.md` — fixed org and project section templates, following a what/where/who/how/why framework at project level (org level uses a subset, plus default-project routing); that file carries the note on alignment with Mixpanel's native context generation.
 - `references/interview-questions.md` — question bank per section, including the authority question.
 - `references/import-mapping.md` — how to map an arbitrary source doc onto the template, what to keep, what to drop.

@@ -3,6 +3,7 @@
 Fixed section structure for generated context. The project-level template follows the what/where/who/how/why framework used by Mixpanel's native context generation (the in-product "Generate with AI" feature) at the time of writing — verify alignment against current Mixpanel docs. The org-level template uses the subset of that framework that applies at org scope (what / who / how-we-measure-success), plus default-project routing. Whatever the native feature does today, the Org-Level and Project-Level Templates below are canonical for this skill — see `SKILL.md`'s "Structure is fixed; source, content, and target are flexible" constraint. Used by `import-context`, `setup-context`, and scored by `status`.
 
 ## Contents
+
 - Org-Level Template
 - Project-Level Template
 - Worked Example (Excerpt)
@@ -94,7 +95,7 @@ Timezone: [tz]
 
 The bracketed placeholders in the Org-Level and Project-Level Templates are fill instructions, not output. A completed section is grounded and terse, with no placeholders — for calibration:
 
-````markdown
+```markdown
 ## Business
 Acme runs a B2B expense-management SaaS; revenue is per-seat subscription plus
 interchange on the Acme corporate card. Finance and ops teams are the buyers.
@@ -102,7 +103,7 @@ interchange on the Acme corporate card. Finance and ops teams are the buyers.
 ## North Star & Key Metrics
 - **North star (in Mixpanel)**: weekly active approvers — an approver who actions ≥1 expense in a rolling 7-day window; best in-product signal that the workflow is adopted.
 - **True north star outside Mixpanel**: net revenue retention (lives in the billing system); closest Mixpanel proxy is seat activation rate.
-````
+```
 
 And a filled project-level Schema Snapshot — the volatile-quarantine convention rendered correctly (fenced, timestamped, counts nowhere else):
 

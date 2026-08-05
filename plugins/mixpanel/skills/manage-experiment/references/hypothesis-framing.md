@@ -15,11 +15,11 @@ All four properties of a good hypothesis — falsifiable, directional, mechanist
 
 > **If** `<change>`, **then** `<measurable outcome>` will `<direction>`, **because** `<mechanism>`.
 
-| Property            | Test                                                        | Failure mode                                                                                                                                                                                     |
-| ------------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Falsifiable**     | Could the data say "no"?                                    | "Improving UX" can't be falsified. "Increasing weekly retention by ≥2pp" can.                                                                                                                    |
-| **Directional**     | Is the predicted change up or down?                         | "Affecting cart size" leaves the polarity ambiguous; the system defaults to `direction: "up"` and the interpretation step misreads regressions as wins.                                          |
-| **Mechanistic**     | What's the proposed causal chain?                           | "Because users will see X and decide Y" is a mechanism. "We think it'll work" is not. Without a mechanism, the team can't tell when the metric they picked is actually downstream of the change. |
+| Property | Test | Failure mode |
+| --- | --- | --- |
+| **Falsifiable** | Could the data say "no"? | "Improving UX" can't be falsified. "Increasing weekly retention by ≥2pp" can. |
+| **Directional** | Is the predicted change up or down? | "Affecting cart size" leaves the polarity ambiguous; the system defaults to `direction: "up"` and the interpretation step misreads regressions as wins. |
+| **Mechanistic** | What's the proposed causal chain? | "Because users will see X and decide Y" is a mechanism. "We think it'll work" is not. Without a mechanism, the team can't tell when the metric they picked is actually downstream of the change. |
 | **Bounded in time** | Does the predicted effect occur within a measurable window? | Day-30 LTV claims need a ≥30-day experiment. A 2-week test on a 30-day metric can't measure the real effect (the metric isn't mature yet) and invites a noise-driven false read. |
 
 ## When the user gives you a one-liner
@@ -36,14 +36,14 @@ Ask them to commit to five things, in order. Don't proceed until you have all fi
 
 The mechanism predicts the _kind_ of metric that should move. Use this mapping as a sanity check:
 
-| Mechanism flavour                                        | Likely primary-metric class                                                                           | Anti-pattern                                       |
-| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Reduces friction at a specific step                      | Step conversion rate (funnel-typed)                                                                   | Headline retention metric                          |
-| Surfaces a new option / increases discoverability        | Click-through or first-use rate on the surfaced option (conversion)                                   | Total events per user                              |
-| Reorders information / changes salience                  | Time-to-task, completion rate on the salient step                                                     | Account-level revenue                              |
-| Changes the cost of an action (price, paywall, friction) | Conversion-to-paid, refund rate, cancel rate (with `direction: "down"`)                               | DAU                                                |
-| Adds a new content / recommendation system               | CTR on recommendations, downstream conversion                                                         | Aggregate engagement                               |
-| Long-term retention play (referrals, loyalty)            | Day-7 or Week-1 retention as leading proxy; lagging Day-30 stays a post-launch monitor, not a primary | Day-30 retention as primary on a 2-week experiment |
+| Mechanism flavour | Likely primary-metric class | Anti-pattern |
+| --- | --- | --- |
+| Reduces friction at a specific step | Step conversion rate (funnel-typed) | Headline retention metric |
+| Surfaces a new option / increases discoverability | Click-through or first-use rate on the surfaced option (conversion) | Total events per user |
+| Reorders information / changes salience | Time-to-task, completion rate on the salient step | Account-level revenue |
+| Changes the cost of an action (price, paywall, friction) | Conversion-to-paid, refund rate, cancel rate (with `direction: "down"`) | DAU |
+| Adds a new content / recommendation system | CTR on recommendations, downstream conversion | Aggregate engagement |
+| Long-term retention play (referrals, loyalty) | Day-7 or Week-1 retention as leading proxy; lagging Day-30 stays a post-launch monitor, not a primary | Day-30 retention as primary on a 2-week experiment |
 
 When the user's mechanism and proposed metric live on different rows of this table, push back — that's the **hypothesis ↔ metric mismatch** pitfall.
 

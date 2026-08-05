@@ -1,9 +1,8 @@
 # Command: status
 
-The unified AI-readiness readout. Scores both layers in one view — business context completeness *and* Lexicon coverage — and tells the user exactly what's missing and which command fixes it. This is the re-engagement hook: run it on any account to see where it stands and what to do next. It is read-only.
+The unified AI-readiness readout. Scores both layers in one view — business context completeness _and_ Lexicon coverage — and tells the user exactly what's missing and which command fixes it. This is the re-engagement hook: run it on any account to see where it stands and what to do next. It is read-only.
 
-**Session reads:** `org_id`, `org_name`, `target_level`, `project_id`, `project_name`, `existing_context`, `lexicon_score`
-**Session writes:** `existing_context`, `lexicon_score` (refreshes both)
+**Session reads:** `org_id`, `org_name`, `target_level`, `project_id`, `project_name`, `existing_context`, `lexicon_score` **Session writes:** `existing_context`, `lexicon_score` (refreshes both)
 
 ---
 

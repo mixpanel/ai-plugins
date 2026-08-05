@@ -1,7 +1,9 @@
 {
   "name": "mixpanel",
   "version": "1.0.0",
-  "description": "Mixpanel skills for Cursor — engine-agnostic (MCP server or mixpanel-headless SDK). Run the install skill to configure.",
-  "author": { "name": "Mixpanel" },
+  "description": "Mixpanel skills for AI coding agents — analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK.",
+  "author": {
+    "name": "Mixpanel"
+  },
   "license": "Apache-2.0"
 }

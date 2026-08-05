@@ -60,13 +60,13 @@ Any other shape — a status change combined with metadata or ruleset edits, or 
 
 ### Summary
 
-| Call shape                                       | What happens                                             |
-| ------------------------------------------------ | -------------------------------------------------------- |
-| Archive (alone or combined with other edits)     | Archives. **Other fields silently dropped.**             |
-| Restore (alone or combined with other edits)     | Restores to disabled. **Other fields silently dropped.** |
-| Enable/disable alone                             | Status flip only; ruleset preserved.                     |
-| Enable/disable combined with metadata or ruleset | Status + metadata applied together; merge with current.  |
-| Metadata or ruleset edits (no status change)     | Metadata/ruleset merged with current flag.               |
+| Call shape | What happens |
+| --- | --- |
+| Archive (alone or combined with other edits) | Archives. **Other fields silently dropped.** |
+| Restore (alone or combined with other edits) | Restores to disabled. **Other fields silently dropped.** |
+| Enable/disable alone | Status flip only; ruleset preserved. |
+| Enable/disable combined with metadata or ruleset | Status + metadata applied together; merge with current. |
+| Metadata or ruleset edits (no status change) | Metadata/ruleset merged with current flag. |
 
 ## Multi-rollout-group flags (UI-only)
 

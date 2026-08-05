@@ -1,7 +1,6 @@
 # Command — Enrich & Tag Lexicon
 
-> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
-> **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `existing_tags`
+> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map` **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `existing_tags`
 
 Auto-generate display names, descriptions, and tags for events and properties that are missing them. One combined preview, one confirmation, then three sequential write groups: events → tags → properties. Execute silently.
 
@@ -16,6 +15,7 @@ Ensure the required Session reads are loaded; load any that aren't.
 Build three gap lists:
 
 **Event metadata gaps:** for each event, record which of these are empty:
+
 - `description` (null/empty)
 - `display_name` (null OR equals raw event name)
 
@@ -48,9 +48,9 @@ Infer purpose from the entity name plus schema and business context. One to two 
 
 Assign one to three tags per event, combining two strategies:
 
-*Prefix clustering:* group events by name prefix when the cluster maps cleanly to a product area. Examples: `checkout_*` → "Checkout", `onboarding_*` → "Onboarding", `$mp_*` / `$ae_*` → "Mixpanel System".
+_Prefix clustering:_ group events by name prefix when the cluster maps cleanly to a product area. Examples: `checkout_*` → "Checkout", `onboarding_*` → "Onboarding", `$mp_*` / `$ae_*` → "Mixpanel System".
 
-*Functional domain:* match the event verb/noun to the customer's product domain. Pull domain naming from the business context above. Baseline patterns: commerce events (purchase, cart, payment) → "Commerce"; auth events (login, signup, register) → "Authentication"; engagement events (click, view, navigate) → "Engagement"; errors (error, fail, crash) → "Errors". These are starting points — propose domain-fitting tags from the business context when the defaults don't match (e.g., fintech transactions, healthtech consults, gaming sessions).
+_Functional domain:_ match the event verb/noun to the customer's product domain. Pull domain naming from the business context above. Baseline patterns: commerce events (purchase, cart, payment) → "Commerce"; auth events (login, signup, register) → "Authentication"; engagement events (click, view, navigate) → "Engagement"; errors (error, fail, crash) → "Errors". These are starting points — propose domain-fitting tags from the business context when the defaults don't match (e.g., fintech transactions, healthtech consults, gaming sessions).
 
 ---
 

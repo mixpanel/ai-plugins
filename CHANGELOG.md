@@ -2,16 +2,17 @@
 
 ## mixpanel 1.0.0 — 2026-08-05
 
-New general-purpose plugin: **`mixpanel`** (engine-agnostic).
+New general-purpose plugin: **`mixpanel`**.
 
 - One plugin for all regions and access methods. The engine — Mixpanel MCP
-  server (US/EU/India), the `mixpanel-headless` Python SDK, or a custom
-  integration — is chosen per project with the new `install` skill and
-  persisted to `.claude/mixpanel.json`.
+  server (US/EU/India) or the `mixpanel-headless` Python SDK — is set up per
+  project with the new `install` skill; skills detect the installed engine,
+  no config file needed.
 - New `ENGINE.md` convention: skills express Mixpanel actions as `cap:*`
   capabilities resolved against the configured engine; no hardcoded tool
   names or URLs.
-- All 11 skills migrated from `mixpanel-mcp` and made engine-agnostic.
+- All 11 skills migrated from `mixpanel-mcp` and decoupled from any specific
+  engine.
 - Legacy plugins `mixpanel-mcp`, `mixpanel-mcp-eu`, `mixpanel-mcp-in` are
   **retired**: removed from the marketplace and auto-migrated to `mixpanel`
   via the `renames` map (Claude Code ≥ 2.1.193). Their source lives at tag

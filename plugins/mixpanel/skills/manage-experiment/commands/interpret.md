@@ -43,13 +43,13 @@ Experiment-details has two parallel data paths — live (preferred) and cached. 
 
 ### Verdict table
 
-| Situation                                                              | Recommendation                                                                                                                                                                       |
-| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Situation | Recommendation |
+| --- | --- |
 | Trust ✓, primary polarity positive, guardrails ✓, magnitude meaningful | **SHIP.** Conclude the experiment via its decide lifecycle action, naming the winning variant and a rationale message. **Confirm with the user first — concluding is irreversible.** |
-| Trust ✓, primary polarity positive, guardrail polarity negative        | **ITERATE.** Investigate the regression; do not auto-ship.                                                                                                                           |
-| Trust ✓, primary polarity neutral after target sample reached          | **KILL or ITERATE.** Use the inconclusive-results playbook in [../references/why-no-statsig.md](../references/why-no-statsig.md).                                                    |
-| Trust ✓, target sample/duration not yet reached                        | **WAIT** (or extend, or restart with more power — see [../references/why-no-statsig.md](../references/why-no-statsig.md)).                                                           |
-| Trust ✗                                                                | **DO NOT DECIDE.** Report the failure and recommend remediation from [../references/health-check-interpretation.md](../references/health-check-interpretation.md).                   |
+| Trust ✓, primary polarity positive, guardrail polarity negative | **ITERATE.** Investigate the regression; do not auto-ship. |
+| Trust ✓, primary polarity neutral after target sample reached | **KILL or ITERATE.** Use the inconclusive-results playbook in [../references/why-no-statsig.md](../references/why-no-statsig.md). |
+| Trust ✓, target sample/duration not yet reached | **WAIT** (or extend, or restart with more power — see [../references/why-no-statsig.md](../references/why-no-statsig.md)). |
+| Trust ✗ | **DO NOT DECIDE.** Report the failure and recommend remediation from [../references/health-check-interpretation.md](../references/health-check-interpretation.md). |
 
 For multi-variant tests, the special success-without-a-single-variant choices (ship-without-a-variant, defer-the-decision), and the exact decide-call shape, see [../references/lifecycle-handoff.md](../references/lifecycle-handoff.md).
 
@@ -93,15 +93,15 @@ Look up the situation in the **Verdict table** in Components. If the recommendat
 
 ### 3. Going deeper (open references on demand)
 
-| User asks about…                                                                    | Open                                                                                                   |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| SRM failing, Retro A/A failing, exposures insufficient, or any trustworthiness fail | [../references/health-check-interpretation.md](../references/health-check-interpretation.md)           |
-| "Translate this lift / CI / p-value into English"                                   | [../references/per-metric-interpretation.md](../references/per-metric-interpretation.md)               |
-| "Why hasn't this hit statsig yet? Should we wait or stop?"                          | [../references/why-no-statsig.md](../references/why-no-statsig.md)                                     |
-| "Which segments should I break this down on?"                                       | [../references/segment-of-interest-selection.md](../references/segment-of-interest-selection.md)       |
-| "What does this segment-by-segment result mean?"                                    | [../references/segment-breakdown-interpretation.md](../references/segment-breakdown-interpretation.md) |
-| "Can session replays help explain this result?"                                     | [../references/session-replay-analysis.md](../references/session-replay-analysis.md)                   |
-| "How do I actually conclude this experiment? Multi-variant ship?"                   | [../references/lifecycle-handoff.md](../references/lifecycle-handoff.md)                               |
+| User asks about… | Open |
+| --- | --- |
+| SRM failing, Retro A/A failing, exposures insufficient, or any trustworthiness fail | [../references/health-check-interpretation.md](../references/health-check-interpretation.md) |
+| "Translate this lift / CI / p-value into English" | [../references/per-metric-interpretation.md](../references/per-metric-interpretation.md) |
+| "Why hasn't this hit statsig yet? Should we wait or stop?" | [../references/why-no-statsig.md](../references/why-no-statsig.md) |
+| "Which segments should I break this down on?" | [../references/segment-of-interest-selection.md](../references/segment-of-interest-selection.md) |
+| "What does this segment-by-segment result mean?" | [../references/segment-breakdown-interpretation.md](../references/segment-breakdown-interpretation.md) |
+| "Can session replays help explain this result?" | [../references/session-replay-analysis.md](../references/session-replay-analysis.md) |
+| "How do I actually conclude this experiment? Multi-variant ship?" | [../references/lifecycle-handoff.md](../references/lifecycle-handoff.md) |
 
 ### 4. Output
 

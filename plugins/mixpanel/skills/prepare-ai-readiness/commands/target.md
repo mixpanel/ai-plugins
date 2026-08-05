@@ -2,8 +2,7 @@
 
 Change which level(s) the skill writes business context to: org-level, project-level, or both.
 
-**Session reads:** `org_id`, `org_name`, `project_id`, `project_name`, `caller_role`
-**Session writes:** `target_level`
+**Session reads:** `org_id`, `org_name`, `project_id`, `project_name`, `caller_role` **Session writes:** `target_level`
 
 ---
 
@@ -32,6 +31,7 @@ Update `target_level` to `"org"`, `"project"`, or `"both"`. Confirm back to the 
 ## Follow-on
 
 Offer the next natural step based on where they are in the workflow:
+
 - If they haven't run `status` yet: "Want me to check your AI readiness **status** first?"
 - If they have context to import: "Ready to **import** your existing context?"
 - Otherwise: "Ready to **set up** context from scratch?"

@@ -1,7 +1,6 @@
 # Command — Reset Lexicon
 
-> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`
-> **Session writes:** `event_details_cache`, `property_details_cache`
+> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache` **Session writes:** `event_details_cache`, `property_details_cache`
 
 Clear descriptions, display names, and/or tags from events and properties. Destructive — always preview, then require literal `CONFIRM` before any writes. Execute silently.
 
@@ -155,6 +154,7 @@ Reset complete. The cleared fields are now empty across [N] events and [N] prope
 ```
 
 Selection handling:
+
 - **(a)** → Read `commands/enrich-and-tag.md` and execute. Session cache already reflects the cleared state, so `enrich-and-tag` picks them up as gaps and regenerates.
 - **(b)** → Return control to the Execution loop.
 

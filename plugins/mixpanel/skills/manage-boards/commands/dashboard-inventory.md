@@ -8,15 +8,14 @@ Lists all dashboards in a project with report counts, ownership, and metadata. P
 
 ### Phase 1 — Fetch all dashboards
 
-Fetch the dashboard set per the **Fetching the dashboard set** rule, reusing `dashboard_list_cache` if it
-is already populated (e.g. from a prior cleanup command). Only re-fetch if the
-cache is empty.
+Fetch the dashboard set per the **Fetching the dashboard set** rule, reusing `dashboard_list_cache` if it is already populated (e.g. from a prior cleanup command). Only re-fetch if the cache is empty.
 
 ### Phase 2 — Enrich with layout data
 
 For each dashboard, read its full layout. Fire in parallel (batches of 5).
 
 Extract per dashboard:
+
 - **Report count:** number of report cells
 - **Report names:** the name of each report cell
 - **Text card count:** number of text cells
@@ -44,9 +43,7 @@ Total: 12 dashboards | 54 reports | Avg 4.5 reports/board
 
 ### Phase 4 — Optional detail drill-down
 
-After showing the catalog, if the user asks about a specific dashboard, show
-full details: all report names, description, text card contents. This data is
-already in `dashboard_layout_cache` — no additional calls needed.
+After showing the catalog, if the user asks about a specific dashboard, show full details: all report names, description, text card contents. This data is already in `dashboard_layout_cache` — no additional calls needed.
 
 ### Phase 5 — Optional export
 
@@ -63,7 +60,7 @@ The catalog table above, plus the summary line. Return control to router.
 ## Error Handling
 
 | Situation | Action |
-|-----------|--------|
+| --- | --- |
 | Fetch returns empty | "No dashboards in this project." Return. |
 | Layout read fails for one board | Show row with "⚠️ Could not inspect" in Reports column |
 | Large project (50+ dashboards) | Process in batches of 5, show progress: "Inspecting 15/52..." |

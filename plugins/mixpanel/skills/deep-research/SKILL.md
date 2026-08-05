@@ -8,7 +8,7 @@ metadata:
 
 # Deep Research / Metric Investigation
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 This skill is a structured investigation, not a one-shot answer.
 
@@ -20,7 +20,7 @@ This skill is a structured investigation, not a one-shot answer.
 
 ## When to use this skill
 
-Trigger when the user wants to understand *why* something happened in their data. Common phrasings:
+Trigger when the user wants to understand _why_ something happened in their data. Common phrasings:
 
 - "Why did [metric] drop / spike / change?"
 - "Can you do a deep dive on [X]?"
@@ -48,8 +48,7 @@ State your assumptions and ask the user to confirm before continuing. The final 
 
 ### Phase 2 — Validate and plan
 
-Run small exploratory queries to confirm data exists in the analysis window. Be resilient — try different approaches if your first attempts don't work.
-If volume is zero, partial, or anomalously low, surface that to the user before going further.
+Run small exploratory queries to confirm data exists in the analysis window. Be resilient — try different approaches if your first attempts don't work. If volume is zero, partial, or anomalously low, surface that to the user before going further.
 
 Then present a compact plan:
 

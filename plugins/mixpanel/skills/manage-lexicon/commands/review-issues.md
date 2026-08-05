@@ -1,7 +1,6 @@
 # Command — Review Issues
 
-> **Session reads:** `event_list`, `volume_rank_map`, `event_details_cache`
-> **Session writes:** `issues_list`, `event_list`, `volume_rank_map`
+> **Session reads:** `event_list`, `volume_rank_map`, `event_details_cache` **Session writes:** `issues_list`, `event_list`, `volume_rank_map`
 
 Fetch open data quality issues, triage by severity, produce a prioritised report. Execute silently.
 
@@ -41,24 +40,26 @@ Evaluate each issue against these patterns in order. Assign to the first group t
 If `volume_rank_map` is not in session, fetch it now: run the payload in `assets/volume-ranking-query.json` and parse into `volume_rank_map: { event_name: { volume, rank } }`. If the query fails, proceed with `volume_rank_map = {}` — severity scoring below will skip the volume tiebreaker.
 
 **Null Property Values:**
+
 - High → property on top-20 event OR key dimension (`user_id`, `content_id`, `platform`, `plan_id`, `subscription_status`, `device_type`)
 - Medium → property on active event (has 7-day volume)
 - Low → on hidden / dropped / zero-volume event
 
 **Type Drift:**
+
 - High → key property OR affects >5 events
 - Medium → 2–5 events
 - Low → 1 event
 
 **Volume Anomalies:**
+
 - High → >50% drop on top-20 event
 - Medium → >50% drop on any active event
 - Low → spike (informational)
 
 ### Rank
 
-Sort: High → Medium → Low. Within severity: highest event volume first.
-Top 5 critical = first 5 High (fill from Medium if <5).
+Sort: High → Medium → Low. Within severity: highest event volume first. Top 5 critical = first 5 High (fill from Medium if <5).
 
 ---
 
@@ -104,6 +105,7 @@ Run deep-dive context queries or dismiss issues based on user choice.
 ### Deep Dive
 
 User picks by number or event name. Run contextual query:
+
 - Null values → Insights breakdown by null property, 30 days
 - Type drift → Insights breakdown by drifting property, 30 days
 - Volume anomaly → Insights trend, daily, 30 days

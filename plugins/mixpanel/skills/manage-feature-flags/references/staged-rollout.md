@@ -6,12 +6,12 @@ The pattern is **logarithmic, not linear**. Doubling at each stage exposes the f
 
 ## Recommended cadence (default for most flags)
 
-| Stage  | Rollout | Watch for                                              | Wait before next stage |
-| ------ | ------- | ------------------------------------------------------ | ---------------------- |
-| Canary | 1%      | Crash rate, error logs, support tickets                | 24 hours minimum       |
-| Early  | 10%     | All canary signals + business KPI directional movement | 24–48 hours            |
-| Mid    | 50%     | Sustained KPI signal, cohort-level differences         | 24–72 hours            |
-| Full   | 100%    | Final guardrail check, support volume                  | —                      |
+| Stage | Rollout | Watch for | Wait before next stage |
+| --- | --- | --- | --- |
+| Canary | 1% | Crash rate, error logs, support tickets | 24 hours minimum |
+| Early | 10% | All canary signals + business KPI directional movement | 24–48 hours |
+| Mid | 50% | Sustained KPI signal, cohort-level differences | 24–72 hours |
+| Full | 100% | Final guardrail check, support volume | — |
 
 Wait times are conservative defaults — calibrate to your monitoring latency and product risk. Faster monitoring (real-time crash reporting) supports shorter holds; slower-emerging signals (refund rates, retention) need longer holds.
 

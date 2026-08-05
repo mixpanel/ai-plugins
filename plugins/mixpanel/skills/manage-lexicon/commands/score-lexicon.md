@@ -1,7 +1,6 @@
 # Command — Score Lexicon
 
-> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `volume_rank_map`
-> **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
+> **Session reads:** `event_list`, `event_details_cache`, `property_names`, `volume_rank_map` **Session writes:** `event_list`, `event_details_cache`, `property_names`, `property_details_cache`, `volume_rank_map`
 
 Audit Lexicon metadata coverage and compute a health score (0–100). Self-contained pipeline: fetch → audit → score → report. Execute silently — no phase announcements.
 
@@ -23,13 +22,13 @@ Ensure the required Session reads are loaded; load any that aren't.
 
 Score every event in the working set against the four metadata fields plus hygiene.
 
-| Field | Pass condition |
-|---|---|
-| `description` | Non-null, non-empty |
-| `display_name` | Non-null AND differs from raw event name |
-| `verified` | `true` |
-| `tags` | Non-empty array |
-| `hygiene` | Zero 7-day volume → must be hidden/dropped. If not → ⚠️ |
+| Field          | Pass condition                                          |
+| -------------- | ------------------------------------------------------- |
+| `description`  | Non-null, non-empty                                     |
+| `display_name` | Non-null AND differs from raw event name                |
+| `verified`     | `true`                                                  |
+| `tags`         | Non-empty array                                         |
+| `hygiene`      | Zero 7-day volume → must be hidden/dropped. If not → ⚠️ |
 
 Compute per-field coverage: `(pass count) / (working set size) × 100`.
 
@@ -43,9 +42,9 @@ Score every property against description and display name.
 
 For each property in `property_details_cache` (full set, post-exclusions):
 
-| Field | Pass condition |
-|---|---|
-| `description` | Non-null, non-empty |
+| Field          | Pass condition                     |
+| -------------- | ---------------------------------- |
+| `description`  | Non-null, non-empty                |
 | `display_name` | Non-null AND differs from raw name |
 
 Compute coverage for event properties and user properties separately.
@@ -58,26 +57,26 @@ Combine the sub-scores into a single weighted 0–100 score and grade.
 
 Weighted average (each sub-score 0–100):
 
-| Sub-score | Weight |
-|---|---|
-| Event description coverage | 20% |
-| Event display name coverage | 8% |
-| Event verified coverage | 15% |
-| Event tagging coverage | 10% |
-| Property description coverage | 20% |
-| Property display name coverage | 7% |
-| Dropped/hidden hygiene | 10% |
-| Data quality issues | 10% |
+| Sub-score                      | Weight |
+| ------------------------------ | ------ |
+| Event description coverage     | 20%    |
+| Event display name coverage    | 8%     |
+| Event verified coverage        | 15%    |
+| Event tagging coverage         | 10%    |
+| Property description coverage  | 20%    |
+| Property display name coverage | 7%     |
+| Dropped/hidden hygiene         | 10%    |
+| Data quality issues            | 10%    |
 
 **Issues sub-score:** if `issues_list` is in session → `max(0, 100 - (open_count × 2))`. Otherwise redistribute that 10% weight across the other six sub-scores. Do not display a `0/100` issues row when no data is available.
 
-| Score | Grade |
-|---|---|
-| 90–100 | A — Excellent |
-| 75–89 | B — Good |
-| 60–74 | C — Needs work |
-| 40–59 | D — Poor |
-| 0–39 | F — Critical |
+| Score  | Grade          |
+| ------ | -------------- |
+| 90–100 | A — Excellent  |
+| 75–89  | B — Good       |
+| 60–74  | C — Needs work |
+| 40–59  | D — Poor       |
+| 0–39   | F — Critical   |
 
 ---
 
@@ -119,6 +118,7 @@ ZERO-METADATA EVENTS
 Offer the bulk enrich handoff if the score report surfaced any actionable gaps.
 
 Gap conditions (any of):
+
 - Event description coverage < 100%
 - Event display name coverage < 100%
 - Event tag coverage < 100%
@@ -134,6 +134,7 @@ Gap conditions (any of):
 ```
 
 Selection handling:
+
 - **(a)** → Read `commands/enrich-and-tag.md` and execute. Session cache is already populated — `enrich-and-tag` reuses it with no re-fetching.
 - **(b)** → Return control to the Execution loop.
 

@@ -22,8 +22,7 @@ Staleness is a first-class signal here — a board with many reports that nobody
 
 ### Phase 1 — Fetch all dashboards (with recency)
 
-1. Fetch the dashboard set per the **Fetching the dashboard set** rule (sortable entity-search preferred,
-   sorting on the most recent timestamp the API exposes; plain list as fallback).
+1. Fetch the dashboard set per the **Fetching the dashboard set** rule (sortable entity-search preferred, sorting on the most recent timestamp the API exposes; plain list as fallback).
 2. For each dashboard, extract whatever the response provides:
    - `id`, `title`, `description`
    - `last_modified` (a.k.a. modified/updated), `last_viewed` (if present), `created_at`
@@ -37,6 +36,7 @@ Staleness is a first-class signal here — a board with many reports that nobody
 For each dashboard from Phase 1, read its full layout. Fire in parallel (batches of 5 to avoid rate limits). Skip any dashboard already in `dashboard_layout_cache`.
 
 From the layout, derive and cache:
+
 - **Report count:** number of report cells
 - **Text-only count:** number of text cells
 - **Total cells:** sum of all cells
@@ -44,14 +44,14 @@ From the layout, derive and cache:
 
 ### Phase 3 — Classification
 
-Compute `days_since` from the chosen recency timestamp (today minus that date). Then classify. **Staleness and structure are independent axes** — evaluate both; a board may carry a structural flag *and* a stale flag.
+Compute `days_since` from the chosen recency timestamp (today minus that date). Then classify. **Staleness and structure are independent axes** — evaluate both; a board may carry a structural flag _and_ a stale flag.
 
 > **Use the bundled helper for staleness and duplicate math.** Run `scripts/dashboard_utils.py` rather than re-deriving title normalization or recency arithmetic by hand each run — it is the single source of truth for `days_since(...)`, `normalize_title(...)`, and `is_probable_duplicate(...)`. This keeps results deterministic across runs.
 
 **Structural flags** (from layout):
 
 | Category | Criteria | Flag |
-|----------|----------|------|
+| --- | --- | --- |
 | **Empty** | 0 report cells AND 0 text cells (or only a single default text card) | 🟡 Empty |
 | **Text-only** | 0 report cells but has text cards | 🟡 Text-only |
 | **Sparse** | 1-2 report cells only | 🔵 Sparse |
@@ -60,15 +60,15 @@ Compute `days_since` from the chosen recency timestamp (today minus that date). 
 
 **Recency flag** (from `days_since`, only if a timestamp was found):
 
-| Category | Criteria | Flag |
-|----------|----------|------|
-| **Stale** | `days_since` ≥ 90 | 🔴 Stale ([N]d) |
-| **Aging** | 60 ≤ `days_since` < 90 | 🟤 Aging ([N]d) |
-| **Recent** | `days_since` < 60 | (no flag) |
+| Category   | Criteria               | Flag            |
+| ---------- | ---------------------- | --------------- |
+| **Stale**  | `days_since` ≥ 90      | 🔴 Stale ([N]d) |
+| **Aging**  | 60 ≤ `days_since` < 90 | 🟤 Aging ([N]d) |
+| **Recent** | `days_since` < 60      | (no flag)       |
 
 > Default threshold is 90 days (a skill-chosen heuristic). If the user names a different window ("anything untouched for 6 months", "stale = 30 days"), use theirs. State the threshold in the report header.
 
-**Cleanup priority** — order the action list by: 🔴 Stale **and** (Empty/Text-only/Sparse) first → 🔴 Stale + Active → 🟠 duplicates → 🟡 structural-only. The worst offenders are old *and* thin.
+**Cleanup priority** — order the action list by: 🔴 Stale **and** (Empty/Text-only/Sparse) first → 🔴 Stale + Active → 🟠 duplicates → 🟡 structural-only. The worst offenders are old _and_ thin.
 
 **Duplicate detection** — delegated to `scripts/dashboard_utils.py`. Run `is_probable_duplicate(a, b)` pairwise across the board list; flag both members of any matching pair. (It matches on normalized-title similarity ≥ 0.80 or one normalized title contained in the other — the module is the source of truth for the exact rule.)
 
@@ -133,7 +133,7 @@ Return control to router.
 ## Error Handling
 
 | Situation | Action |
-|-----------|--------|
+| --- | --- |
 | Entity-search unavailable | Fall back to the plain dashboard list (no sort); recency still parsed if present |
 | No timestamp field in response | Skip Stale/Aging classification, note in header, show structural flags only |
 | Fetch returns empty | "No dashboards found in this project." Return. |

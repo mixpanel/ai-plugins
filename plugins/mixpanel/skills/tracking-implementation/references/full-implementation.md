@@ -59,7 +59,7 @@ Research across all available sources. The goal is to build a business model pic
 4. "What compliance or consent constraints should we respect before any tracking starts?"
 
 | Source | What to extract |
-|---|---|
+| --- | --- |
 | Marketing site (homepage, product pages, pricing) | Core value proposition, target customer (B2B vs B2C, industry, company size), pricing model (subscription, usage-based, freemium, transactional), platform (web, iOS, Android) |
 | Pricing page specifically | Plan tiers -> infer Mixpanel plan eligibility; free vs paid conversion funnel structure; whether Group Analytics is plausible |
 | About / Team / Careers pages | Company stage, team size, open roles (reveal growth priorities and tech stack), founding story |
@@ -89,7 +89,7 @@ Lead with the business model summary rather than raw product facts:
 Then ask only the questions research couldn't answer:
 
 | Remaining question | Decision It Drives |
-|---|---|
+| --- | --- |
 | Do you use a CDP or data warehouse? (Segment, Rudderstack, mParticle, Snowflake, BigQuery) | If yes -> skip SDK installation; route through integration in Phase 6 |
 | Do you have the Group Analytics add-on? (if not inferable from pricing page) | If yes -> surface Group Analytics in Phase 3 |
 | What are the 2--3 most important business questions you want Mixpanel to answer? | Drives event selection, KPI design, and tracking plan in Phases 1--4 |
@@ -97,7 +97,7 @@ Then ask only the questions research couldn't answer:
 **If neither a codebase nor a URL is available**, ask all five questions conversationally:
 
 | Question | Decision It Drives |
-|---|---|
+| --- | --- |
 | What type of product? (SaaS, e-commerce, media, fintech, mobile game, marketplace, internal tool) | Vertical-specific event examples in Phase 4 |
 | What platform(s)? (web, iOS, Android, React Native, Flutter, server-side only, combo) | SDK selection in Phase 6 |
 | Do you use a CDP or data warehouse? (Segment, Rudderstack, mParticle, Snowflake, BigQuery) | If yes -> skip SDK installation; route through integration in Phase 6 |
@@ -145,7 +145,7 @@ Store all confirmed answers in the Context Block. They gate which content you su
 **B. Determine project structure** (before creating anything)
 
 | Scenario | Recommendation |
-|---|---|
+| --- | --- |
 | Web + mobile, same product, same users | Single project |
 | Completely separate products / user bases | Separate projects |
 | Same product, different feature sets per platform | Single project + `platform` super property |
@@ -166,7 +166,7 @@ Once dev and production projects exist, ask:
 > "Can you copy the project token for each project? You'll find them at mixpanel.com -> your project -> Project Settings -> Project Token. Paste both here and I'll inject them directly into the initialization code -- no manual search-and-replace needed."
 
 | What to collect | Where the customer finds it |
-|---|---|
+| --- | --- |
 | Production project token | mixpanel.com -> Production project -> Settings -> Project Token |
 | Dev/staging project token | mixpanel.com -> Development project -> Settings -> Project Token |
 
@@ -188,7 +188,7 @@ If the customer cannot provide tokens yet (e.g., someone else owns the Mixpanel 
 **Core concepts to convey:**
 
 | Concept | Key fact |
-|---|---|
+| --- | --- |
 | **Events** | Immutable, timestamped actions. Required fields: event name, distinct_id, timestamp. |
 | **Event Properties** | Point-in-time; never change after ingestion. Send numerics without quotes or they become strings. |
 | **User Profiles** | Mutable, current state. Join retroactively to events via distinct_id. Only create for identified users. |
@@ -287,12 +287,14 @@ Owner: <team or email>
 > "Do you have access to the codebase right now, or are you gathering specifications for a developer to implement later?"
 
 **If user has codebase access:**
+
 - Confirm to the user: > "Phase 5 done -- codebase access confirmed. Moving on to Phase 6: Implementation."
 - Proceed with Phase 6 (Implementation)
 - Write code directly into files
 - Use Pre-Flight scan results if available
 
 **If user is gathering specs for handoff:**
+
 - Confirm to the user: > "Phase 5 done -- no codebase access right now. Skipping direct implementation (Phases 6 and 7) and generating a Developer Handoff Spec instead."
 - Skip to Developer Handoff Spec Generation (after Phase 7)
 - Collect any remaining technical details:
@@ -314,7 +316,7 @@ Owner: <team or email>
 **Tracking method recommendation:**
 
 | Method | Use When | Key Tradeoff |
-|---|---|---|
+| --- | --- | --- |
 | **Server-side** (preferred) | Any event observable on your backend | Reliable; must manage IDs and parse User-Agent manually |
 | **Client-side web** | Anonymous behavior pre-login; UI interactions | 15--30% event loss to ad blockers; use a proxy to mitigate |
 | **Client-side mobile** | Native iOS/Android/RN/Flutter | Old app versions persist; harder to fix bugs |
@@ -324,7 +326,7 @@ Owner: <team or email>
 **Then surface the relevant SDK section(s) from `sdk-snippets.md` (Full SDK Lifecycle Guide):**
 
 | Platform | Reference Section |
-|---|---|
+| --- | --- |
 | JavaScript (Browser) | `sdk-snippets.md Section JavaScript (Browser)` |
 | Python (server) | `sdk-snippets.md Section Python (Server-Side)` |
 | Node.js (server) | `sdk-snippets.md Section Node.js (Server-Side)` |
@@ -360,6 +362,7 @@ If the confirmed platform includes JavaScript (web), ask before finalizing the i
 - **Neither / non-web platform:** Note `disabled` in the Context Block and proceed.
 
 Example init with both enabled:
+
 ```js
 mixpanel.init('YOUR_TOKEN', {
   autocapture: true,
@@ -382,8 +385,7 @@ If Session Replay is enabled, add a verification step to the QA gate below: afte
 1. "Does your product have anonymous browsing before login, or do users authenticate immediately?"
 2. "Do users access your product on multiple devices or platforms?"
 
-If anonymous browsing exists or multi-device usage is likely: cover this phase in full.
-If users always authenticate immediately (e.g., SSO-only internal tool): anonymous bridging section can be skipped.
+If anonymous browsing exists or multi-device usage is likely: cover this phase in full. If users always authenticate immediately (e.g., SSO-only internal tool): anonymous bridging section can be skipped.
 
 **The three required calls (client-side):**
 
@@ -420,6 +422,7 @@ On logout              -> mixpanel.reset()
 **Generate:** `MIXPANEL_IMPLEMENTATION_SPEC.md` using the template in `reference.md Section Developer Handoff Specification Template`.
 
 **Required content (from Full Implementation Context Block):**
+
 - All context gathered during Phases 0-4
 - Platform(s), SDK(s), tracking method, CDP, consent requirements
 - Complete tracking plan: all events with full property schemas (not just 2 events)
@@ -434,6 +437,7 @@ On logout              -> mixpanel.reset()
 - Governance setup instructions (Lexicon, Data Standards, Event Approval, roles)
 
 **Fill in the template with:**
+
 - Actual project tokens (dev + prod from Phase 2)
 - Real event names and properties from full tracking plan (Phase 4)
 - Complete SDK initialization code with platform-specific syntax
@@ -446,7 +450,9 @@ On logout              -> mixpanel.reset()
 **Save to:** User's current working directory (or ~/Downloads if working directory is unclear).
 
 **Presentation:**
+
 > "I've created a complete implementation specification at [absolute path]. This contains:
+>
 > - Complete, copy-paste ready code for [N] events with your actual project tokens
 > - Priority ranking: implement these [X] events first, then these [Y], then these [Z]
 > - Step-by-step testing instructions with expected Live View results
@@ -457,10 +463,12 @@ On logout              -> mixpanel.reset()
 > Share this with your developer -- they won't need any context from our conversation. The spec includes everything needed to implement in 1-2 days."
 
 **Optional additional artifacts:**
+
 - CSV export of complete tracking plan (for product managers who prefer spreadsheets)
 - Code-only snippets file (for quick reference)
 
 **After generating spec:**
+
 - Skip Phase 6 implementation (developer will do this)
 - Skip Phase 7 identity verification (included in spec as implementation steps)
 - Skip AGENTS.md creation (it's included in the handoff spec as a template)
@@ -476,14 +484,13 @@ On logout              -> mixpanel.reset()
 **Assign roles before implementation:**
 
 | Role | Responsibility |
-|---|---|
+| --- | --- |
 | **Data Owner** | Approves new events before they go live |
 | **Analyst / PM** | Documents use cases; verifies events match tracking plan |
 | **Engineer** | Implements only reviewed and approved events |
 | **Data Governor** | Oversees Lexicon; enforces naming standards; runs quarterly reviews |
 
-**Set up Lexicon immediately** (Data Management -> Lexicon):
-For every event shipped, add: Description (one sentence: what triggers it, what it represents), Tags (domain/team), Example property values.
+**Set up Lexicon immediately** (Data Management -> Lexicon): For every event shipped, add: Description (one sentence: what triggers it, what it represents), Tags (domain/team), Example property values.
 
 **Enable Data Standards** (Project Settings -> Data Standards):
 
@@ -521,6 +528,7 @@ Summarize the full implementation plan back to the customer:
 **Add Mixpanel tracking guidance to `AGENTS.md` in the project root.** Check if an `AGENTS.md` already exists. If it does, append the Mixpanel analytics section from `AGENTS.md.template` -- do not overwrite existing content from other tools or conventions. If no `AGENTS.md` exists, create one using the full template. In either case, fill in actual values from the implementation (platform, SDK, token location, full event list, identity file paths, consent status). This ensures future AI agents know that Mixpanel is the analytics tool and how to add tracking correctly.
 
 Next steps:
+
 - Add Lexicon descriptions for every event
 - Enable Data Standards and Event Approval in Project Settings
 - Schedule quarterly governance reviews
@@ -530,10 +538,13 @@ Next steps:
 **If Developer Handoff Spec was generated (no codebase access path):**
 
 Confirm the spec location:
+
 > "Your complete implementation specification is saved at [absolute path]."
 
 Summarize what's in the spec:
+
 > "The specification includes:
+>
 > - Complete tracking plan with [N] events, prioritized for implementation
 > - Your Value Moment ([event name]) and how it ties to [KPI/OKR]
 > - Ready-to-use code for [platform(s)] with your actual project tokens
@@ -542,7 +553,9 @@ Summarize what's in the spec:
 > - Governance setup checklist (Lexicon, Data Standards, Event Approval, role assignments)"
 
 Remind about governance:
+
 > "The spec includes a complete governance checklist in the Post-Implementation section. This is critical -- without governance, your tracking plan will drift within 3 months. The checklist covers:
+>
 > - Lexicon population (add descriptions for all events)
 > - Data Standards enablement (enforce snake_case naming)
 > - Event Approval setup (prevent undocumented events)
@@ -568,4 +581,3 @@ Offer follow-up support:
 **Output of this phase:** Complete Developer Handoff Specification generated with business context, implementation code, governance checklist, and verification guide. Ready for developer handoff.
 
 ---
-

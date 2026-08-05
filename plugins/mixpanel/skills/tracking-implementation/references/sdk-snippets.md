@@ -36,6 +36,7 @@ mixpanel.reset();                                  // on logout
 ```
 
 **Consent gate (if EU/CA):**
+
 ```javascript
 mixpanel.init('YOUR_PROJECT_TOKEN', { opt_out_tracking_by_default: true });
 // After user consents:
@@ -695,7 +696,7 @@ curl --request POST \
 **Key fields for server-side HTTP API:**
 
 | Field | Notes |
-|---|---|
+| --- | --- |
 | `token` | Your project token (required) |
 | `distinct_id` | The user identifier |
 | `time` | Unix timestamp in seconds (required for server-side; auto-set by SDKs) |
@@ -728,7 +729,7 @@ curl --request POST \
 All official Mixpanel SDKs, each linking to its documentation.
 
 | SDK | Type | URL |
-|---|---|---|
+| --- | --- | --- |
 | All SDKs (full list) | -- | https://docs.mixpanel.com/docs/tracking-methods/sdks.md |
 | JavaScript | Client-side | https://docs.mixpanel.com/docs/tracking-methods/sdks/javascript.md |
 | React Native | Client-side | https://docs.mixpanel.com/docs/tracking-methods/sdks/react-native.md |

@@ -8,7 +8,7 @@ metadata:
 
 # Manage Feature Flags
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 Coach the user through Mixpanel feature-flag work end-to-end: routing the request to the right flag-shaped product, ramping safely, killing fast when something goes wrong, and cleaning up when iteration is done.
 
@@ -53,14 +53,14 @@ Do **not** trigger for experiment design ("how should I size this A/B test?", "w
 
 ## Components
 
-| File                                                                                   | Purpose                                                                                                                                 |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [references/routing-and-setup.md](references/routing-and-setup.md)                     | Picking Feature Gate vs Dynamic Config vs Experiment. Variant rules. The control-on-OFF rule for Feature Gates. Naming and key hygiene. |
-| [references/staged-rollout.md](references/staged-rollout.md)                           | Standard / slow / fast ramp cadences. Kill-switch trigger conditions. The mid-stage ship / hold / roll-back decision.                   |
-| [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) | The disabled ↔ enabled → archived state machine. The three flag-update call shapes and which silently drop fields.                     |
-| [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md)                 | Pre-creation duplicate check. The cleanup playbook for stale flags. Naming hygiene. The "100% forever" anti-pattern.                    |
-| [references/sdk-and-exposure.md](references/sdk-and-exposure.md)                       | SDK call shapes. Exposure-event semantics. The "no exposures after enable" diagnostic checklist.                                        |
-| [references/experiment-linked-flags.md](references/experiment-linked-flags.md)         | How to spot an experiment-linked flag, what transitions overwrite, and when to route to the `manage-experiment` skill.                  |
+| File | Purpose |
+| --- | --- |
+| [references/routing-and-setup.md](references/routing-and-setup.md) | Picking Feature Gate vs Dynamic Config vs Experiment. Variant rules. The control-on-OFF rule for Feature Gates. Naming and key hygiene. |
+| [references/staged-rollout.md](references/staged-rollout.md) | Standard / slow / fast ramp cadences. Kill-switch trigger conditions. The mid-stage ship / hold / roll-back decision. |
+| [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) | The disabled ↔ enabled → archived state machine. The three flag-update call shapes and which silently drop fields. |
+| [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md) | Pre-creation duplicate check. The cleanup playbook for stale flags. Naming hygiene. The "100% forever" anti-pattern. |
+| [references/sdk-and-exposure.md](references/sdk-and-exposure.md) | SDK call shapes. Exposure-event semantics. The "no exposures after enable" diagnostic checklist. |
+| [references/experiment-linked-flags.md](references/experiment-linked-flags.md) | How to spot an experiment-linked flag, what transitions overwrite, and when to route to the `manage-experiment` skill. |
 
 ---
 
@@ -74,11 +74,11 @@ Run in order. Each step's output is the next step's input. Skip the steps that d
 
 Before doing anything, decide which flag-shaped product the user actually wants:
 
-| User intent                                                                                                           | Use                     | Skill / path              |
-| --------------------------------------------------------------------------------------------------------------------- | ----------------------- | ------------------------- |
-| Toggle a feature on/off for some users (kill switch, gradual rollout, geo-gate, internal-only enable)                 | Create a Feature Gate   | This skill, step 3        |
-| Serve different **configuration** values per user (copy variations, theme keys, structured payloads) — no measurement | Create a Dynamic Config | This skill, step 3        |
-| Compare variants and **measure** which performs better — hypothesis, primary metric, statistical significance         | Create an experiment    | `manage-experiment` skill |
+| User intent | Use | Skill / path |
+| --- | --- | --- |
+| Toggle a feature on/off for some users (kill switch, gradual rollout, geo-gate, internal-only enable) | Create a Feature Gate | This skill, step 3 |
+| Serve different **configuration** values per user (copy variations, theme keys, structured payloads) — no measurement | Create a Dynamic Config | This skill, step 3 |
+| Compare variants and **measure** which performs better — hypothesis, primary metric, statistical significance | Create an experiment | `manage-experiment` skill |
 
 Three rules that catch the most common mis-routes:
 
@@ -147,11 +147,11 @@ Every flag should reach one of three explicit terminal states: a **permanent ope
 
 ## Quick lookups
 
-| User question                                                                        | Where to look                                                                          |
-| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
-| "How do I pick a flag type?" / "Custom variants?" / "Naming and keying?"             | [references/routing-and-setup.md](references/routing-and-setup.md)                     |
-| "Staged rollout cadence?" / "When to kill?"                                          | [references/staged-rollout.md](references/staged-rollout.md)                           |
-| "Archive vs delete?" / "How do I clean up stale flags?" / "What's our flag debt?"    | [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md)                 |
-| "How do I call this from the SDK?" / "Why are exposures zero?" / "Sticky bucketing?" | [references/sdk-and-exposure.md](references/sdk-and-exposure.md)                       |
-| "What does restore do?" / "Why did my archive call drop my rename?"                  | [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) |
-| "Why can't I edit this flag's variants?" / "Why did my flag config get overwritten?" | [references/experiment-linked-flags.md](references/experiment-linked-flags.md)         |
+| User question | Where to look |
+| --- | --- |
+| "How do I pick a flag type?" / "Custom variants?" / "Naming and keying?" | [references/routing-and-setup.md](references/routing-and-setup.md) |
+| "Staged rollout cadence?" / "When to kill?" | [references/staged-rollout.md](references/staged-rollout.md) |
+| "Archive vs delete?" / "How do I clean up stale flags?" / "What's our flag debt?" | [references/hygiene-and-cleanup.md](references/hygiene-and-cleanup.md) |
+| "How do I call this from the SDK?" / "Why are exposures zero?" / "Sticky bucketing?" | [references/sdk-and-exposure.md](references/sdk-and-exposure.md) |
+| "What does restore do?" / "Why did my archive call drop my rename?" | [references/lifecycle-and-state-machine.md](references/lifecycle-and-state-machine.md) |
+| "Why can't I edit this flag's variants?" / "Why did my flag config get overwritten?" | [references/experiment-linked-flags.md](references/experiment-linked-flags.md) |

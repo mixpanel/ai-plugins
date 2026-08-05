@@ -28,13 +28,13 @@ Metrics that **must not regress**, even if primaries win. The trustworthiness ba
 
 Standard guardrails by domain — pick at least one from the row that matches the change:
 
-| Change targets…                      | Guardrail candidates                                    |
-| ------------------------------------ | ------------------------------------------------------- |
-| Performance / UI / new client code   | Page load time, API latency, error rate, crash rate     |
-| Engagement / activation / onboarding | Weekly active users, session count, Day-7 retention     |
-| Revenue / monetisation / pricing     | ARPU, conversion-to-paid, refund rate, cancel rate      |
-| Trust / safety / moderation          | Complaint rate, unsubscribe rate, support-ticket volume |
-| Time-to-task / search / IA           | Task abandonment rate, time-to-completion               |
+| Change targets… | Guardrail candidates |
+| --- | --- |
+| Performance / UI / new client code | Page load time, API latency, error rate, crash rate |
+| Engagement / activation / onboarding | Weekly active users, session count, Day-7 retention |
+| Revenue / monetisation / pricing | ARPU, conversion-to-paid, refund rate, cancel rate |
+| Trust / safety / moderation | Complaint rate, unsubscribe rate, support-ticket volume |
+| Time-to-task / search / IA | Task abandonment rate, time-to-completion |
 
 For every guardrail, **set direction explicitly**. A guardrail named "errors" left at the default `up` will silently let regressions slip through interpretation as "wins." A wrong direction is fixable later via the metric-update tool.
 
@@ -46,8 +46,7 @@ Metrics for understanding **why** the primary moved, not for the ship decision. 
 
 **Secondary metrics are not decisional.** Even if the user names a secondary in their hypothesis text, they cannot ship/kill on its result. If a metric matters for the decision, it must be primary or guardrail.
 
-> **Setup misconfiguration to flag.** If the user's hypothesis text names a metric that they then classify as secondary, ask:
-> _"You mentioned `<metric>` in your hypothesis. Should this be a primary metric? Secondary metrics don't influence ship/no-ship decisions, so if it matters for the outcome, promote it."_
+> **Setup misconfiguration to flag.** If the user's hypothesis text names a metric that they then classify as secondary, ask: _"You mentioned `<metric>` in your hypothesis. Should this be a primary metric? Secondary metrics don't influence ship/no-ship decisions, so if it matters for the outcome, promote it."_
 
 This is the **Hypothesis ↔ metric mismatch** pitfall in the pre-launch pitfall catalogue.
 

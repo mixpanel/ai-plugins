@@ -68,16 +68,16 @@ lift = (treatment_mean - control_mean) / control_mean
 
 Pick the phrase that matches the four-question pattern. These are the words to use with users; they map onto the platform's already-computed numbers, so the agent never has to invent thresholds.
 
-| Pattern (sig × polarity × magnitude)                        | Plain-language verdict                                                                                                                                                    |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Significant, polarity positive, magnitude large vs baseline | "**Clear win** — `<metric>` moved `<lift%>` in the goal direction, which is meaningful at this baseline." (apply Twyman's Law if lift > ~30%)                             |
+| Pattern (sig × polarity × magnitude) | Plain-language verdict |
+| --- | --- |
+| Significant, polarity positive, magnitude large vs baseline | "**Clear win** — `<metric>` moved `<lift%>` in the goal direction, which is meaningful at this baseline." (apply Twyman's Law if lift > ~30%) |
 | Significant, polarity positive, magnitude small vs baseline | "**Statistically significant but practically small** — `<lift%>` on a `<baseline>` baseline is `<absolute>`; confirm with the user whether that clears the business bar." |
-| Significant, polarity negative                              | "**Regression** — `<metric>` moved `<lift%>` against its goal direction. This is a reason not to ship even if other primaries won."                                       |
-| Not significant, lift in goal direction, well-powered       | "**Likely no effect at the detectable size.** The experiment had enough power to detect `<MDE>`; the observed lift is below that threshold."                              |
-| Not significant, lift in goal direction, underpowered       | "**Inconclusive — too underpowered to call.** Route to the why-no-statsig playbook to decide between wait / extend / restart."                                            |
-| Not significant, lift in wrong direction                    | "**No detectable harm**, but no win either."                                                                                                                              |
-| `lift is None`                                              | "**No measurement** — this variant's row failed to compute. Surface the failure and re-sync."                                                                             |
-| Lift > ~30% on any metric                                   | Prefix with "**Twyman's Law check:** that lift is unusually large; verify the denominator hasn't changed before celebrating."                                             |
+| Significant, polarity negative | "**Regression** — `<metric>` moved `<lift%>` against its goal direction. This is a reason not to ship even if other primaries won." |
+| Not significant, lift in goal direction, well-powered | "**Likely no effect at the detectable size.** The experiment had enough power to detect `<MDE>`; the observed lift is below that threshold." |
+| Not significant, lift in goal direction, underpowered | "**Inconclusive — too underpowered to call.** Route to the why-no-statsig playbook to decide between wait / extend / restart." |
+| Not significant, lift in wrong direction | "**No detectable harm**, but no win either." |
+| `lift is None` | "**No measurement** — this variant's row failed to compute. Surface the failure and re-sync." |
+| Lift > ~30% on any metric | Prefix with "**Twyman's Law check:** that lift is unusually large; verify the denominator hasn't changed before celebrating." |
 
 ---
 
@@ -122,11 +122,11 @@ When you see a > 30% lift, name the risk explicitly:
 
 Different metric types behave differently; cite the relevant nuance in your verdict.
 
-| Metric type                      | Distribution | Interpretation nuance                                                                                     |
-| -------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| Unique users / conversion rate   | Bernoulli    | Variance = `p(1−p)`. Lift on rates near 50% is most powered; rates near 0% or 100% need much more sample. |
-| Event counts / sessions per user | Poisson      | Variance = mean. Highly sensitive to power users; consider whether one heavy user can swing results.      |
-| Revenue / numeric properties     | Gaussian     | Long tails (whales) inflate variance. Strongly consider Winsorization.                                    |
+| Metric type | Distribution | Interpretation nuance |
+| --- | --- | --- |
+| Unique users / conversion rate | Bernoulli | Variance = `p(1−p)`. Lift on rates near 50% is most powered; rates near 0% or 100% need much more sample. |
+| Event counts / sessions per user | Poisson | Variance = mean. Highly sensitive to power users; consider whether one heavy user can swing results. |
+| Revenue / numeric properties | Gaussian | Long tails (whales) inflate variance. Strongly consider Winsorization. |
 
 ---
 
@@ -139,10 +139,10 @@ Different metric types behave differently; cite the relevant nuance in your verd
 
 ## Multiple comparisons & metric tiers — what's decisional and what isn't
 
-| Tier          | How it influences the verdict                                                                                                                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Primary**   | **Decisional.** The platform auto-applies correction when the experiment is configured for Bonferroni or Benjamini-Hochberg (across primaries × variants).                                                    |
-| **Guardrail** | **Vetoes** a ship if polarity is negative with meaningful magnitude.                                                                                                                                          |
+| Tier | How it influences the verdict |
+| --- | --- |
+| **Primary** | **Decisional.** The platform auto-applies correction when the experiment is configured for Bonferroni or Benjamini-Hochberg (across primaries × variants). |
+| **Guardrail** | **Vetoes** a ship if polarity is negative with meaningful magnitude. |
 | **Secondary** | **Exploratory only.** NOT Bonferroni-corrected. **Never base a ship decision on secondary metrics**, even if the hypothesis text references them. Treat any "significance" here as a hypothesis to test next. |
 
 If multiple-testing correction is off AND there are 2+ primaries × 1+ non-control variants: don't auto-discount a single significant primary, but look at the aggregate. If most primaries point the same direction, there's likely a real effect. If only one or two of many are significant, it's inconclusive until correction is enabled.

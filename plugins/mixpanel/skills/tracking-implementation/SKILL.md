@@ -14,7 +14,7 @@ For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](ref
 
 # Mixpanel Implementation
 
-> **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, resolve the engine per [`ENGINE.md`](../../ENGINE.md) if one is configured; otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
+> **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, resolve the engine per [`ENGINE.md`](../../ENGINE.md) if one is set up; otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
 
@@ -44,6 +44,7 @@ Full guidance, vertical-specific event examples, and governance detail are in [r
 Before doing anything else, ask the customer which mode fits their goal:
 
 > "What brings you here today?"
+>
 > 1. **Quick Start** -- Get your first events into Mixpanel in one session
 > 2. **Full Implementation** -- Build a complete, production-ready analytics setup from scratch
 > 3. **Add Tracking** -- Extend an existing Mixpanel implementation with new events
@@ -54,7 +55,7 @@ State the selected mode explicitly and offer to switch at any point.
 ### Mode mapping
 
 | Mode | What it covers | Detail section |
-|---|---|---|
+| --- | --- | --- |
 | **Quick Start** | 7-step compressed flow: mandatory questions -> context -> mini tracking plan -> project setup -> implementation + identity -> Live View verification -> wrap-up | Quick Start Flow (below) |
 | **Full Implementation** | All 8 phases (0--7) in order: Discovery -> Analytics Strategy -> Project Setup -> Data Model -> Tracking Plan -> Implementation -> Identity Management -> Data Governance | Full Greenfield Rollout (below) |
 | **Add Tracking** | Starts with "what do you want to track?" -> checks existing schema -> designs new events -> implements and verifies | Add Tracking Mode (below) |
@@ -76,7 +77,7 @@ State the selected mode explicitly and offer to switch at any point.
 This skill is implementation guidance, not legal advice. Use customer policy and counsel as source of truth when there is conflict.
 
 | Scenario | Default behavior |
-|---|---|
+| --- | --- |
 | Region includes EU/EEA/UK/CH or CA users | Treat consent as required before non-essential tracking; apply consent gate pattern before SDK initialization |
 | Region is unknown | Ask once; if still unknown, use conservative consent-gated behavior until clarified |
 | Server-side geolocation enrichment | Only forward IP when customer policy permits; if restricted, omit IP and document reduced geo resolution |
@@ -93,7 +94,7 @@ This skill is implementation guidance, not legal advice. Use customer policy and
 Read the codebase silently and build a working picture to carry into all downstream work. This replaces most discovery questions and produces a grounded draft tracking plan before the first conversation turn.
 
 | What to read | What to extract |
-|---|---|
+| --- | --- |
 | Route/page files, controllers, API endpoints | Candidate events -- every meaningful user-initiated action (`POST /projects`, `PUT /subscriptions/upgrade`, checkout handler, etc.) |
 | Database models or schema files | Candidate properties and their types; User Profile fields; Group entity fields if B2B |
 | Auth / session files (login, signup, logout handlers) | Where to place `.identify()`, `.people.set()`, and `.reset()`; whether anonymous browsing exists |
@@ -168,6 +169,7 @@ Use when the customer has an existing Mixpanel setup and wants to assess its qua
 **Produce prioritized fixes:**
 
 Rank issues by severity:
+
 - **Critical** (data corruption): identity bugs, consent violations, wrong ID merge mode
 - **High** (data quality): duplicate events, naming inconsistencies, missing properties
 - **Medium** (maintainability): missing Lexicon descriptions, no governance process
@@ -286,7 +288,7 @@ Get these wrong and the data is permanently corrupted or very expensive to fix. 
 - Never construct event or property names dynamically at runtime -- creates thousands of unique names
 - Never use `$` or `mp_` prefixes on custom event or property names
 - Omit properties entirely when they have no applicable value -- do not send `null` or `""`
-- Mixpanel is case-sensitive: `checkout_completed` !=  `Checkout_Completed` -- enforce snake_case from day one
+- Mixpanel is case-sensitive: `checkout_completed` != `Checkout_Completed` -- enforce snake_case from day one
 - **One event, one meaning** -- do not reuse one event name for two different user actions (e.g. the same "Button Clicked" for nav and checkout); use a specific event per action
 - **Avoid duplicate events** -- before creating a new event, check existing events in Lexicon or the project; extend an existing event with a property when possible
 - **Autocapture and page views are mutually exclusive** -- if `autocapture: true` is set in the JS SDK init, do NOT also set `track_pageview: true` and do NOT write manual `track('page_viewed', ...)` calls; autocapture already fires page view events and combining them produces duplicates

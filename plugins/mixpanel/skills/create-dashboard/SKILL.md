@@ -8,7 +8,7 @@ metadata:
 
 # Dashboard Creation
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
 
 Your job is to design a coherent analytical narrative, not just drop reports into rows.
 
@@ -59,7 +59,7 @@ Before building, decide:
 - **First row:** Intro text card setting context (what this dashboard covers, scope, audience, caveats).
 - **Subsequent rows:** 1-4 reports per row, with an optional leading text card.
 - **Report names:** Every report needs a descriptive name a viewer can understand without clicking into it — what the metric is, what it is broken down by, what context it covers. Avoid generic names like "Funnel" or "Trend".
-- Be creative with layout. Each dashboard is different. Think about what *this* user needs and arrange for maximum clarity.
+- Be creative with layout. Each dashboard is different. Think about what _this_ user needs and arrange for maximum clarity.
 
 ### Phase 6 — Present
 
@@ -86,4 +86,3 @@ Respond with a brief summary (2–3 sentences) and the dashboard URL. **Never** 
 - Use rich formatting (headings, lists, bold, inline code) to create hierarchy inside the card — that is what makes them scannable. Read dashboard schema documentation for formatting options.
 - Keep them short. A text card is a sign-post, not an essay.
 - Lead with the point. If the card explains a metric, state the takeaway first, then the nuance.
-

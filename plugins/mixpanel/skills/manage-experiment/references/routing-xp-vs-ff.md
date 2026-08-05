@@ -4,14 +4,14 @@ Before any setup work, decide whether the user actually wants an **experiment** 
 
 ## The discriminator
 
-| If the user wants…                                                                | Then it's a…                                                                   |
-| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Causal evidence — "does this change move metric X by enough to justify shipping?" | **Experiment** (XP).                                                           |
-| Progressive rollout — "ship to 10%, then 50%, then 100% if nothing breaks."       | **Feature flag** (FF).                                                         |
-| Kill-switch — "I want to be able to turn this off instantly if it goes sideways." | **Feature flag** (FF).                                                         |
-| Per-segment gating — "only show this to enterprise customers."                    | **Feature flag** (FF).                                                         |
-| Targeted access — "give beta access to these 50 design partners."                 | **Feature flag** (FF).                                                         |
-| Both — "ship to 10%, but also tell me if it moves checkout conversion."           | **Experiment** with a phased rollout, or **FF + a separate experiment** later. |
+| If the user wants… | Then it's a… |
+| --- | --- |
+| Causal evidence — "does this change move metric X by enough to justify shipping?" | **Experiment** (XP). |
+| Progressive rollout — "ship to 10%, then 50%, then 100% if nothing breaks." | **Feature flag** (FF). |
+| Kill-switch — "I want to be able to turn this off instantly if it goes sideways." | **Feature flag** (FF). |
+| Per-segment gating — "only show this to enterprise customers." | **Feature flag** (FF). |
+| Targeted access — "give beta access to these 50 design partners." | **Feature flag** (FF). |
+| Both — "ship to 10%, but also tell me if it moves checkout conversion." | **Experiment** with a phased rollout, or **FF + a separate experiment** later. |
 
 The clean way to think about it: a feature flag is a **delivery mechanism**. An experiment is a **decision mechanism** built on top of one. An experiment using the feature-flag collection method auto-creates a flag under the hood (verify current); not every feature flag use case needs an experiment.
 

@@ -36,12 +36,12 @@ Each segment value needs its own meaningful per-variant sample for the per-segme
 
 ## Heterogeneity vs Simpson's paradox vs noise
 
-| What you see                                                                                        | Interpretation                                                                                                                                             |
-| --------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Most segments lift positive, one or two negative, all with overlapping CIs                          | **Noise.** Not heterogeneity. Don't ship a segment-specific story.                                                                                         |
-| One segment lifts much more than the rest, with a tight CI and a clear mechanism                    | **Real heterogeneity.** The change is concentrated in that segment. Consider shipping only to that segment, or revising the hypothesis.                    |
+| What you see | Interpretation |
+| --- | --- |
+| Most segments lift positive, one or two negative, all with overlapping CIs | **Noise.** Not heterogeneity. Don't ship a segment-specific story. |
+| One segment lifts much more than the rest, with a tight CI and a clear mechanism | **Real heterogeneity.** The change is concentrated in that segment. Consider shipping only to that segment, or revising the hypothesis. |
 | Every segment shows treatment winning, but the overall metric shows control winning (or vice versa) | **Simpson's paradox.** The variant mix differs across segments. Run per-segment SRM checks — this often signals a bucketing bug rather than a real effect. |
-| Two opposite-direction effects in different segments that roughly cancel overall                    | **Mixed effects.** The headline says "no effect" but real winners and losers are hiding. The product question is whether the gains outweigh the losses.    |
+| Two opposite-direction effects in different segments that roughly cancel overall | **Mixed effects.** The headline says "no effect" but real winners and losers are hiding. The product question is whether the gains outweigh the losses. |
 
 When you spot Simpson's paradox, route the user to the **SRM** section of the health-check interpretation reference — bucketing is usually the cause, not a real reversal.
 

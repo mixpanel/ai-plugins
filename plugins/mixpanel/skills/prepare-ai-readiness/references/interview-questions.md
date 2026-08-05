@@ -12,59 +12,70 @@ Starter question bank, grouped by template section (`tldr;` and section names ar
 
 ## Org level
 
-### Business  *(confirm the web-research draft when one exists; else use the fallback)*
+### Business _(confirm the web-research draft when one exists; else use the fallback)_
+
 - Here's what I found about the company: [drafted summary]. Is this right? Anything to fix or add?
 - Anything about the business model or how you make money that the public description gets wrong?
-- *(Fallback, no pre-fill)* In a sentence or two: what does the company do, and how does it make money?
+- _(Fallback, no pre-fill)_ In a sentence or two: what does the company do, and how does it make money?
 
-### North Star & Key Metrics  *(must be Mixpanel-trackable)*
-- *(Seed with schema_facts)* Of the things you actually track in Mixpanel, which metric best reflects success? (anchor to real events, e.g. "is it `[X]`, activations, something else?")
+### North Star & Key Metrics _(must be Mixpanel-trackable)_
+
+- _(Seed with schema_facts)_ Of the things you actually track in Mixpanel, which metric best reflects success? (anchor to real events, e.g. "is it `[X]`, activations, something else?")
 - What are the 2–3 supporting metrics **in Mixpanel** underneath it?
 - Is your true company north star something Mixpanel can't see? (e.g. revenue, NRR (net revenue retention), GMV (gross merchandise value) in a finance tool) If so, name it and the closest Mixpanel proxy — I'll note both so the agent doesn't chase data that isn't here.
 - How do you define an "active" or "qualified" user in this data? (the exact rule)
 
-### Customer Segments  *(confirm the web-research draft when one exists; else use the fallback)*
+### Customer Segments _(confirm the web-research draft when one exists; else use the fallback)_
+
 - I have these as your main customer types: [drafted list]. Accurate? Any segments you analyze separately that aren't obvious from outside?
 - Which internal teams or roles use Mixpanel here (e.g. growth, product, support)? (feeds the org `tldr;`'s "Who" line — its internal-users clause)
-- *(Fallback, no pre-fill)* What are your main customer types or segments, and what distinguishes them?
+- _(Fallback, no pre-fill)_ What are your main customer types or segments, and what distinguishes them?
 
 ### Default Project & Routing
+
 - When someone asks a product question without naming a project, which project should the agent look in first?
 - Which project answers which kind of question (e.g. web vs mobile, prod vs internal)? Any projects the agent should avoid (test, staging, sandbox)?
 
-### Internal Vocabulary & Acronyms  *(ask for a source first)*
+### Internal Vocabulary & Acronyms _(ask for a source first)_
+
 - Do you have a glossary, data dictionary, or definitions page anywhere? If so, point me to it and I'll pull from it.
-- If not: what internal terms or acronyms would the agent misread? Term + meaning. (focus on words that mean something specific in *your* data — "activation", "engaged", "churned")
+- If not: what internal terms or acronyms would the agent misread? Term + meaning. (focus on words that mean something specific in _your_ data — "activation", "engaged", "churned")
 
 ---
 
 ## Project level
 
 ### Domain & Vocabulary
+
 - What product or surface does this project track? (web app, mobile, backend, a specific feature)
 - Who is the end-user whose behavior shows up here? (your customer, an internal team, a machine/service)
-- *(Seed with schema_facts' integrations)* Where does this project's data come from — client SDK, server-side, a warehouse import, or a mix? (confirms the schema-sourced "Where" line in the project `tldr;`)
-- *(Seed with schema_facts)* Your highest-volume events are `[X]` and `[Y]` — one line each, what do those represent?
+- _(Seed with schema_facts' integrations)_ Where does this project's data come from — client SDK, server-side, a warehouse import, or a mix? (confirms the schema-sourced "Where" line in the project `tldr;`)
+- _(Seed with schema_facts)_ Your highest-volume events are `[X]` and `[Y]` — one line each, what do those represent?
 
 ### Event Taxonomy & Naming Conventions
+
 - How are events named here? Casing or prefix rules? (e.g. "Verb Noun", `[Verified]` prefix, snake_case)
-- *(Seed with schema_facts)* I see properties like `[A]` and `[B]` — what do they mean, and which matter most for analysis?
+- _(Seed with schema_facts)_ I see properties like `[A]` and `[B]` — what do they mean, and which matter most for analysis?
 - Any events or properties that look important but should be ignored? (test, deprecated, internal-only)
 - How is analysis actually done here — custom entities or cohorts built on raw events, saved reports, conventions analysts follow? (feeds the project `tldr;`'s "How" line)
 
 ### Authority & Governance
+
 - Who owns the schema and the canonical reports in this project?
 - Whose naming and conventions should the agent follow when unsure?
 - When should the agent stop and ask a human instead of creating a new event, property, or report itself?
 
 ### Key Dashboards & Reports
+
 - Which dashboards/reports are the canonical, trusted ones? What is each for?
 - Where would you point a new team member first?
 
 ### Definition of Active/Qualified User (this project)
+
 - Does "active" or "qualified" user mean something different here than at the org level? If so, what?
 
 ### Why (feeds the project `tldr;` — no dedicated body section)
+
 - What decisions does this project's analysis actually drive, and who acts on them?
 
 ---
