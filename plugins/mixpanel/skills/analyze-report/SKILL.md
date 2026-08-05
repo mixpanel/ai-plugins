@@ -18,7 +18,7 @@ description: >
   Mixpanel engine — run /mixpanel:install if not set up.
 compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). Works for any project the user has access to."
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Mixpanel Analyze Report

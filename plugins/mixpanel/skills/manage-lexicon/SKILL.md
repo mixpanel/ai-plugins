@@ -16,7 +16,7 @@ description: >
   cohort tagging; customer health scoring. Requires a configured
   Mixpanel engine — run /mixpanel:install if not set up.
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Manage Lexicon

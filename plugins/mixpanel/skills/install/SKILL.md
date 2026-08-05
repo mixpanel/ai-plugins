@@ -15,7 +15,7 @@ description: >
   non-interactive sessions.
 compatibility: "Works in any project. Configures the engine all other Mixpanel skills use."
 metadata:
-  engine-required: "false"
+  engine: none
 ---
 
 # Mixpanel Install

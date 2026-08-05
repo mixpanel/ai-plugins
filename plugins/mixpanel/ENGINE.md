@@ -17,10 +17,13 @@ frontmatter (the `metadata` field is part of the Agent Skills spec):
 
 ```yaml
 metadata:
-  engine-required: "true"   # or "false" for skills that never touch Mixpanel data
+  engine: required   # or: none, for skills that never touch Mixpanel data
 ```
 
-When `"true"`, the body must also carry a one-line pointer right under the
+The tag is always explicit — omitting it fails CI, so a forgotten tag can
+never be mistaken for a deliberate `none`.
+
+When `required`, the body must also carry a one-line pointer right under the
 title — frontmatter metadata is never loaded into model context, so the body
 line is what the model actually follows:
 

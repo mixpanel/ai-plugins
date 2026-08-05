@@ -15,7 +15,7 @@ description: >
   `weekly-pulse`) or adoption reports (use `gtm-customer-intelligence`).
   Requires a configured Mixpanel engine — run /mixpanel:install if not set up.
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Monitor Metrics

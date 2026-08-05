@@ -11,7 +11,7 @@ description: >
   the dedicated skills for those tasks.
 license: Apache-2.0
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Mixpanel MCP Guide

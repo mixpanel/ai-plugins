@@ -3,7 +3,7 @@ name: create-dashboard
 description: Creates a well-designed Mixpanel dashboard. Use when the user asks you to build, create, or design a dashboard, or when you need to present findings from an investigation as a live dashboard. Handles layout, text cards, report validation, and narrative structure.
 license: Apache-2.0
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Dashboard Creation

@@ -14,7 +14,7 @@ description: >
   /mixpanel:install if not set up.
 compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). No other connectors required."
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Manage Boards

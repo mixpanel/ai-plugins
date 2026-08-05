@@ -3,7 +3,7 @@ name: tracking-implementation
 description: Guides a coding agent through helping a Mixpanel customer implement analytics correctly. Covers Quick Start (first events in one session), Full Implementation (complete production-ready setup), Add Tracking (extend existing implementation), and Implementation Audit. Use when a user wants to implement Mixpanel, set up Mixpanel, add Mixpanel tracking, configure a new Mixpanel project, or is a Mixpanel customer starting or extending their implementation.
 license: Apache-2.0
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 For any reference to `agents.md.template`, use this resource: [agents.md.template](assets/agents.md.template).

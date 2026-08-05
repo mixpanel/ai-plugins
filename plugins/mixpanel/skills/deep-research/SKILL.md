@@ -3,7 +3,7 @@ name: deep-research
 description: Conducts a structured metric investigation in Mixpanel. Use when the user asks why a metric changed, what's driving a trend, requests a "deep dive" or "root cause," or wants to understand a phenomenon in their data. Walks through project / event / property scoping, plan confirmation, and an iterative query → interpret → hypothesise loop.
 license: Apache-2.0
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Deep Research / Metric Investigation

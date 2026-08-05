@@ -8,7 +8,7 @@ description: >
   Not for dashboards or metrics. Requires a configured Mixpanel
   engine — run /mixpanel:install if not set up.
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Mixpanel AI Readiness

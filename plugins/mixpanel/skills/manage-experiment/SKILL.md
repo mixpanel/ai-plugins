@@ -15,7 +15,7 @@ description: >
   measurement criterion — that belongs to the `manage-feature-flags` skill.
 license: Apache-2.0
 metadata:
-  engine-required: "true"
+  engine: required
 ---
 
 # Manage Experiment
