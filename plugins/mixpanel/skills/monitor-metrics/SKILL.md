@@ -18,16 +18,7 @@ description: >
 
 # Monitor Metrics
 
-> **Engine:** Before any Mixpanel action, resolve the engine once per session:
-> read `.claude/mixpanel.json` from the project root. If it is missing or
-> unparseable and a Mixpanel MCP server is visibly connected, use `engine: mcp`
-> and offer to persist it; otherwise STOP and direct the user to run
-> `/mixpanel:install`. Never guess an engine. This skill does **not** hardcode
-> tool names — every Mixpanel action is written as a `cap:*` capability key and
-> resolved through the engine at runtime. **Before Step 0**, consult
-> `../../ENGINE.md`: build the session capability map per its rules and route
-> every `cap:*` reference through it. Never type a literal Mixpanel tool name
-> into a call plan — resolve the capability instead.
+> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`. Every Mixpanel action in this skill is a `cap:*` capability key — resolve it through the session capability map (ENGINE.md), never a literal tool name.
 
 A focused diagnostic skill for a single metric at a time. Works for any
 project the user has access to. Requires a configured Mixpanel engine. Answers three

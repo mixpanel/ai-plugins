@@ -18,6 +18,8 @@ compatibility: "Works in any project. Configures the engine all other Mixpanel s
 
 # Mixpanel Install
 
+> **No Mixpanel engine required.** This skill is what *configures* the engine.
+
 Configure how this project talks to Mixpanel. The choice — the **engine** — is
 written to `.claude/mixpanel.json` at the project root; every other skill in
 this plugin reads that file and routes all Mixpanel actions through it. The

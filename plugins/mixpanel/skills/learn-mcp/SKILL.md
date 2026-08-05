@@ -14,12 +14,7 @@ license: Apache-2.0
 
 # Mixpanel MCP Guide
 
-> **Engine gate:** This skill teaches the Mixpanel MCP server specifically, so
-> it applies only when the project's engine is `mcp` — check
-> `.claude/mixpanel.json` (see `../../ENGINE.md`). If the engine is `headless`,
-> point the user to https://docs.mixpanel.com/docs/mixpanel-headless and exit;
-> if `custom`, their own integration docs apply. If no engine is configured,
-> direct the user to run `/mixpanel:install` first.
+> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) — if none is configured, direct the user to `/mixpanel:install` first. This skill applies only when the engine is `mcp`: for `headless`, point the user to https://docs.mixpanel.com/docs/mixpanel-headless and exit; for `custom`, their own integration docs apply.
 
 Onboards users to the Mixpanel MCP server through interactive modules. One concept, one prompt, one result at a time.
 

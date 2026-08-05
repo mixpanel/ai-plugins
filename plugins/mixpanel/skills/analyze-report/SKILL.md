@@ -21,15 +21,7 @@ compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). W
 
 # Mixpanel Analyze Report
 
-> **Engine:** Before any Mixpanel action, resolve the engine once per session:
-> read `.claude/mixpanel.json` from the project root. If it is missing or
-> unparseable and a Mixpanel MCP server is visibly connected, use `engine: mcp`
-> and offer to persist it; otherwise STOP and direct the user to run
-> `/mixpanel:install`. Never guess an engine. Route every Mixpanel action
-> through the resolved engine — `mcp`: the configured server's tools;
-> `headless`: mixpanel-headless Python calls; `custom`: follow the config's
-> instructions — and consult `../../ENGINE.md` for the capability map and
-> per-engine rules before your first Mixpanel action.
+> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
 
 Take a Mixpanel report or chart that already exists (or just got built)
 and turn it into a one-screen summary the customer can act on. The skill

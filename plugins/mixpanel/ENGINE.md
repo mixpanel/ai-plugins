@@ -10,6 +10,26 @@ capability map.
 A skill's only mode concern is **interactive vs non-interactive** (can it ask the
 user questions right now?). Engine differences end at capability resolution.
 
+## Skill marker convention (CI-enforced)
+
+Every SKILL.md in this plugin must declare its engine dependency with exactly
+one of these markers in the first 40 lines (right under the title):
+
+```markdown
+> **Requires a Mixpanel engine.** Resolve it per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action — if none is configured, stop and direct the user to `/mixpanel:install`.
+```
+
+or, for skills that never touch Mixpanel data:
+
+```markdown
+> **No Mixpanel engine required.**
+```
+
+Skills may append short skill-specific notes to the marker line (e.g.
+monitor-metrics adds its `cap:*` rule). `scripts/check-engine-markers.sh`
+enforces this in CI — a skill with neither marker fails, so a new skill can't
+ship without engine resolution.
+
 ---
 
 ## Config file: `.claude/mixpanel.json`

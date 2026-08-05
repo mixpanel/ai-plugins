@@ -9,6 +9,7 @@ on:
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
       - 'plugins/**'
+      - 'scripts/**'
   pull_request:
     paths: *paths
 
@@ -63,3 +64,6 @@ jobs:
           fi
 
           echo "Marketplace manifests are identical."
+
+      - name: Verify skills declare an engine marker
+        run: bash scripts/check-engine-markers.sh
