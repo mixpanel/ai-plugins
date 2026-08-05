@@ -1,13 +1,16 @@
-# Mixpanel engine — how skills reach Mixpanel
+# Mixpanel plugin — engine guide
 
-Skills in this plugin describe Mixpanel actions in plain language ("list the projects", "run the query", "create the board"). How an action executes depends on which **engine** is installed. Detect it once per session and cache the result:
+This plugin gives AI agents Mixpanel expertise: skills for analytics, dashboards, experiments, feature flags, lexicon, and tracking implementation. The skills describe Mixpanel actions in plain language ("list the projects", "run the query", "create the board") — **how** an action executes depends on the **engine** the project has installed.
 
-1. **MCP server** — a Mixpanel MCP server is connected in this session (its tools are listed, or it's registered in the client's MCP config, e.g. the project's `.mcp.json`). Region comes from the server URL: `mcp.mixpanel.com` → US, `mcp-eu.mixpanel.com` → EU, `mcp-in.mixpanel.com` → India. Perform each action with the server tool whose description matches it. If no tool fits an action, say so — don't hand-build an API call.
-2. **Headless SDK** — otherwise, if `mixpanel-headless` is importable in the project's Python (`python3 -c "import mixpanel_headless"` succeeds). Perform actions as Python calls following the [SDK docs](https://docs.mixpanel.com/docs/mixpanel-headless); the SDK is self-documenting (`mp --help`, docstrings on every method) and auth comes from its service-account environment variables. On `ImportError` or auth failure, stop and direct the user to `/mixpanel:install`.
-3. **Custom integration** — otherwise, if the user (or the project's own agent instructions, e.g. `CLAUDE.md` / `AGENTS.md`) describes their own way to reach Mixpanel, follow those instructions as the engine. Assume the context they provide is sufficient — don't interrogate.
-4. **None of the above** — stop. Tell the user Mixpanel isn't set up for this project and direct them to run `/mixpanel:install`. Never guess.
+## How skills work
 
-If more than one is available, prefer MCP unless the user says otherwise.
+Detect the engine once per session (first match wins, cache the result), then perform every Mixpanel action through it. If none is detected, stop and direct the user to run `/mixpanel:install` — never guess, never hand-build an API call. When more than one engine is available, prefer MCP unless the user says otherwise.
+
+## Engines
+
+1. **Mixpanel MCP server** — detected when a Mixpanel MCP server is connected in this session (its tools are listed, or it's registered in the client's MCP config, e.g. the project's `.mcp.json`). Region comes from the server URL: `mcp.mixpanel.com` → US, `mcp-eu.mixpanel.com` → EU, `mcp-in.mixpanel.com` → India. Perform each action with the server tool whose description matches it; if no tool fits, say so. Setup and docs: [`skills/install/references/mcp-setup.md`](skills/install/references/mcp-setup.md).
+2. **mixpanel-headless SDK** — detected when `mixpanel-headless` is importable in the project's Python (`python3 -c "import mixpanel_headless"` succeeds). Perform actions as Python calls; the SDK is self-documenting (`mp --help`, docstrings on every method) and auth comes from its service-account environment variables. On `ImportError` or auth failure, stop and direct the user to `/mixpanel:install`. Setup and docs: [`skills/install/references/headless-setup.md`](skills/install/references/headless-setup.md).
+3. **Custom integration** — detected when the user (or the project's own agent instructions, e.g. `CLAUDE.md` / `AGENTS.md`) describes their own way to reach Mixpanel. Follow those instructions as the engine; assume the context they provide is sufficient — don't interrogate.
 
 ## Skill tag (CI-enforced)
 
