@@ -3,7 +3,7 @@ name: tracking-implementation
 description: Guides a coding agent through helping a Mixpanel customer implement analytics correctly. Covers Quick Start (first events in one session), Full Implementation (complete production-ready setup), Add Tracking (extend existing implementation), and Implementation Audit. Use when a user wants to implement Mixpanel, set up Mixpanel, add Mixpanel tracking, configure a new Mixpanel project, or is a Mixpanel customer starting or extending their implementation.
 license: Apache-2.0
 metadata:
-  engine: required
+  engine: optional
 ---
 
 For any reference to `agents.md.template`, use this resource: [agents.md.template](assets/agents.md.template).
@@ -14,7 +14,7 @@ For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](ref
 
 # Mixpanel Implementation
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if unconfigured, stop and run `/mixpanel:install`.
+> **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, resolve the engine per [`ENGINE.md`](../../ENGINE.md) if one is configured; otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
 

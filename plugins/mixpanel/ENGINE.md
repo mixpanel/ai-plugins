@@ -17,13 +17,18 @@ frontmatter (the `metadata` field is part of the Agent Skills spec):
 
 ```yaml
 metadata:
-  engine: required   # or: none, for skills that never touch Mixpanel data
+  engine: required   # or: optional | none
 ```
+
+- `required` — the core flow queries or writes Mixpanel data; no engine → stop.
+- `optional` — the core flow works without an engine; engine-enhanced steps
+  use it when configured and fall back gracefully when not (never stop).
+- `none` — the skill never touches live Mixpanel data.
 
 The tag is always explicit — omitting it fails CI, so a forgotten tag can
 never be mistaken for a deliberate `none`.
 
-When `required`, the body must also carry a one-line pointer right under the
+When `required` (or `optional`), the body must also carry a one-line pointer right under the
 title — frontmatter metadata is never loaded into model context, so the body
 line is what the model actually follows:
 
