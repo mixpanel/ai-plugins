@@ -23,7 +23,7 @@ metadata:
 
 # Mixpanel Analyze Report
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 Take a Mixpanel report or chart that already exists (or just got built) and turn it into a one-screen summary the customer can act on. The skill is **lean by default** — it explains what the report shows and flags what's notable, but does not chase root causes unless the customer asks.
 

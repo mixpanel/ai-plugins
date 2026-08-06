@@ -6,11 +6,11 @@
 #     engine: required    # or: optional, none
 #
 # Default-require: a skill without the tag FAILS, so new skills can't silently
-# ship without deciding. When "required", the body's first 40 lines must also
-# point the model at the engine convention (mention ENGINE.md and
-# /mixpanel:install), since frontmatter metadata is not loaded into model
-# context. When "optional", the body must mention ENGINE.md (how to use the
-# engine when present) but must not gate on one. See plugins/mixpanel/ENGINE.md.
+# ship without deciding. When "required", the body's first 40 lines must carry
+# the engine marker (mention /mixpanel:install), since frontmatter metadata is
+# not loaded into model context. When "optional", the body must mention
+# ENGINE.md (how to use the engine when present) but must not gate on one.
+# See plugins/mixpanel/ENGINE.md.
 set -euo pipefail
 
 HEAD_LINES=40
@@ -24,10 +24,10 @@ for skill_md in plugins/mixpanel/skills/*/SKILL.md; do
   case "$tag" in
     required)
       head_content=$(head -n "$HEAD_LINES" "$skill_md")
-      if ! grep -q "ENGINE.md" <<<"$head_content" || ! grep -q "/mixpanel:install" <<<"$head_content"; then
+      if ! grep -q "/mixpanel:install" <<<"$head_content"; then
         echo "ERROR: $skill_md has 'engine: required' but its first $HEAD_LINES lines"
-        echo "       don't point at ENGINE.md and /mixpanel:install (the model never sees"
-        echo "       frontmatter metadata — the body needs the pointer)."
+        echo "       don't carry the engine marker (mention /mixpanel:install — the model"
+        echo "       never sees frontmatter metadata; the body needs the marker)."
         fail=1
       fi
       ;;
@@ -57,4 +57,4 @@ done
 if [ "$fail" -eq 1 ]; then
   exit 1
 fi
-echo "All skills declare an engine tag, and engine skills point at ENGINE.md."
+echo "All skills declare an engine tag and carry their engine marker."

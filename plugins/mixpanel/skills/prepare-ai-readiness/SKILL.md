@@ -13,7 +13,7 @@ metadata:
 
 # Mixpanel AI Readiness
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 This skill gets a customer's Mixpanel setup ready for AI assistants (the in-product agent and MCP clients). "Ready" means two layers are in place:
 
@@ -124,7 +124,7 @@ Properties of the underlying APIs, not preferences — every constraint below ca
 
 ## 1. Resolve organization and target
 
-Identify the org. Determine `target_level` (infer from the request, else ask: org / project / both). Resolve `project_id` if project is in scope. If no Mixpanel engine is available, direct the user to run `/mixpanel:install` and stop.
+Identify the org. Determine `target_level` (infer from the request, else ask: org / project / both). Resolve `project_id` if project is in scope. If no Mixpanel engine is available, stop and ask the user whether to run `/mixpanel:install` now.
 
 ## 2. Permission pre-check
 

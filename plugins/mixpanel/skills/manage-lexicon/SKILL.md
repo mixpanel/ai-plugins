@@ -21,7 +21,7 @@ metadata:
 
 # Manage Lexicon
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 This skill manages a Mixpanel project's Lexicon — the registry of tracked events and properties. It scores metadata quality, bulk-enriches missing descriptions / display names / tags, resets metadata, triages data quality issues, and renames or deletes tags. It runs as a single interactive session per project; do not invoke in parallel for the same project.
 
@@ -120,7 +120,7 @@ Resolve which Mixpanel project the user wants to operate on.
 - **No match:** tell the user what wasn't found, offer to `list` (which re-fetches the project list and shows the table).
 - **User named nothing:** ask which project. `list` → fetch projects → show table.
 
-If the project listing fails because no Mixpanel capability is available, direct the user to run `/mixpanel:install` and stop.
+If the project listing fails because no Mixpanel capability is available, stop and ask the user whether to run `/mixpanel:install` now.
 
 ## 2. Set session context
 

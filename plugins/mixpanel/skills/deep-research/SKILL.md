@@ -8,7 +8,7 @@ metadata:
 
 # Deep Research / Metric Investigation
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 This skill is a structured investigation, not a one-shot answer.
 

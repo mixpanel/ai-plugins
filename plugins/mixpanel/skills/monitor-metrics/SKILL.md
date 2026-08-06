@@ -20,7 +20,7 @@ metadata:
 
 # Monitor Metrics
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 A focused diagnostic skill for a single metric at a time. Works for any project the user has access to. Requires a configured Mixpanel engine. Answers three questions cleanly:
 

@@ -8,7 +8,7 @@ metadata:
 
 # Manage Feature Flags
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 Coach the user through Mixpanel feature-flag work end-to-end: routing the request to the right flag-shaped product, ramping safely, killing fast when something goes wrong, and cleaning up when iteration is done.
 

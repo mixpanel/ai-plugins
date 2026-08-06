@@ -19,7 +19,7 @@ metadata:
 
 # Manage Boards
 
-> **Engine required** — resolve per [`ENGINE.md`](../../ENGINE.md) before any Mixpanel action; if none is detected, stop and run `/mixpanel:install`.
+> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
 
 Top-level router: validate project → route command → handle return.
 
@@ -83,7 +83,7 @@ Persist across commands within a session. **Cross-command reuse is mandatory** �
 1. Retrieve the list of accessible projects and match the ID. If found → `✅ [Project Name] ([project_id])`, proceed.
 2. Not found → error, ask to re-enter or 'list'.
 
-**Engine check:** If the project lookup fails because no Mixpanel capability is available → direct the user to run `/mixpanel:install`, then stop.
+**Engine check:** If the project lookup fails because no Mixpanel capability is available → stop and ask the user whether to run `/mixpanel:install` now.
 
 ---
 
