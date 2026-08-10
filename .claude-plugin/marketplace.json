@@ -1,11 +1,19 @@
 {
   "name": "mixpanel",
+  "description": "Official Mixpanel plugins — skills for analytics, dashboards, experiments, lexicon, and tracking implementation.",
   "owner": {
     "name": "Mixpanel"
   },
   "plugins": [
-    { "name": "mixpanel-mcp", "source": "./plugins/mixpanel-mcp" },
-    { "name": "mixpanel-mcp-eu", "source": "./plugins/mixpanel-mcp-eu" },
-    { "name": "mixpanel-mcp-in", "source": "./plugins/mixpanel-mcp-in" }
-  ]
+    {
+      "name": "mixpanel",
+      "source": "./plugins/mixpanel",
+      "description": "Mixpanel skills for analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK."
+    }
+  ],
+  "renames": {
+    "mixpanel-mcp": "mixpanel",
+    "mixpanel-mcp-eu": "mixpanel",
+    "mixpanel-mcp-in": "mixpanel"
+  }
 }

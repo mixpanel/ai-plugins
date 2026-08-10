@@ -9,6 +9,7 @@ on:
       - '.claude-plugin/**'
       - '.cursor-plugin/**'
       - 'plugins/**'
+      - 'scripts/**'
   pull_request:
     paths: *paths
 
@@ -55,14 +56,14 @@ jobs:
 
           echo "All plugin directories are registered in both marketplace manifests."
 
-      - name: Verify EU/IN skills are in sync with US
+      - name: Verify marketplace manifests are identical
         run: |
-          for region in eu in; do
-            if ! diff -rq plugins/mixpanel-mcp/skills/ "plugins/mixpanel-mcp-${region}/skills/"; then
-              echo "::error::plugins/mixpanel-mcp-${region}/skills/ is out of sync with plugins/mixpanel-mcp/skills/"
-              echo "Run 'make sync-skills' to fix."
-              exit 1
-            fi
-          done
+          if ! diff .claude-plugin/marketplace.json .cursor-plugin/marketplace.json; then
+            echo "::error::.claude-plugin/marketplace.json and .cursor-plugin/marketplace.json must stay identical"
+            exit 1
+          fi
 
-          echo "All regional skills are in sync."
+          echo "Marketplace manifests are identical."
+
+      - name: Verify skills declare an engine marker
+        run: bash scripts/check-engine-markers.sh
