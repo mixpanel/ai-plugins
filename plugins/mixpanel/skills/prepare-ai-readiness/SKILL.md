@@ -5,7 +5,7 @@ description: >
   Gets a Mixpanel org or project ready for its AI assistants — business context
   and Lexicon metadata. Use to set up or import context, fill gaps, or check
   AI-readiness: "set us up for Mixpanel AI", "how ready are we for the agent".
-  Not for dashboards or metrics. Requires a configured Mixpanel
+  Not for dashboards or metrics. Requires a Mixpanel
   engine — run /mixpanel:install if not set up.
 metadata:
   engine: required
@@ -13,7 +13,7 @@ metadata:
 
 # Mixpanel AI Readiness
 
-> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
+> **Engine required** — resolve an engine per [`ENGINE.md`](../../ENGINE.md): one named in the conversation or loaded instructions is mandatory (not set up → offer `/mixpanel:install` for it); otherwise use the Mixpanel MCP server, or offer `/mixpanel:install` if it's unavailable.
 
 This skill gets a customer's Mixpanel setup ready for AI assistants (the in-product agent and MCP clients). "Ready" means two layers are in place:
 

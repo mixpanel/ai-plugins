@@ -10,20 +10,20 @@ description: >
   dashboards are mentioned with "governance", "cleanup", "template", "onboarding", or
   "standardize". Do NOT use for A/B experiments (use `manage-experiment`), feature-flag
   rollouts (use `manage-feature-flags`), or Lexicon/event-and-property metadata cleanup (use
-  `manage-lexicon`). Requires a configured Mixpanel engine — run
+  `manage-lexicon`). Requires a Mixpanel engine — run
   /mixpanel:install if not set up.
-compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). No other connectors required."
+compatibility: "Requires a Mixpanel engine (run /mixpanel:install). No other connectors required."
 metadata:
   engine: required
 ---
 
 # Manage Boards
 
-> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
+> **Engine required** — resolve an engine per [`ENGINE.md`](../../ENGINE.md): one named in the conversation or loaded instructions is mandatory (not set up → offer `/mixpanel:install` for it); otherwise use the Mixpanel MCP server, or offer `/mixpanel:install` if it's unavailable.
 
 Top-level router: validate project → route command → handle return.
 
-This skill uses the **configured Mixpanel engine only**. No other connectors are required or referenced.
+This skill uses the resolved Mixpanel engine only. No other connectors are required or referenced.
 
 ---
 

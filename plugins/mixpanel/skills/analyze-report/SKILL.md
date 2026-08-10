@@ -14,16 +14,16 @@ description: >
   report shows and flags notable patterns, but does not chase root
   causes. Do NOT trigger for building new charts, reviewing entire
   dashboards, or full root-cause diagnostic workflows (for "why did
-  this change" questions, use monitor-metrics). Requires a configured
+  this change" questions, use monitor-metrics). Requires a
   Mixpanel engine — run /mixpanel:install if not set up.
-compatibility: "Requires a configured Mixpanel engine (run /mixpanel:install). Works for any project the user has access to."
+compatibility: "Requires a Mixpanel engine (run /mixpanel:install). Works for any project the user has access to."
 metadata:
   engine: required
 ---
 
 # Mixpanel Analyze Report
 
-> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
+> **Engine required** — resolve an engine per [`ENGINE.md`](../../ENGINE.md): one named in the conversation or loaded instructions is mandatory (not set up → offer `/mixpanel:install` for it); otherwise use the Mixpanel MCP server, or offer `/mixpanel:install` if it's unavailable.
 
 Take a Mixpanel report or chart that already exists (or just got built) and turn it into a one-screen summary the customer can act on. The skill is **lean by default** — it explains what the report shows and flags what's notable, but does not chase root causes unless the customer asks.
 

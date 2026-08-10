@@ -14,7 +14,7 @@ For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](ref
 
 # Mixpanel Implementation
 
-> **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, use the Mixpanel engine per [`ENGINE.md`](../../ENGINE.md) if one is available; otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
+> **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, use an available engine per [`ENGINE.md`](../../ENGINE.md); otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
 

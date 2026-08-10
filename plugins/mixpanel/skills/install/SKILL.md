@@ -1,27 +1,27 @@
 ---
 name: install
 description: >
-  Set up Mixpanel for this project — pick and install the engine the
-  other Mixpanel skills will use (Mixpanel MCP server, mixpanel-headless
+  Set up Mixpanel for this project — set up an engine for the
+  other Mixpanel skills to use (Mixpanel MCP server, mixpanel-headless
   Python SDK, or the user's own integration). Use whenever the user asks to set up, install,
   configure, or connect Mixpanel, switch Mixpanel engine or region, or
   when any Mixpanel skill finds no engine set up. Trigger phrases:
   "set up mixpanel", "configure mixpanel", "connect mixpanel", "install
   mixpanel", "switch mixpanel region", "use mixpanel headless", "change
-  mixpanel engine". Do NOT use for adding Mixpanel tracking code to an
+  mixpanel engine", "add another engine". Do NOT use for adding Mixpanel tracking code to an
   application (use tracking-implementation) or for running analytics
   queries. Interactive — asks the user to choose; do not run in
   non-interactive sessions.
-compatibility: "Works in any project. Configures the engine all other Mixpanel skills use."
+compatibility: "Works in any project. Sets up an engine for the other Mixpanel skills to use."
 metadata:
   engine: none
 ---
 
 # Mixpanel Install
 
-> **No engine required** — this skill is what _configures_ the engine.
+> **No engine required** — this skill is what _sets engines up_.
 
-Set up how this project talks to Mixpanel. Every other skill in this plugin defaults to the Mixpanel MCP server unless the user's instructions name another engine; this skill installs an engine and can save that preference. The shared convention (per-engine rules, preference locations) lives in [`../../ENGINE.md`](../../ENGINE.md) — read it before starting.
+Set up how this project talks to Mixpanel. Engines can coexist — a project may have more than one; this skill adds one and can record which to prefer. How the other skills resolve an engine (the precedence ladder, preference locations) lives in [`../../ENGINE.md`](../../ENGINE.md) — read it before starting.
 
 This skill is **interactive**: it asks the user to choose. If the session can't ask questions (non-interactive/CI run), stop and tell the user to run `/mixpanel:install` in an interactive session instead.
 
@@ -31,11 +31,11 @@ The bundled references defer to the live Mixpanel docs they cite — on any conf
 
 ## Step 0 — Detect existing state
 
-1. Mixpanel MCP tools listed in this session → tell the user the MCP engine is already set up (name the region if the server URL is visible) and ask whether to keep it or switch. If they keep it, stop here.
+1. Mixpanel MCP tools listed in this session → tell the user the MCP engine is already set up (name the region if the server URL is visible) and ask: keep it, switch, or add another engine alongside it. Keep → stop here. Add another → Step 1, skipping the MCP option.
 2. Otherwise run `mp --version` (one command). Success → the headless SDK is installed: ask **"MCP is not available — how should we proceed?"** with two options: (a) install MCP, (b) use headless. Installing MCP → Step 2a. Using headless → verify auth (Step 2b's verify) and jump to Step 3, including the preference note.
 3. Neither → continue to Step 1.
 
-## Step 1 — Choose an engine
+## Step 1 — Pick an engine to set up
 
 Ask with the client's multiple-choice question UI (one question, three options):
 
@@ -63,6 +63,6 @@ Nothing to install and nothing to interrogate — assume the user provides the c
 
 Always complete all three points — even when this skill was triggered mid-task by another skill, finish them **before** resuming the original request.
 
-1. Re-run the verification for the chosen path and summarize what was installed (engine, region, where it lives — e.g. the repo's `.mcp.json` or the Python environment).
-2. **Preference note** — if the user ended on a non-default engine (headless or their own integration), ask: "Want me to leave a note of this preference so you don't have to specify it each time?" If yes, ask where — project level or user level — and append one plain line (e.g. `For Mixpanel, use the headless SDK.`) to the matching file per [`../../ENGINE.md`](../../ENGINE.md): project → the project's `CLAUDE.md` (or `AGENTS.md` in Cursor); user → `~/.claude/CLAUDE.md` (in Cursor, point them to Settings → Rules). Never write without asking. MCP needs no note — it's the default.
+1. Re-run the verification for the chosen path and summarize what is now available — the engine just set up (engine, region, where it lives — e.g. the repo's `.mcp.json` or the Python environment) plus any engine the project already had.
+2. **Preference note** — if the user ended on an engine other than MCP, or more than one engine is now available, ask: "Want me to leave a note of this preference so you don't have to specify it each time?" If yes, ask where — project level or user level — and append one plain line (e.g. `For Mixpanel, use the headless SDK.`) to the matching file per [`../../ENGINE.md`](../../ENGINE.md): project → the project's `CLAUDE.md` (or `AGENTS.md` in Cursor); user → `~/.claude/CLAUDE.md` (in Cursor, point them to Settings → Rules). Never write without asking. A note is only needed to prefer something other than MCP.
 3. Suggest a next step: try a skill like `analyze-report`, `deep-research`, or `tracking-implementation`. If the headless engine was installed, also mention the SDK's companion plugin (see [`references/headless-setup.md`](references/headless-setup.md)).

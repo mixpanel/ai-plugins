@@ -13,16 +13,16 @@ description: >
   asks what's happening, or describes a metric in prose and wants to know if
   the movement is real. Do NOT trigger for portfolio health checks (use
   `weekly-pulse`) or adoption reports (use `gtm-customer-intelligence`).
-  Requires a configured Mixpanel engine — run /mixpanel:install if not set up.
+  Requires a Mixpanel engine — run /mixpanel:install if not set up.
 metadata:
   engine: required
 ---
 
 # Monitor Metrics
 
-> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
+> **Engine required** — resolve an engine per [`ENGINE.md`](../../ENGINE.md): one named in the conversation or loaded instructions is mandatory (not set up → offer `/mixpanel:install` for it); otherwise use the Mixpanel MCP server, or offer `/mixpanel:install` if it's unavailable.
 
-A focused diagnostic skill for a single metric at a time. Works for any project the user has access to. Requires a configured Mixpanel engine. Answers three questions cleanly:
+A focused diagnostic skill for a single metric at a time. Works for any project the user has access to. Requires a Mixpanel engine. Answers three questions cleanly:
 
 1. **Is a recent point weird?** (anomaly detection — `metric-anomaly`)
 2. **Has the baseline itself shifted?** (drift detection — `metric-drift`)

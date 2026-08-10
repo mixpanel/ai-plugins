@@ -7,7 +7,7 @@ To propose a plugin, open a pull request — we prefer **one plugin per PR** so 
 All skill development happens in **`plugins/mixpanel/skills/`**.
 
 - Skills must stay **engine-agnostic**: no hardcoded MCP tool names or URLs. Describe Mixpanel actions in plain language and follow the conventions in [`plugins/mixpanel/ENGINE.md`](plugins/mixpanel/ENGINE.md).
-- Every skill must declare `engine: required | optional | none` in its frontmatter `metadata`, and engine skills carry a one-line ENGINE.md pointer under the title (details in ENGINE.md). CI runs `scripts/check-engine-markers.sh` and fails skills that skip either.
+- Every skill must declare `engine: required | optional | none` in its frontmatter `metadata`, and engine skills carry the one-line engine marker under the title (the exact line is in ENGINE.md's Skill tag section). CI runs `scripts/check-engine-markers.sh` and fails skills that skip either.
 
 ## Marketplace invariants
 

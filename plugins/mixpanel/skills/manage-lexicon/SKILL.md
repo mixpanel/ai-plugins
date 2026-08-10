@@ -13,7 +13,7 @@ description: >
   descriptions", "tracking plan audit", "clean up the schema", "score our
   instrumentation" — as long as Mixpanel is the context.
   Do NOT use for: deleting event data or user profiles; dashboard cleanup;
-  cohort tagging; customer health scoring. Requires a configured
+  cohort tagging; customer health scoring. Requires a
   Mixpanel engine — run /mixpanel:install if not set up.
 metadata:
   engine: required
@@ -21,7 +21,7 @@ metadata:
 
 # Manage Lexicon
 
-> **Engine required** — unless explicitly told otherwise (then just use the named engine — no availability checks), use the Mixpanel MCP server; if it's not available, offer to run `/mixpanel:install`.
+> **Engine required** — resolve an engine per [`ENGINE.md`](../../ENGINE.md): one named in the conversation or loaded instructions is mandatory (not set up → offer `/mixpanel:install` for it); otherwise use the Mixpanel MCP server, or offer `/mixpanel:install` if it's unavailable.
 
 This skill manages a Mixpanel project's Lexicon — the registry of tracked events and properties. It scores metadata quality, bulk-enriches missing descriptions / display names / tags, resets metadata, triages data quality issues, and renames or deletes tags. It runs as a single interactive session per project; do not invoke in parallel for the same project.
 

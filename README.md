@@ -2,7 +2,7 @@
 
 Plugins that give AI agents Mixpanel expertise. Built on the [Agent Skills](https://agentskills.io) open standard.
 
-The `mixpanel` plugin is **engine-agnostic**: its skills work through whichever engine you install — the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) (any region) or the [`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless) Python SDK. You set it up once with the `install` skill and every skill uses it from there.
+The `mixpanel` plugin is **engine-agnostic**: its skills work through whichever engine(s) you set up — the [Mixpanel MCP server](https://docs.mixpanel.com/docs/mcp) (any region) or the [`mixpanel-headless`](https://docs.mixpanel.com/docs/mixpanel-headless) Python SDK. You set an engine up with the `install` skill and every skill resolves it from there.
 
 ## Getting Started
 
@@ -13,23 +13,23 @@ claude plugin marketplace add mixpanel/ai-plugins
 claude plugin install mixpanel
 ```
 
-Then, in your project, run `/mixpanel:install` and pick your engine (and region). Every other skill detects that installation.
+Then, in your project, run `/mixpanel:install` and set up an engine (and region). Every other skill detects that installation.
 
 ### Cursor
 
 Install the plugin from the Cursor marketplace, or have a team admin import this GitHub repository as a team marketplace (Dashboard → Settings → Plugins → Import).
 
-Once installed, skills appear in **Cursor Settings → Rules** under the **Agent Decides** section and can be invoked with `/skill-name` in chat. Run the `install` skill first to set up the engine.
+Once installed, skills appear in **Cursor Settings → Rules** under the **Agent Decides** section and can be invoked with `/skill-name` in chat. Run the `install` skill first to set up an engine.
 
 ## Skills
 
 | Skill | Description |
 | --- | --- |
-| [`install`](plugins/mixpanel/skills/install/) | Sets up the Mixpanel engine for a project — MCP server (US/EU/India), mixpanel-headless SDK, or the user's own integration. The other skills detect whichever one is installed. |
+| [`install`](plugins/mixpanel/skills/install/) | Sets up a Mixpanel engine for a project — MCP server (US/EU/India), mixpanel-headless SDK, or the user's own integration. The other skills resolve one of the available engines. |
 | [`analyze-report`](plugins/mixpanel/skills/analyze-report/) | Reads and explains an existing Mixpanel report or chart — what it shows, what's notable, and what's worth a closer look. |
 | [`create-dashboard`](plugins/mixpanel/skills/create-dashboard/) | Creates a well-designed Mixpanel dashboard with validated data, text cards, and narrative layout. |
 | [`deep-research`](plugins/mixpanel/skills/deep-research/) | Conducts a structured metric investigation in Mixpanel. Use when a user asks _why_ a metric changed, what's driving a trend, or requests a deep dive or root cause analysis. |
-| [`learn-mcp`](plugins/mixpanel/skills/learn-mcp/) | Onboards users to the Mixpanel MCP server through guided, interactive modules (applies when the installed engine is MCP). |
+| [`learn-mcp`](plugins/mixpanel/skills/learn-mcp/) | Onboards users to the Mixpanel MCP server through guided, interactive modules (applies when the engine in use is MCP). |
 | [`manage-boards`](plugins/mixpanel/skills/manage-boards/) | Full lifecycle dashboard management — create, template, clone, clean up, inventory, and update dashboards across projects and teams. |
 | [`manage-experiment`](plugins/mixpanel/skills/manage-experiment/) | Coaches an agent through any phase of a Mixpanel experiment — designing before launch (hypothesis, metrics, sizing, statistical model, advanced features, pre-launch checks) and interpreting after launch (read results, ship / iterate / kill / wait, health checks, segment breakdowns, session replays). |
 | [`manage-feature-flags`](plugins/mixpanel/skills/manage-feature-flags/) | Coaches an agent through Mixpanel feature-flag work — picking the right flag-shaped tool (Feature Gate vs Dynamic Config vs Experiment), staged rollouts, the kill switch, exposure debugging, archive/restore, and SDK call patterns. |
@@ -48,7 +48,7 @@ Once installed, skills appear in **Cursor Settings → Rules** under the **Agent
 
 The original region-specific plugins — `mixpanel-mcp`, `mixpanel-mcp-eu`, and `mixpanel-mcp-in` — are retired in favor of `mixpanel`, where region is a configuration choice instead of a separate plugin.
 
-- **Existing installs migrate automatically**: the marketplace maps the old names to `mixpanel` (via `renames`, Claude Code ≥ 2.1.193). On your next marketplace update you'll see a one-line rename notice; then run `/mixpanel:install` once to configure your engine and region.
+- **Existing installs migrate automatically**: the marketplace maps the old names to `mixpanel` (via `renames`, Claude Code ≥ 2.1.193). On your next marketplace update you'll see a one-line rename notice; then run `/mixpanel:install` once to set up an engine and region.
 - **To stay on the old plugins**, pin your marketplace to the pre-restructure state (tag [`v0.1.1`](https://github.com/mixpanel/ai-plugins/releases/tag/v0.1.1)):
 
 ```bash

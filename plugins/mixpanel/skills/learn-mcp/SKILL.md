@@ -16,7 +16,7 @@ metadata:
 
 # Mixpanel MCP Guide
 
-> **Engine required** — this skill is about the Mixpanel MCP server; if it's not set up, offer to run `/mixpanel:install` first. If the user works with the `headless` engine instead, point them to https://docs.mixpanel.com/docs/mixpanel-headless and exit.
+> **Engine required** — this skill is about the Mixpanel MCP server; if it's not set up, offer to run `/mixpanel:install` first. If the resolved engine is `headless`, point them to https://docs.mixpanel.com/docs/mixpanel-headless and exit.
 
 Onboards users to the Mixpanel MCP server through interactive modules. One concept, one prompt, one result at a time.
 
