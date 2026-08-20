@@ -21,7 +21,7 @@ In Quick Start mode:
 - Broad event taxonomy or tracking plan beyond the first 2 events
 - Cross-functional sign-off on tracking plan
 - Dev/prod project split
-- Simplified ID Merge verification (it's the default since April 2024)
+- Simplified ID Merge verification (the default for organizations created after April 2024 -- note it is org-scoped, so a new project inside an older org can still be on Original ID Merge; confirm only if the org predates April 2024 or the project already has data)
 - Role assignment or governance setup
 - Full data model education
 
@@ -56,14 +56,16 @@ Maintain this minimal context during Quick Start:
 - **Platform(s):**
 - **Tracking method:** client-side / server-side / CDP
 - **CDP in use:** none / [name]
-- **EU or CA users:** yes / no
+- **EU or CA users:** yes / no / not collected (if `not collected` or missing, ASK -- never guess)
+- **Data residency:** US / EU / IN (determines `api_host`; a wrong host drops every event silently)
 - **Value Moment:**
 - **Event 1:** `sign_up_completed` -- properties: [list]
 - **Event 2:** [Value Moment event] -- properties: [list]
 - **Project token:**
 - **Identity complexity flags:** [none / anonymous browsing / multi-device / shared devices / account switching]
-- **Autocapture:** enabled / disabled
-- **Session Replay:** enabled / disabled / [sample rate %]
+- **Autocapture:** enabled / disabled (ask if unstated -- web/JS platforms only)
+- **Session Replay:** enabled / disabled / [sample rate %] (ask if unstated -- web/JS platforms only)
+- **Simplified ID Merge:** verified / not verified / assumed default (see Critical Rules -- org-scoped)
 
 ### Step 1 -- Mandatory Questions (No One-Way Doors Only)
 
@@ -164,7 +166,7 @@ For Quick Start:
 **Do NOT require for Quick Start:**
 
 - Dev/prod project split (recommend as follow-up)
-- Simplified ID Merge verification (it's the default since April 2024)
+- Simplified ID Merge verification (the default for organizations created after April 2024 -- note it is org-scoped, so a new project inside an older org can still be on Original ID Merge; confirm only if the org predates April 2024 or the project already has data)
 - Role assignment
 - Timezone verification
 - Project structure decisions
@@ -212,7 +214,13 @@ This is the core of Quick Start. The agent writes real code, placed in specific 
 
 If the platform confirmed in Step 1 is JavaScript (web), ask:
 
-> "Mixpanel can automatically capture clicks, form submissions, and page views without manual `track()` calls (Autocapture). It can also record user sessions for replay so you can watch exactly what users did (Session Replay). Would you like to enable either or both?"
+> "Two optional features are worth deciding now, since both are one line in the init config:
+>
+> **Autocapture** automatically tracks clicks, form submissions, and page views with no manual `track()` calls. The value: you get baseline usage data from the moment the SDK ships, and it catches interactions you didn't think to track — so when a new question comes up, the data often already exists. Your named events stay the precision layer for KPIs; autocapture is the wide-angle lens around them.
+>
+> **Session Replay** records a sample of real user sessions for playback. The value: when a number looks wrong — a funnel drop-off, a rage-clicked button — you can watch actual users hit the problem instead of guessing from charts. It's privacy-first out of the box: all text and inputs are masked by default, and you choose the sample rate. Privacy considerations are covered in Mixpanel's docs: https://docs.mixpanel.com/docs/session-replay/session-replay-privacy-controls
+>
+> Both are recommended — want them on? They're easy to enable later too, but enabling now means the data exists when you first need it."
 
 - **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel.
 - **Session Replay:** If yes, ask for a sample rate (e.g. 1% for high-traffic, 100% for low-traffic or testing), then add `record_sessions_percent: [N]` to the init config. Remind the customer to review their privacy policy if recording EU/CA users. Update the Context Block.

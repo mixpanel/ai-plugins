@@ -8,8 +8,108 @@
 
 This file has two parts:
 
-1. **Quick Start Snippets** — minimal init + track + identify/reset per platform, for getting working code fast
-2. **Full SDK Lifecycle Guide** — install → init → track event → super properties → user profile → identify → reset, per SDK
+1. **Runtime Patterns** — three cross-cutting concerns that modify every snippet below. Read first.
+2. **Quick Start Snippets** — minimal init + track + identify/reset per platform, for getting working code fast
+3. **Full SDK Lifecycle Guide** — install → init → track event → super properties → user profile → identify → reset, per SDK
+
+---
+
+## Runtime Patterns -- Read Before Using Any Snippet Below
+
+Three failure modes that the snippets below do not cover on their own. All three share a shape: they work in a developer's dev server and fail silently in production, so testing does not catch them.
+
+### 1. Data residency -- `api_host`
+
+An EU- or India-resident project left on the default host sends every event nowhere and reports no error. Mixpanel's docs are explicit that no data is ingested unless the SDK points at that region's endpoint.
+
+| Residency | `api_host` |
+| --- | --- |
+| US (default) | `https://api.mixpanel.com` |
+| EU | `https://api-eu.mixpanel.com` |
+| India | `https://api-in.mixpanel.com` |
+
+```javascript
+mixpanel.init('YOUR_PROJECT_TOKEN', {
+  api_host: 'https://api-eu.mixpanel.com',   // omit for US
+});
+```
+
+The same config key exists across SDKs (`api_host`, or the server-URL equivalent). If you do not know the project's residency, **ask** -- you cannot detect a wrong host from the code, and the build will succeed either way. Docs: [EU](https://docs.mixpanel.com/docs/privacy/eu-residency), [India](https://docs.mixpanel.com/docs/privacy/in-residency).
+
+### 2. Server-rendered frameworks -- initialize on the client only
+
+`mixpanel-browser` imported at module scope in a server component throws. "Initialize the SDK on app boot" has no single meaning in Next.js App Router, Remix, SvelteKit, or Nuxt, so do not follow it literally.
+
+Three requirements: a client-only boundary, a `typeof window` guard, and once-only execution that survives hot reload and client-side route changes.
+
+```javascript
+'use client';
+
+import { useEffect, useRef } from 'react';
+import mixpanel from 'mixpanel-browser';
+
+// Module-level flag survives component remounts and Fast Refresh;
+// a bare useEffect would re-init on every route change in dev.
+let initialized = false;
+
+export function MixpanelProvider({ children }) {
+  const started = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (initialized || started.current) return;
+    initialized = true;
+    started.current = true;
+
+    mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN, {
+      api_host: process.env.NEXT_PUBLIC_MIXPANEL_API_HOST, // undefined = US default
+    });
+  }, []);
+
+  return children;
+}
+```
+
+Mount this once, high in the tree (in `app/layout.tsx` for App Router). Any component that calls `mixpanel.track()` must itself be a client component. If a tracked action lives in a server action or route handler, use the **server** SDK there instead -- don't try to reach the browser instance.
+
+This is the most likely place a build actually breaks rather than the tracking quietly misbehaving, so confirm the app still builds before moving on.
+
+### 3. Server SDKs in short-lived processes -- flush before exit
+
+Buffered consumers batch events and send when the batch fills. A process that exits before the batch fills drops those events **with no error**.
+
+Affected: serverless functions (Lambda, Cloud Functions, Vercel/Netlify), cron jobs, CLI scripts, queue workers that exit per message, and any handler that returns immediately after tracking.
+
+For **mixpanel-python**, the choice of consumer decides whether you need this. Verified against the SDK source:
+
+- `Consumer` (the default) sends one request per call. Safe in short-lived processes; slower under high volume.
+- `BufferedConsumer` batches up to 50 messages per endpoint and only sends when a buffer fills or you call `flush()`. **Anything still buffered at process exit is lost.**
+
+```python
+from mixpanel import Mixpanel, BufferedConsumer
+
+consumer = BufferedConsumer()
+mp = Mixpanel('YOUR_PROJECT_TOKEN', consumer=consumer)
+
+try:
+    mp.track(user_id, 'subscription_upgraded', {'plan': 'pro'})
+finally:
+    consumer.flush()   # REQUIRED -- without this the event never leaves the process
+```
+
+In a Lambda handler, flush before returning -- not in a background task, which the runtime may freeze mid-flight.
+
+For other server SDKs, check that SDK's batching semantics before you ship: if it buffers at all, find its flush/shutdown call and `await` it before the process or handler returns. Add the flush when you write the code. This failure is invisible in a long-running dev server, so nobody finds it until data is already missing.
+
+### Bonus: deterministic `$insert_id`
+
+Server-side events need `$insert_id` for deduplication (see the HTTP API section below). A randomly generated value defeats the purpose -- a retried webhook produces a new key and a duplicate event. Derive it from the logical occurrence instead:
+
+```python
+insert_id = f"subscription_upgraded-{subscription_id}-{billing_period}"
+```
+
+Retried webhooks, at-least-once queues, and re-run jobs are exactly the traffic this protects.
 
 ---
 
