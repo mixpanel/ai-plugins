@@ -16,7 +16,9 @@ After each phase, update a structured context block in your working notes. Refer
 - **Platform(s):**
 - **CDP in use:** (Segment / Rudderstack / mParticle / Snowflake / BigQuery / none)
 - **Group Analytics:** yes / no
-- **EU or CA users:** yes / no
+- **EU or CA users:** yes / no / not collected (if `not collected` or missing, ASK -- never guess, and never infer from domain TLD)
+- **Data residency:** US / EU / IN (determines `api_host`; a wrong host drops every event silently)
+- **Simplified ID Merge:** verified / not verified / assumed default (org-scoped -- see Critical Rules)
 - **Value Moment:**
 - **KPIs (2--3):**
 - **Dev project token:**
@@ -355,10 +357,16 @@ Place each `track()` call as close to the triggering action as possible -- in th
 
 If the confirmed platform includes JavaScript (web), ask before finalizing the init code:
 
-> "Mixpanel offers two additional data collection features for web: Autocapture (automatically tracks clicks, form submissions, and page views without manual `track()` calls) and Session Replay (records user sessions so you can watch exactly what users did). Would you like to enable either or both?"
+> "Two optional web features are worth deciding before I finalize the init code:
+>
+> **Autocapture** automatically tracks clicks, form submissions, and page views with no manual `track()` calls. The value: baseline usage data from day one alongside your custom tracking plan, and a safety net for interactions the plan didn't anticipate — when a new question comes up, the data often already exists. Your tracking plan stays the precision layer for KPIs; autocapture is the wide-angle lens around it.
+>
+> **Session Replay** records a sample of real user sessions for playback. The value: qualitative context behind your metrics — when the funnel shows a drop-off, you watch actual sessions to see *why* instead of inferring from charts. It's privacy-first out of the box: all text and inputs are masked by default, and you choose the sample rate. Privacy considerations are covered in Mixpanel's docs: https://docs.mixpanel.com/docs/session-replay/session-replay-privacy-controls
+>
+> Both are recommended — want them on? They're easy to enable later too, but enabling now means the data exists when you first need it."
 
 - **Autocapture:** If yes, add `autocapture: true` to the `mixpanel.init()` config and update the Context Block. Note: Autocapture supplements -- it does not replace -- the custom events in the tracking plan. **Important:** When autocapture is enabled, do NOT set `track_pageview: true` in the init config and do NOT write any manual `track('page_viewed', ...)` or equivalent calls -- autocapture already fires page view events automatically. Adding either would produce duplicate page view events in Mixpanel. If the tracking plan contains a manual `page_viewed` event, remove it before implementation.
-- **Session Replay:** If yes, confirm a sample rate appropriate for traffic volume (1--10% for high-traffic production; 100% for low-traffic or testing). Add `record_sessions_percent: [N]` to the init config. If EU/CA users were flagged in Phase 2, remind the customer that Session Replay data must comply with applicable privacy regulations and their privacy policy should reference it. Update the Context Block.
+- **Session Replay:** If yes, confirm a sample rate appropriate for traffic volume (1--10% for high-traffic production; 100% for low-traffic or testing). Add `record_sessions_percent: [N]` to the init config. If EU/CA users were flagged in Phase 2, recommend the customer review their privacy notice with legal counsel before enabling -- disclosing data collection is a consistent requirement across many privacy regulations, and Mixpanel's docs call the review a best practice. Update the Context Block.
 - **Neither / non-web platform:** Note `disabled` in the Context Block and proceed.
 
 Example init with both enabled:

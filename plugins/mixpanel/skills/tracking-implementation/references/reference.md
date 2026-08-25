@@ -1326,6 +1326,14 @@ For any language not covered there, check https://docs.mixpanel.com/docs/trackin
 
 **Token substitution:** When surfacing any code snippet from sdk-snippets.md, replace `'YOUR_PROJECT_TOKEN'` with the real project tokens collected in Phase 2. Use the dev token in dev initialization blocks and the prod token in production initialization blocks. Never output the placeholder literal if real tokens are already in hand.
 
+**Runtime patterns -- do not skip.** Before adapting any snippet, read the **Runtime Patterns** section at the top of [sdk-snippets.md](sdk-snippets.md). It covers three things no per-language snippet handles on its own:
+
+- **`api_host` for data residency** -- an EU or India project on the default host drops every event with no error
+- **Client-only initialization in SSR frameworks** -- `mixpanel-browser` at module scope in a server component throws; needs a client boundary, a `typeof window` guard, and once-only init
+- **Flushing server SDKs in short-lived processes** -- buffered consumers silently lose whatever is still buffered when a serverless handler, cron job, or script exits
+
+All three work in a dev server and fail silently in production, which is why they need to be handled at write time rather than found later.
+
 ### Post-Deploy Verification
 
 After deploying a new event (or batch), verify it is flowing correctly beyond a single Live View sighting:

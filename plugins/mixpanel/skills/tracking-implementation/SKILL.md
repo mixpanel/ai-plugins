@@ -20,6 +20,8 @@ CRITICAL -- DO NOT WRITE ANY CODE YET
 
 **This skill is a guided conversation, not a build template.** You MUST collect answers from the user before generating any implementation code. Writing Mixpanel code without the inputs below will produce a broken implementation -- wrong SDK, wrong events, missing consent gates, or duplicate data pipelines.
 
+**One exception:** if the request already arrived with a finished tracking plan (events, properties, and a project token -- typically in a context block from Mixpanel's in-product onboarding), the answers below were already collected elsewhere. Take them from the spec instead of asking, and go to **Implement From Spec Mode**. Consent (item 4) is the one input that is still always asked, because the in-product flow deliberately does not collect it.
+
 **Before writing ANY code, you must know ALL of the following:**
 
 1. Which mode the user wants (Quick Start / Full Implementation / Add Tracking / Audit)
@@ -29,7 +31,7 @@ CRITICAL -- DO NOT WRITE ANY CODE YET
 5. What their Value Moment is -- the most important user action (you can't write tracking code without knowing what to track)
 6. For web/JavaScript platforms: whether they want Autocapture and/or Session Replay enabled -- if Autocapture is on, do NOT also set `track_pageview: true` or write manual page view events (duplicates)
 
-**If you do not have explicit answers to items 2--5, ASK. Do not assume. Do not infer from the project name. Do not start building.**
+**If you do not have explicit answers to items 2--6, ASK. Do not assume. Do not infer from the project name. Do not start building.** (Item 6 applies only when the platform is web/JavaScript -- skip it otherwise.)
 
 The sections below tell you what to ask, in what order, and what to do with the answers. Follow the conversation flow -- it exists because wrong assumptions here create irreversible rework.
 
@@ -41,7 +43,19 @@ Full guidance, vertical-specific event examples, and governance detail are in [r
 
 ## Mode Selection -- Ask First
 
-Before doing anything else, ask the customer which mode fits their goal:
+### Skip Mode Selection entirely if a spec already arrived
+
+**Check this before asking anything.** If the incoming request already carries a tracking plan -- a list of events with properties, plus a project token, typically inside a context block -- then discovery has already happened somewhere else (usually Mixpanel's in-product onboarding). Do not run Mode Selection. Do not run Phases 0--4. Go to **Implement From Spec Mode** below.
+
+Signals that a spec arrived:
+
+- A context block with fields like `Value Moment`, `CDP in use`, `Tracking method`, `Prod project token`
+- An explicit instruction not to re-run discovery
+- A named event list with property types and allowed values already specified
+
+Re-interrogating one of these users is the single worst failure mode of this skill. They came to their coding agent specifically to stop answering questions.
+
+### Otherwise, ask which mode fits their goal:
 
 > "What brings you here today?"
 >
@@ -60,6 +74,7 @@ State the selected mode explicitly and offer to switch at any point.
 | **Full Implementation** | All 8 phases (0--7) in order: Discovery -> Analytics Strategy -> Project Setup -> Data Model -> Tracking Plan -> Implementation -> Identity Management -> Data Governance | Full Greenfield Rollout (below) |
 | **Add Tracking** | Starts with "what do you want to track?" -> checks existing schema -> designs new events -> implements and verifies | Add Tracking Mode (below) |
 | **Audit** | Diagnoses current state -> produces prioritized fixes -> executes fixes via Add Tracking or Full Implementation | Implementation Audit Mode (below) |
+| **Implement From Spec** | Not user-selectable -- entered automatically when a tracking plan arrives with the request. Pre-Flight -> Phase 6 -> Phase 7 -> Live View -> Phase 8. Skips Mode Selection and Phases 0--4. | Implement From Spec Mode (below) |
 
 ### Mode switching rules
 
@@ -111,6 +126,79 @@ Read the codebase silently and build a working picture to carry into all downstr
 - The auth file locations and login/logout/re-open patterns (for identity)
 
 Present assumptions to the customer rather than asking from scratch. Only ask what the codebase cannot answer.
+
+---
+
+## Implement From Spec Mode
+
+Use when a tracking plan arrived with the request (see the entry check under Mode Selection). Discovery already happened in another surface. Your job is implementation and honest reporting, not re-design.
+
+**Flow:** Pre-Flight codebase scan -> the three questions below -> Phase 6 (Implementation) -> Phase 7 (Identity) -> Live View verification -> Phase 8 (`AGENTS.md`).
+
+Every phase you need already exists elsewhere in this skill. This mode is an entry point, not new content. Read the referenced phase sections as you reach them.
+
+### Do not re-ask what the spec answered
+
+Take whatever the context block provides -- typically Value Moment, CDP status, data residency, and tokens -- and do not re-ask it.
+
+**The block may be partial, and that is normal, not an error.** Resolve any absent field in this order:
+
+1. **Pre-Flight** -- if the codebase scan already answered it (platform, existing analytics tools, framework)
+2. **This skill's own default** -- Simplified ID Merge follows the org-default rule in Critical Rules; Group Analytics is out of scope unless the plan's events reference a group key
+3. **Ask** -- data residency (a wrong host fails silently), Autocapture and Session Replay on web platforms (the customer's call, and the answer changes the init config -- when asking, explain the value using the "Autocapture and Session Replay check" script in [quick-start.md](references/quick-start.md), don't just name the features), and consent (always asked regardless, below)
+
+Never treat a missing field as something to guess, and never stall the whole mode because the block is thin. A spec with just an event list and a token is enough to start.
+
+### Three questions you MUST still ask
+
+These are facts about the codebase and about the business that no upstream product flow can know.
+
+**1. Consent -- ALWAYS ask, no exceptions.**
+
+Mixpanel's in-product onboarding deliberately does not collect this, so the context block will not carry it. Whether the field is absent, `not collected`, or `unknown`: **stop and ask before you initialize the SDK.**
+
+> "Do you have users in the EU, UK, or California?"
+
+Do not infer it from the codebase, the company name, or the domain TLD. If the customer doesn't know, treat the answer as yes and apply the consent gate. Events fired before consent are a compliance violation requiring data deletion -- this is the one question in this mode that has a legal consequence, and the "do not re-run discovery" instruction never overrides it.
+
+**2. Is another analytics tool already installed?**
+
+Check for Segment, GTM, RudderStack, PostHog, Amplitude, or an existing Mixpanel install. If you find one, **stop and ask** rather than adding a second parallel pipeline. Two pipelines to the same project produce duplicate events and an unfixable identity graph.
+
+**3. Is this server-rendered?**
+
+Determines whether browser SDK initialization needs a client-only boundary. See the SSR rule in Critical Rules -- getting this wrong breaks the build, not just the tracking.
+
+### Which events have no source of truth here?
+
+Before writing anything, classify every event in the spec against the codebase:
+
+| Classification | Meaning |
+| --- | --- |
+| **Implementable here** | A handler, route, or lifecycle hook in this repo fires at the right moment |
+| **Backend confirmation** | The trigger is a server-side or out-of-band confirmation (a job, a webhook, a crawler, a beacon) that may live in a different service entirely |
+| **No source of truth** | Nothing in this repo knows when this happens |
+
+Specs generated from a product conversation routinely contain events of the second and third kind -- "backend confirms serving," "integration test passed," "experience published." Wiring the client-triggerable subset and reporting the full list as done is the most common failure in this mode. Do not do it.
+
+Same rule for properties: if a property has no source of truth, omit it. Do not send `"unknown"`, `""`, `null`, `0`, or `-1`. Six correct events beat ten where four are fiction.
+
+### Required closing report
+
+End the mode with a table covering **every** event in the spec -- no silent omissions:
+
+| Event | Status | Detail |
+| --- | --- | --- |
+| `sign_up_completed` | Instrumented | `app/auth/signup.ts:47` |
+| `experience_seen` | Blocked | Backend confirms serving; no such handler in this repo |
+| `installation_method` | Omitted | No source of truth for this property |
+
+Plus one of:
+
+- **Live View confirmed** -- you ran the app, triggered at least three events, and saw them arrive. Paste what you saw.
+- **Could not run the app** -- say so explicitly, and say why.
+
+Never report success on a compile. A build that compiles is fully compatible with a wrong token, a wrong region host (see the data residency rule), and an ad-blocked SDK.
 
 ---
 
@@ -197,7 +285,7 @@ These checklists apply to Full Implementation mode. Quick Start uses Live View v
 
 **Phase 2 exit**
 
-- Simplified ID Merge setting verified.
+- Simplified ID Merge setting verified. (Feasible here because Phase 2 is where projects get created -- this is a Full Implementation gate, not a universal one. Quick Start and Implement From Spec use the default instead; see Critical Rules.)
 - Dev and production projects exist with correct timezone.
 - EU/CA (or stricter) consent flag documented.
 
@@ -268,8 +356,25 @@ Get these wrong and the data is permanently corrupted or very expensive to fix. 
 **Project setup:**
 
 - Never track to production before creating and verifying a separate dev/staging project
-- Verify Simplified ID Merge is enabled BEFORE sending a single event -- cannot safely change after data exists
+- **Simplified ID Merge** is the default for **organizations** created after April 2024. Do not block implementation to verify it. Stop and confirm before sending events only if: the organization predates April 2024, the project already contains event data, or the context block says `Simplified ID Merge: not verified`. The Identity API version cannot be changed once any data exists in the project, and it is org-scoped -- a project created today inside an older org can still be on Original ID Merge. ([docs](https://docs.mixpanel.com/docs/tracking-methods/id-management))
 - Set project timezone correctly at creation -- cannot change retroactively without affecting historical data
+- **Data residency** -- an EU- or India-resident project left on the default host sends every event nowhere and reports no error. Set `api_host` to match the project's residency:
+
+  | Residency | `api_host` |
+  | --- | --- |
+  | US (default) | `https://api.mixpanel.com` |
+  | EU | `https://api-eu.mixpanel.com` |
+  | India | `https://api-in.mixpanel.com` |
+
+  If residency is unknown, ask. A wrong host fails silently -- you cannot detect this from the code, and "it compiles" tells you nothing. Mixpanel's own docs are explicit: no data is ingested into a residency project unless the SDK points at that region's endpoint. ([EU](https://docs.mixpanel.com/docs/privacy/eu-residency), [India](https://docs.mixpanel.com/docs/privacy/in-residency))
+
+**Platform and runtime -- the failures that only appear in production:**
+
+- **SSR and bundling** -- `mixpanel-browser` imported at module scope in a server component throws at build or render time. "Initialize on app boot" has no single meaning in a server-rendered framework, so do not treat it as an instruction you can follow literally. In Next.js App Router, Remix, SvelteKit, Nuxt, or any SSR setup you must: (1) put initialization behind a client-only boundary (`'use client'`, a dynamic import with `ssr: false`, or the framework's equivalent), (2) guard with `typeof window !== 'undefined'`, and (3) make init run **once** -- module-level flag or a ref -- so HMR and client-side route changes don't re-init. This is the most likely place the build actually breaks rather than the tracking quietly misbehaving.
+
+- **Server SDK flush in short-lived processes** -- server SDKs buffer events and flush on an interval. Any process that exits before the interval elapses drops those events **with no error**: serverless functions (Lambda, Cloud Functions, Vercel/Netlify functions), cron jobs, CLI scripts, queue workers that exit per message, and request handlers that return immediately. Always `await` an explicit flush before the process or handler returns. This works fine in a long-running dev server and fails silently in production, which makes it nearly invisible in testing -- so add the flush when you write the code, not after someone notices missing data.
+
+- **Deterministic `$insert_id` on server-side events** -- `$insert_id` is already required for server-side deduplication elsewhere in this skill, but a random value defeats it. Derive it deterministically from the logical occurrence, so a retry of the same logical event produces the same key: `` `subscription_upgraded-${subscription_id}-${billing_period}` ``, not a UUID generated at call time. Retried webhooks, at-least-once queues, and re-run jobs are exactly the traffic that needs this.
 
 **Identity management:**
 
