@@ -71,7 +71,7 @@ State the selected mode and offer to switch at any point.
 | Quick Start | Pre-flight → SDK init with flags → create flag → evaluate → verify → enable | [Quick Start Flow](#quick-start-flow) |
 | Full Setup | Quick Start plus identity, environments, exposure correctness, experiment wiring, cleanup plan | [Full Setup](#full-setup) |
 | Add a Flag | Reuse existing init → route flag type → evaluate → verify | [Add a Flag](#add-a-flag) |
-| Migrate | Inventory vendor flags → map semantics → recreate → dual-run → cut over | [migration.md](references/migration.md) |
+| Migrate | Inventory vendor flags → map semantics → recreate → dual-run → cut over. Bulk writes are gated on a preview and an explicit yes. | [migration.md](references/migration.md) |
 | Audit | Diagnose fallback-always, zero exposures, wrong variant, skewed splits | [Audit](#audit) |
 
 **Escalation rules**
@@ -101,17 +101,19 @@ If the customer says "A/B test," "does this improve conversion," or names a succ
 
 ### 2. Ensure the SDK is installed and initialized with flags enabled
 
-Flags are **off by default in every SDK** — the most common cause of "I added the code and nothing happened." Init shapes per platform, and the two context rules that go with them, are in [sdk-snippets.md](references/sdk-snippets.md#enabling-flags-at-init).
+Flags are **off by default in every SDK**. Init shapes per platform, and the two context rules that go with them, are in [Enabling flags at init](references/sdk-snippets.md#enabling-flags-at-init).
 
 - Already initialized → add the flags option to the existing init. Do not create a second instance.
 - Not installed → install and write a minimal init: token, flags enabled, region host if EU/IN, `debug` on for now.
-- Server-side → choose remote vs local evaluation now; it changes the init shape. **Local cannot do cohort targeting or sticky variants** — if the customer wants either, they need remote. Details in [sdk-snippets.md](references/sdk-snippets.md#server-sdks-remote-vs-local-evaluation).
+- Server-side → choose remote vs local evaluation now; it changes the init shape. **Local cannot do cohort targeting or sticky variants** (verify current — the gap narrows over time) — if the customer wants either, they need remote. Details in [sdk-snippets.md](references/sdk-snippets.md#server-sdks-remote-vs-local-evaluation).
 
-**Before writing the init, check whether any flag in the project uses a non-default variant assignment key or runtime-property targeting.** Both need extra fields in the init context, and omitting either is a silent no-match — the flag just never returns.
+**Before writing the init, check whether any flag in the project uses a non-default variant assignment key or runtime-property targeting.** Both require extra fields in the init context — the rules are in [Enabling flags at init](references/sdk-snippets.md#enabling-flags-at-init).
 
 ### 3. Create the flag — before writing any code
 
-**Show the proposed flag and get an explicit yes before creating it** — name, key, type, variant assignment key, variants. Two of those are irreversible (below), which is why this step earns a confirmation gate when most don't.
+**If the type is Experiment, do not create a flag here.** The experiment owns creation and auto-links its backing flag — `manage-experiment` designs it, then read the generated flag key off the experiment and continue from *Write the evaluation code*. Creating a flag directly for an experiment produces the orphan described in *Route the flag type*. The rest of this step is for Feature Gate and Dynamic Config.
+
+**Show the proposed flag and get an explicit yes before creating it** — name, key, type, variant assignment key, variants. The key and the variant assignment key are both irreversible, which is why this step earns a confirmation gate when most don't.
 
 With an engine: create it on confirmation and read back the generated key. Without one: direct the customer to create it in the Mixpanel UI and paste the key back.
 
@@ -188,10 +190,7 @@ Customers name flags in prose ("the checkout flag"), not by key. Match on key fi
 
 **The diagnostic checklists live in [verification.md](references/verification.md)** — one each for always-getting-the-fallback, wrong-variant, correct-variants-but-zero-exposures, and skewed splits. Work the one that matches the symptom.
 
-Two things to bring to them that the checklists can't supply on their own:
-
-- **Order by cost, not by suspicion.** The checklists are already ordered by what is cheapest to rule out against how often it is the cause; resist jumping to the interesting hypothesis. A disabled flag and a mistyped key account for most reports and take seconds to rule out.
-- **Separate "wrong variant" from "no exposure".** They look alike to a customer and have disjoint causes. Establish which one you're chasing before opening a checklist.
+One thing the checklists can't supply on their own: **separate "wrong variant" from "no exposure".** They look alike to a customer and have disjoint causes. Establish which one you're chasing before opening a checklist.
 
 ---
 
@@ -204,8 +203,6 @@ This skill stops at verified code. Three neighbours own what comes next:
 | Rollout %, ramp cadence, kill switch, archive, flag hygiene | `manage-feature-flags` |
 | Hypothesis, metrics, sizing, launch, monitoring, results | `manage-experiment` |
 | Event tracking plan, event naming, analytics strategy | `tracking-implementation` |
-
-Reference files are linked from the step that needs them; the Mode Selection table above routes the rest.
 
 ---
 

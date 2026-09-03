@@ -33,11 +33,15 @@ Feature Gates and Dynamic Configs have no such constraint — reassignment there
 
 Parts 1–3 below are API and console work — route them through an available engine (see [`ENGINE.md`](../../../ENGINE.md)) or the customer. **Parts 4 and 5 are this skill's job**, and are where the detail here is deepest. The section headings are the taxonomy; [Sequencing summary](#sequencing-summary) is the order to actually execute in.
 
+**Every bulk write in Parts 1 and 2 needs a preview and an explicit yes before it runs — one confirmation for the batch, not per row.** These are the least reversible operations in this skill: ingested events cannot be un-ingested, and a flag's variant assignment key is immutable once the flag is enabled. A single mistake is repeated across the whole batch, so the preview is the only place it can be caught cheaply. What each preview must show is stated in its own part below.
+
 ---
 
 ## Part 1 — Historical exposures
 
 Export the vendor's exposure events and re-ingest them as Mixpanel exposure events through the Import API. Each vendor names its exposure event differently, and the mapping depends on which Mixpanel flag type the original corresponds to — the playbook has the full table.
+
+**Before ingesting, show and confirm:** the row count, the earliest and latest original timestamp, how `$insert_id` is derived, and one fully rendered sample row. Re-ingesting is not reversible, and a re-run without stable `$insert_id`s duplicates every exposure — so confirm the derivation before the first run, not after a failed one.
 
 Each row becomes a Mixpanel `$experiment_started` event. At minimum it needs the enrollment identity, the original exposure timestamp, the flag or experiment name, and the assigned variant:
 
@@ -67,6 +71,8 @@ Recreate flags and experiments through the Mixpanel API. What you create depends
 
 - **Feature Gates and Dynamic Configs** — create the flag directly.
 - **Experiments** — create the **experiment**, not a flag. Its backing flag is auto-created and linked for you; read that flag's key back off the experiment and configure it, rather than creating a second flag. Direct flag creation rejects the experiment flag type anyway, and a separately created flag would not be linked to the experiment meant to drive it.
+
+**Before creating anything, show the full list and get one explicit yes:** every object with its name, key, type, variant value type, and variant assignment key. The assignment key is immutable once the flag is enabled, so it cannot be corrected after the batch runs.
 
 This matters more in a scripted bulk migration than anywhere else: a loop that creates a flag per experiment produces an unlinked flag for every experiment it touches.
 

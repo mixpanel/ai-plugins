@@ -81,7 +81,7 @@ Ordered by what is cheapest to rule out against how often it is the cause — no
 7. **Is the SDK version at or above the minimum?** Below it, flags never return and no error is raised. Versions are in [sdk-snippets.md](sdk-snippets.md).
 8. **Does init actually enable flags?** Flags are off by default. An SDK that tracks events happily will still return no flags.
 9. **On mobile: is prefetch disabled?** If flags aren't fetched at init, nothing is available until `identify()` or an explicit load call.
-10. **Is every targeting input present in the context?** A flag bucketing on a key other than `distinct_id`/`device_id` needs that key in the context; runtime-property targeting needs those properties in `custom_properties`. Missing either is a silent no-match.
+10. **Is every targeting input present in the context?** See the two init-context rules in [sdk-snippets.md](sdk-snippets.md#enabling-flags-at-init) — missing either is a silent no-match.
 11. **Is the user in the rollout?** Rollout percentage, cohort membership, and targeting filters all gate assignment. Remember the cohort refresh delay.
 
 **Web debugging shortcut:** inspect the flags network request in browser devtools. The response shows which flags were returned for this user, and lists the identities on the QA allowlist — compare those against the `distinct_id` the SDK is actually sending. A mismatch there explains most QA-tester failures. (Response shape is internal and may change; use it as a diagnostic, not a contract.)

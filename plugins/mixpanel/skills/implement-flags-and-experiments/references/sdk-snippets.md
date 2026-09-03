@@ -159,7 +159,7 @@ const value = await mixpanel.flags.get_variant_value('my-flag', 'control');
 const variant = await mixpanel.flags.get_variant('my-flag', { key: 'control', value: 'control' });
 ```
 
-Per-platform method names, with the fallback-parameter divergence noted in the table above:
+Per-platform method names, with the fallback-parameter divergence noted in [Cross-SDK divergences](#cross-sdk-divergences--read-this-first):
 
 | Platform | Boolean check | Variant value | Full variant |
 |---|---|---|---|
@@ -185,7 +185,7 @@ Reloading: `identify()` triggers a reload on client SDKs; an `updateContext` cal
 Chosen at init, and it changes the init shape.
 
 - **Remote** — a network call per evaluation.
-- **Local** — the SDK polls for flag definitions and evaluates in-process. Lower latency, but **no cohort targeting and no sticky variants**; either one requires remote.
+- **Local** — the SDK polls for flag definitions and evaluates in-process. Lower latency, with the targeting limits noted in [Cross-SDK divergences](#cross-sdk-divergences--read-this-first).
 
 ```javascript
 // Node.js — local evaluation
@@ -313,7 +313,7 @@ def evaluate(mp, flag_key, user_context):
 
 **Go** has no per-call suppression. Exposure is sent by the tracker supplied at init: `DefaultFlagsExposureTracker` sends synchronously, and a custom tracker function can be passed instead to send asynchronously or drop events. Confirm the current constructor and tracker signature against the Go SDK's docs before wiring one — the shape is not stable enough to reproduce here.
 
-**Java and Ruby** document no per-call suppression. Do not write suppression code for them by analogy with Node or Python. If a customer on Java or Ruby needs first-exposure-only semantics, verify against the installed SDK; if it isn't available, say so plainly and use the "accept repeat exposures" path in [exposure-correctness.md](exposure-correctness.md) rather than inventing an API.
+**Java and Ruby** document no per-call suppression — [exposure-correctness.md](exposure-correctness.md) covers what to do instead.
 
 **On every SDK, the all-variants call does not fire exposure** — if branching is driven by it, exposure must be tracked manually per flag.
 
