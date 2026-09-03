@@ -20,7 +20,9 @@ For any reference to `migration.md`, use this resource: [migration.md](reference
 
 This skill puts a working flag in the customer's code. It ends when a real variant reaches a real user and the exposure event proves it.
 
-**Scope.** This skill owns the code. Configuring rollout percentages, staged ramps, kill switches, experiment design, and reading results are owned by the `manage-feature-flags` and `manage-experiment` skills — hand off to them at the seams marked below.
+*Source: the Mixpanel feature-flags and experiments docs at docs.mixpanel.com. Product behaviour, defaults and SDK surfaces change — verify against current docs before relying on any specific claim here.*
+
+**Scope.** This skill owns the code, and the flag the code reads. Everything downstream of that — rollout, ramps, experiment design, results — belongs to the neighbours listed in [Handing off](#handing-off).
 
 ---
 
@@ -45,7 +47,7 @@ State these before writing any code. Nearly every "my flag doesn't work" report 
 | Existing flag/experiment vendor SDKs (LaunchDarkly, Statsig, Optimizely, GrowthBook, Unleash, OpenFeature) | Migration mode is the real request; the call sites to convert |
 | Auth / session / login handlers | Where `identify()` happens — flags reload on identify, so evaluation must not race it |
 | The feature the customer named | The exact branch point where the variant changes behavior — this is where the evaluation call goes |
-| Env/config files | Whether dev/staging/prod use separate Mixpanel projects (they need separate flags — see below) |
+| Env/config files | Whether dev/staging/prod use separate Mixpanel projects (they need separate flags — see *Full Setup*) |
 
 **Carry forward:** platform + SDK + installed version, whether init already exists, the target branch point, and the identity call site.
 
@@ -122,7 +124,7 @@ With an engine: create it on confirmation and read back the generated key. Witho
 
 Put the call at the branch point identified in pre-flight. Use the snippet for the platform from [sdk-snippets.md](references/sdk-snippets.md).
 
-- Pass a fallback that means "feature off" (see the three facts above).
+- Pass a fallback that means "feature off" — see [The three facts that prevent most first-time failures](#the-three-facts-that-prevent-most-first-time-failures).
 - Match the call to the flag type (boolean check for a gate, variant-value getter for config/experiment).
 - Client SDKs: prefer the async getter. The sync variants return the fallback if flags haven't loaded yet — only use them behind a flags-ready check.
 - Server SDKs: read [exposure-correctness.md](references/exposure-correctness.md) **before** writing the call — exposure semantics and the suppression API both differ from the client SDKs.
@@ -147,10 +149,7 @@ If exposures are zero, work [verification.md](references/verification.md)'s diag
 
 ### 7. Hand off
 
-- Rollout percentage, staged ramp, kill switch, archive → **`manage-feature-flags`**.
-- Experiment design, launch, monitoring, results → **`manage-experiment`**.
-
-Tell the customer which skill owns what next, and that the launch decision is theirs.
+Route what comes next per [Handing off](#handing-off). Tell the customer which skill owns what, and that the launch decision is theirs.
 
 ---
 
@@ -174,7 +173,7 @@ The customer already has working Mixpanel flags.
 
 1. Confirm init already enables flags and note the context shape already in use.
 2. Check whether a flag for this feature already exists — duplicate flags gating the same behavior are a common mess.
-3. Route the type, create the flag, write the evaluation call — Quick Start's first four steps.
+3. Route the type, create the flag, then write the evaluation call — Quick Start's *Route the flag type*, *Create the flag*, and *Write the evaluation code* steps.
 4. **Still verify.** A working init does not mean the new flag is wired correctly — wrong key strings are silent.
 
 If the new flag needs a variant assignment key or runtime properties the existing init doesn't pass, the init must be updated. This is the most common reason a second flag fails when the first one worked.

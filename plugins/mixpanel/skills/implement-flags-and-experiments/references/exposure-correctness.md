@@ -4,7 +4,7 @@ The exposure event is what makes a flag measurable. Nearly every experiment-inva
 
 Read this before writing evaluation calls on a server SDK, before wiring an experiment, and before implementing anything behind a consent gate.
 
-*Source: the Mixpanel feature-flags and SDK docs at docs.mixpanel.com. Claims about SDK behaviour below are marked where they could not be confirmed against a documented statement — verify those against the installed SDK before betting an experiment on them.*
+*Source: the Mixpanel feature-flags and SDK docs at docs.mixpanel.com. Some claims below are explicitly hedged where they could not be confirmed against a documented statement, but do not read an unhedged claim as verified — check anything you are about to bet an experiment on against the installed SDK.*
 
 ## Contents
 

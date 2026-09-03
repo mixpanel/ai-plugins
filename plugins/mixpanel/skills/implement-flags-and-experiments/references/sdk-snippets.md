@@ -16,12 +16,13 @@ Per-platform init, evaluation, and exposure control for Mixpanel feature flags.
 - [Controlling exposure on server SDKs](#controlling-exposure-on-server-sdks)
 - [Flag persistence (client SDKs)](#flag-persistence-client-sdks)
 - [Regions](#regions)
+- [OpenFeature](#openfeature)
 
 ---
 
 ## Cross-SDK divergences — read this first
 
-This table is the reason this file exists. Everything here is something an agent will get wrong by generalising from another SDK. The routine init and getter shapes follow each platform's own conventions and are in the platform's docs; these do not.
+This table is the reason this file exists. Everything in it is something an agent will get wrong by generalising from another SDK. The rest of the file carries the minimum init and getter shapes needed to opt into flags — routine in form, but the opt-in itself is the single most common thing left out, so it is reproduced here rather than deferred to each platform's docs.
 
 | Concern | How it differs |
 |---|---|
@@ -31,7 +32,7 @@ This table is the reason this file exists. Everything here is something an agent
 | **React Native init** | The token goes to the `Mixpanel` **constructor**, not to `init()`. On the instance `init()`, `featureFlagsOptions` is the **5th** positional argument — after `optOutTrackingDefault`, `superProperties`, `serverURL`, `useGzipCompression`. Passing it in any earlier position silently leaves flags disabled instead of erroring. |
 | **Async model** | JavaScript, Flutter, React Native: promises, plus `*Sync` variants. **Swift and Android: completion callbacks, not async/await.** Server local evaluation: synchronous. Server remote: async on Node, synchronous on Python, Ruby and Java. |
 | **Flag persistence** | Client SDKs only. **Flutter supports it on iOS and Android only** — on Web the policy is ignored and behaves as `networkOnly`. |
-| **Local evaluation** | Server SDKs only, and **cohort targeting and sticky variants are not supported** in that mode (verify current — the gap narrows over time). |
+| **Local evaluation** | Server SDKs only, and **cohort targeting and sticky variants are not supported** in that mode — *sticky* meaning a user keeps the variant they were first assigned even if rollout or splits change afterwards (verify current — the gap narrows over time). |
 | **Variant source field** | `variant_source` on JavaScript and React Native; `.source` on Swift, Android and Flutter. Not exposed on server SDKs. |
 
 ---
