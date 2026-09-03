@@ -189,11 +189,11 @@ A flag isn't behaving.
 
 Customers name flags in prose ("the checkout flag"), not by key. Match on key first, then case-insensitive name; if several match, list name + key and ask which. Never ask for an internal ID.
 
-**The diagnostic checklists live in [verification.md](references/verification.md)** — one for always-getting-the-fallback, one for correct-variants-but-zero-exposures, one for skewed splits. Work the one that matches the symptom.
+**The diagnostic checklists live in [verification.md](references/verification.md)** — one each for always-getting-the-fallback, wrong-variant, correct-variants-but-zero-exposures, and skewed splits. Work the one that matches the symptom.
 
 Two things to bring to them that the checklists can't supply on their own:
 
-- **Order by cost, not by suspicion.** The checklists are already ordered cheapest-first; resist jumping to the interesting hypothesis. A disabled flag and a mistyped key account for most reports and take seconds to rule out.
+- **Order by cost, not by suspicion.** The checklists are already ordered by what is cheapest to rule out against how often it is the cause; resist jumping to the interesting hypothesis. A disabled flag and a mistyped key account for most reports and take seconds to rule out.
 - **Separate "wrong variant" from "no exposure".** They look alike to a customer and have disjoint causes. Establish which one you're chasing before opening a checklist.
 
 ---
