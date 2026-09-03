@@ -138,9 +138,16 @@ If the user iterates on an already-saved draft, apply the **read-merge-write** r
 
 After saving the draft, link it back to any prior experiment surfaced in step 1 — record the prior's ID, hypothesis, and outcome in the new experiment's description. That 30-second annotation pays back tenfold at interpretation time.
 
-### 9. Hand off to launch
+### 9. Hand off — implementation first, then launch
 
-`design` stops at `DRAFT`. When the user is ready to go live, route to the `launch` command in this skill, which runs the final readiness check and performs the irreversible launch.
+`design` stops at `DRAFT`. Between here and `launch` sits a step this skill does not own: **something in the customer's code has to evaluate the experiment's backing flag and fire exposures.** The draft auto-creates that flag, so its key exists now and implementation can begin — it could not before.
+
+Ask whether the implementation is already in place:
+
+- **Not implemented, or unsure** → route to the `implement-flags-and-experiments` skill with the backing flag's key. It writes the evaluation call and verifies exposures actually arrive. Come back to `launch` after.
+- **Already implemented and verified** → route to the `launch` command, which runs the final readiness check and performs the irreversible launch.
+
+Do not skip the question. Launching is irreversible and locks the variants, statistical model, and cohort; an experiment launched against code that never evaluates the flag passes every configuration check, goes active, and accrues nothing.
 
 If the user hasn't named a specific feature or surface, ask before fetching baselines or designing — designing the wrong experiment burns more time than the clarifying question costs.
 
