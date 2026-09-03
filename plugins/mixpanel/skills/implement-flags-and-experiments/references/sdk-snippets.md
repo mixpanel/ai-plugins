@@ -25,9 +25,10 @@ This table is the reason this file exists. Everything here is something an agent
 
 | Concern | How it differs |
 |---|---|
-| **`isEnabled` fallback parameter** | Present on JavaScript, Swift, Android, Flutter, React Native. **Absent on Go, Java, Ruby** — those take only the flag key and context. |
-| **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant` with `report_exposure=False`. Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression** — do not assume the Node or Python shape; verify against the installed SDK before promising first-exposure semantics. |
+| **`isEnabled` fallback parameter** | Present on JavaScript, Swift, Android, Flutter, React Native. **Absent on Node, Python, Go, Java, Ruby** — those take only the flag key and context. |
+| **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant`, and the keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False` (camelCase — this is deliberate in the SDK, not a typo). Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression** — do not assume the Node or Python shape; verify against the installed SDK before promising first-exposure semantics. |
 | **"All variants" method** | `getAllVariants` / `get_all_variants` / `GetAllVariants` on Node, Python, Go, Ruby, Flutter, React Native — but **Java is `getAllVariantsByFlag(context, boolean)`**, with a trailing boolean whose meaning is not documented upstream. On every SDK where it is documented, this call does **not** fire an exposure event; treat Java's boolean as unverified rather than assuming it matches the others. |
+| **React Native init** | The token goes to the `Mixpanel` **constructor**, not to `init()`. On the instance `init()`, `featureFlagsOptions` is the **5th** positional argument — after `optOutTrackingDefault`, `superProperties`, `serverURL`, `useGzipCompression`. Passing it in any earlier position silently leaves flags disabled instead of erroring. |
 | **Async model** | JavaScript, Flutter, React Native: promises, plus `*Sync` variants. **Swift and Android: completion callbacks, not async/await.** Server local evaluation: synchronous. Server remote: async on Node, synchronous on Python, Ruby and Java. |
 | **Flag persistence** | Client SDKs only. **Flutter supports it on iOS and Android only** — on Web the policy is ignored and behaves as `networkOnly`. |
 | **Local evaluation** | Server SDKs only, and **cohort targeting and sticky variants are not supported** in that mode (verify current — the gap narrows over time). |
@@ -76,25 +77,37 @@ mixpanel.init('YOUR_PROJECT_TOKEN', {
 ```
 
 ```swift
-// Swift — pass featureFlagsEnabled via MixpanelOptions
-Mixpanel.initialize(token: "YOUR_PROJECT_TOKEN", options: MixpanelOptions(
-    featureFlagsEnabled: true
-))
+// Swift — initialize(options:) is the only overload that accepts MixpanelOptions;
+// the token is a required field on MixpanelOptions itself.
+let options = MixpanelOptions(
+    token: "YOUR_PROJECT_TOKEN",
+    featureFlagOptions: FeatureFlagOptions(
+        enabled: true,
+        context: ["company_id": "X", "custom_properties": ["platform": "ios"]]
+    )
+)
+let mixpanel = Mixpanel.initialize(options: options)
 ```
 
 ```java
-// Android
-JSONObject customProperties = new JSONObject();
-customProperties.put("platform", "android");
+// Android — JSONObject.put throws a checked JSONException, so the context
+// build has to be guarded or declared.
+FeatureFlagOptions featureFlagOptions;
+try {
+    JSONObject customProperties = new JSONObject();
+    customProperties.put("platform", "android");
 
-JSONObject flagContext = new JSONObject();
-flagContext.put("company_id", "X");
-flagContext.put("custom_properties", customProperties);
+    JSONObject flagContext = new JSONObject();
+    flagContext.put("company_id", "X");
+    flagContext.put("custom_properties", customProperties);
 
-FeatureFlagOptions featureFlagOptions = new FeatureFlagOptions.Builder()
-    .enabled(true)
-    .context(flagContext)
-    .build();
+    featureFlagOptions = new FeatureFlagOptions.Builder()
+        .enabled(true)
+        .context(flagContext)
+        .build();
+} catch (JSONException e) {
+    throw new IllegalStateException("Failed to build flag context", e);
+}
 
 MixpanelOptions options = new MixpanelOptions.Builder()
     .featureFlagOptions(featureFlagOptions)
@@ -109,18 +122,26 @@ MixpanelAPI mixpanel = MixpanelAPI.getInstance(
 Mixpanel mixpanel = await Mixpanel.init(
   'YOUR_PROJECT_TOKEN',
   trackAutomaticEvents: false,
-  featureFlags: FeatureFlagsConfig(enabled: true),
+  featureFlags: FeatureFlagsConfig(
+    enabled: true,
+    context: {'company_id': 'X', 'custom_properties': {'platform': 'flutter'}},
+  ),
 );
 ```
 
 ```javascript
-// React Native — featureFlagsOptions is the 4th positional argument
-await mixpanel.init('YOUR_PROJECT_TOKEN', false, false, { enabled: true });
+// React Native — the token goes to the constructor, and featureFlagsOptions is
+// the 5th positional argument of the instance init().
+const mixpanel = new Mixpanel('YOUR_PROJECT_TOKEN', false);
+await mixpanel.init(false, undefined, undefined, undefined, {
+  enabled: true,
+  context: { company_id: 'X', custom_properties: { platform: 'rn' } },
+});
 ```
 
 Server SDK init is bound up with the evaluation-mode choice — see [Server SDKs](#server-sdks-remote-vs-local-evaluation).
 
-**Mobile note:** Swift and Android accept a prefetch option. With prefetch disabled, nothing is fetched at init and no flag is available until `identify()` or an explicit load call. If flags are unexpectedly empty at startup, check that first.
+**Mobile note:** Swift, Android and Flutter accept a `prefetchFlags` option (default `true`). With prefetch disabled, nothing is fetched at init and no flag is available until `identify()` or an explicit load call. If flags are unexpectedly empty at startup, check that first.
 
 ---
 
@@ -146,8 +167,8 @@ Per-platform method names, with the fallback-parameter divergence noted in the t
 | Swift | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
 | Android | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
 | Flutter | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
-| Node.js | — | `<mode>.getVariantValue` | `<mode>.getVariant` |
-| Python | — | `<mode>.get_variant_value` | `<mode>.get_variant` |
+| Node.js | `<mode>.isEnabled` | `<mode>.getVariantValue` | `<mode>.getVariant` |
+| Python | `<mode>.is_enabled` | `<mode>.get_variant_value` | `<mode>.get_variant` |
 | Go | `<Mode>.IsEnabled` | `<Mode>.GetVariantValue` | — |
 | Java | `get<Mode>().isEnabled` | `get<Mode>().getVariantValue` | — |
 | Ruby | `<mode>.is_enabled?` | `<mode>.get_variant_value` | — |
@@ -211,7 +232,7 @@ async function main() {
 import mixpanel
 
 local_config = mixpanel.LocalFlagsConfig(
-    api_host="https://api.mixpanel.com", enable_polling=True, poll_interval=60
+    api_host="api.mixpanel.com", enable_polling=True, polling_interval_in_seconds=60
 )
 mp = mixpanel.Mixpanel("YOUR_PROJECT_TOKEN", local_flags_config=local_config)
 mp.local_flags.start_polling_for_definitions()
@@ -269,10 +290,12 @@ Java configures `LocalFlagsConfig`/`RemoteFlagsConfig` through a builder (`proje
 ```javascript
 // Node.js — suppress with a 4th argument, then track manually
 async function evaluate(mp, flagKey, userContext) {
-  const value = await mp.remote_flags.getVariantValue(flagKey, 'control', userContext, false);
-  // ...once the user is actually exposed:
-  mp.remote_flags.trackExposureEvent(flagKey, value, userContext);
-  return value;
+  const fallback = { variant_value: 'control' };
+  const variant = await mp.remote_flags.getVariant(flagKey, fallback, userContext, false);
+  // ...once the user is actually exposed. trackExposureEvent takes the variant
+  // object, not the raw value, so suppress on getVariant rather than getVariantValue.
+  mp.remote_flags.trackExposureEvent(flagKey, variant, userContext);
+  return variant.variant_value;
 }
 ```
 
@@ -282,6 +305,7 @@ from mixpanel import SelectedVariant
 
 def evaluate(mp, flag_key, user_context):
     fallback = SelectedVariant(variant_value="control")
+    # local_flags takes report_exposure; remote_flags takes reportExposure.
     variant = mp.local_flags.get_variant(flag_key, fallback, user_context, report_exposure=False)
     # ...once the user is actually exposed:
     mp.local_flags.track_exposure_event(flag_key, variant, user_context)

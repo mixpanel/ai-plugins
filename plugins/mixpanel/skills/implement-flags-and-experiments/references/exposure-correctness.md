@@ -56,12 +56,12 @@ Why the difference matters:
 | SDK | Per-call suppression |
 |---|---|
 | Node.js | Yes — a 4th argument to the getter |
-| Python | Yes, but **not** on `get_variant_value`; use `get_variant(..., report_exposure=False)` |
-| Go | No per-call parameter — controlled by the tracker supplied at init |
+| Python | Yes, but **not** on `get_variant_value`; use `get_variant`. The keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False`. |
+| Go | No per-call parameter — controlled by the tracker supplied at init; see [sdk-snippets.md](sdk-snippets.md#controlling-exposure-on-server-sdks) |
 | Java | **Not documented** |
 | Ruby | **Not documented** |
 
-On Java and Ruby, do not write suppression code by analogy with Node or Python — the parameter may not exist. Verify against the installed SDK; if it isn't there, use the accept-repeat-exposures path below and tell the customer which semantics they have.
+On Go, wire the tracker at init rather than reaching for a per-call flag. On Java and Ruby, do not write suppression code by analogy with Node or Python — the parameter may not exist. Verify against the installed SDK; if it isn't there, use the accept-repeat-exposures path below and tell the customer which semantics they have.
 
 Where suppression is available, the shape is: suppress at evaluation, then fire exposure yourself exactly once.
 
