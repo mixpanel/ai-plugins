@@ -110,7 +110,7 @@ Replace each evaluation call with the Mixpanel equivalent from [sdk-snippets.md]
 Two semantic differences to check rather than assume:
 
 - **Default/fallback values.** Confirm the Mixpanel fallback means "feature off" — some vendors default to the *first* variant rather than a designated control.
-- **Exposure semantics.** Vendor SDKs vary in whether evaluation fires exposure and whether it deduplicates. Mixpanel client SDKs deduplicate per SDK instance; server SDKs do not deduplicate at all. Read [exposure-correctness.md](exposure-correctness.md) before converting server-side call sites.
+- **Exposure semantics.** Vendor SDKs vary in whether evaluation fires exposure and whether it deduplicates. Mixpanel differs on both counts, and differs again between its client and server SDKs — so this is the assumption most likely to survive a migration unexamined. Read [exposure-correctness.md](exposure-correctness.md) before converting server-side call sites.
 
 ### Dual-run during cutover
 

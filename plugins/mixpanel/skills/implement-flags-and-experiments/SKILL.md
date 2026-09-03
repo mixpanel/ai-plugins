@@ -99,15 +99,13 @@ If the customer says "A/B test," "does this improve conversion," or names a succ
 
 ### 2. Ensure the SDK is installed and initialized with flags enabled
 
-Flags are **off by default** in every SDK. An existing Mixpanel install that tracks events will not return flags until the init call opts in.
+Flags are **off by default in every SDK** — the most common cause of "I added the code and nothing happened." Init shapes per platform, and the two context rules that go with them, are in [sdk-snippets.md](references/sdk-snippets.md#enabling-flags-at-init).
 
 - Already initialized → add the flags option to the existing init. Do not create a second instance.
 - Not installed → install and write a minimal init: token, flags enabled, region host if EU/IN, `debug` on for now.
-- Server-side → choose remote vs local evaluation now; it changes the init shape. Local evaluation is lower latency but **does not support cohort targeting or sticky variants** (verify current — the gap between the two modes narrows over time). If the customer wants either, they need remote.
+- Server-side → choose remote vs local evaluation now; it changes the init shape. **Local cannot do cohort targeting or sticky variants** — if the customer wants either, they need remote. Details in [sdk-snippets.md](references/sdk-snippets.md#server-sdks-remote-vs-local-evaluation).
 
-Per-platform init code is in [sdk-snippets.md](references/sdk-snippets.md).
-
-**If any flag in the project uses a variant assignment key other than `distinct_id`/`device_id`** (e.g. `company_id`), that key must be in the init context. **If any flag uses runtime-property targeting**, those properties go in a `custom_properties` object nested inside `context`. Omitting either is a silent no-match.
+**Before writing the init, check whether any flag in the project uses a non-default variant assignment key or runtime-property targeting.** Both need extra fields in the init context, and omitting either is a silent no-match — the flag just never returns.
 
 ### 3. Create the flag — before writing any code
 
@@ -127,7 +125,7 @@ Put the call at the branch point identified in pre-flight. Use the snippet for t
 - Pass a fallback that means "feature off" (see the three facts above).
 - Match the call to the flag type (boolean check for a gate, variant-value getter for config/experiment).
 - Client SDKs: prefer the async getter. The sync variants return the fallback if flags haven't loaded yet — only use them behind a flags-ready check.
-- Server SDKs: read [exposure-correctness.md](references/exposure-correctness.md) **before** writing the call. Server SDKs do not deduplicate exposure events the way client SDKs do, and the suppression API differs by language.
+- Server SDKs: read [exposure-correctness.md](references/exposure-correctness.md) **before** writing the call — exposure semantics and the suppression API both differ from the client SDKs.
 
 ### 5. Ship it safely
 

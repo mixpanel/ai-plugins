@@ -175,8 +175,6 @@ Per-platform method names, with the fallback-parameter divergence noted in the t
 
 `<mode>` is `local_flags` or `remote_flags` (`LocalFlags`/`RemoteFlags` on Go, `getLocalFlags()`/`getRemoteFlags()` on Java). JavaScript, React Native, Swift and Android also expose `*Sync` variants — those return the fallback if flags haven't loaded, so only use them behind a flags-ready check.
 
-**Client SDKs also have `*Sync` and a flags-ready check.** Prefer async unless you have a specific reason.
-
 Reloading: `identify()` triggers a reload on client SDKs; an `updateContext` call re-fetches with new context; `reset()` clears assignments and refetches.
 
 ---
@@ -185,8 +183,8 @@ Reloading: `identify()` triggers a reload on client SDKs; an `updateContext` cal
 
 Chosen at init, and it changes the init shape.
 
-- **Remote** — a network call per evaluation. Required for cohort targeting and sticky variants.
-- **Local** — the SDK polls for flag definitions and evaluates in-process. Lower latency; **no cohort targeting, no sticky variants.**
+- **Remote** — a network call per evaluation.
+- **Local** — the SDK polls for flag definitions and evaluates in-process. Lower latency, but **no cohort targeting and no sticky variants**; either one requires remote.
 
 ```javascript
 // Node.js — local evaluation
@@ -285,7 +283,7 @@ Java configures `LocalFlagsConfig`/`RemoteFlagsConfig` through a builder (`proje
 
 ## Controlling exposure on server SDKs
 
-**Server SDKs do not deduplicate exposure events** — every evaluation fires one. If you need first-exposure-only semantics, read [exposure-correctness.md](exposure-correctness.md) first: it covers what "once" has to mean and how to store it. The suppression API itself differs per language, and on two SDKs it doesn't exist.
+[exposure-correctness.md](exposure-correctness.md) owns exposure semantics — why every server-side evaluation fires one, what "once" has to mean, and how to store it. Read it first if you need first-exposure-only behaviour. This section covers only the per-language suppression shapes, which differ, and on two SDKs don't exist.
 
 ```javascript
 // Node.js — suppress with a 4th argument, then track manually
@@ -333,8 +331,6 @@ Serves a stored assignment when the network is slow or unavailable, instead of f
 A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
 
 Exposure events from a persisted variant carry `$variant_source`, plus `$persisted_at_in_ms` and `$ttl_in_ms`. **Fallback variants fire no exposure event at all.**
-
-**Flutter supports persistence on iOS and Android only.** On Flutter Web the policy is ignored and behaves as `networkOnly`.
 
 ---
 
