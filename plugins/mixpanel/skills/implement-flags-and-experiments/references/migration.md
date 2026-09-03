@@ -33,7 +33,7 @@ Feature Gates and Dynamic Configs have no such constraint — reassignment there
 
 Parts 1–3 below are API and console work — route them through an available engine (see [`ENGINE.md`](../../../ENGINE.md)) or the customer. **Parts 4 and 5 are this skill's job**, and are where the detail here is deepest. The section headings are the taxonomy; [Sequencing summary](#sequencing-summary) is the order to actually execute in.
 
-**Every bulk write in Parts 1 and 2 needs a preview and an explicit yes before it runs — one confirmation for the batch, not per row.** These are the least reversible operations in this skill: ingested events cannot be un-ingested, and a flag's variant assignment key cannot be changed afterwards. A single mistake is repeated across the whole batch, so the preview is the only place it can be caught cheaply. What each preview must show is stated in its own part below.
+**Every bulk write in Parts 1 and 2 needs a preview and an explicit yes before it runs — one confirmation for the batch, not per row.** These are the least reversible operations in this skill: ingested events cannot be un-ingested, and a flag's variant assignment key is immutable once the flag is enabled. A single mistake is repeated across the whole batch, so the preview is the only place it can be caught cheaply. What each preview must show is stated in its own part below.
 
 ---
 
@@ -72,7 +72,7 @@ Recreate flags and experiments programmatically. What you create depends on what
 - **Feature Gates and Dynamic Configs** — create the flag directly.
 - **Experiments** — create the **experiment**, not a flag. Its backing flag is auto-created and linked for you; read that flag's key back off the experiment and configure it, rather than creating a second flag. A separately created flag would not be linked to the experiment meant to drive it — see *Route the flag type* in the parent skill for what direct creation does here.
 
-**Before creating anything, show the full list and get one explicit yes:** every object with its name, key, type, variant value type, and variant assignment key. The assignment key cannot be corrected after the batch runs — see *Map the bucketing key explicitly*.
+**Before creating anything, show the full list and get one explicit yes:** every object with its name, key, type, variant value type, and variant assignment key. Get the assignment key right here — see *Map the bucketing key explicitly* for why it cannot be corrected later.
 
 This matters more in a scripted bulk migration than anywhere else: a loop that creates a flag per experiment produces an unlinked flag for every experiment it touches.
 

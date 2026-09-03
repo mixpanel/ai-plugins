@@ -51,7 +51,7 @@ State these before writing any code. Nearly every "my flag doesn't work" report 
 
 **Carry forward:** platform + SDK + installed version, whether init already exists, the target branch point, and the identity call site.
 
-**Version gate.** Feature flags require a minimum SDK version per platform, and flag persistence requires a higher one on client SDKs. Check the installed version against the table in [sdk-snippets.md](references/sdk-snippets.md) before writing code — an old SDK fails with no flags returned and no error.
+**Version gate.** Feature flags require a minimum SDK version per platform, and flag persistence a higher one on client SDKs — check the installed version against the table in [sdk-snippets.md](references/sdk-snippets.md) before writing code — an old SDK fails with no flags returned and no error.
 
 ---
 
@@ -105,7 +105,7 @@ Flags are **off by default in every SDK**. Init shapes per platform, and the two
 
 - Already initialized → add the flags option to the existing init. Do not create a second instance.
 - Not installed → install and write a minimal init: token, flags enabled, region host if EU/IN, `debug` on for now.
-- Server-side → choose remote vs local evaluation now; it changes the init shape. **Local cannot do cohort targeting or sticky variants** (verify current — the gap narrows over time) — if the customer wants either, they need remote. Details in [sdk-snippets.md](references/sdk-snippets.md#server-sdks-remote-vs-local-evaluation).
+- Server-side → choose remote vs local evaluation now; it changes the init shape. **Local cannot do cohort targeting or sticky variants** (verify current — the gap narrows over time) — if the customer wants either, they need remote. Details in [Cross-SDK divergences](references/sdk-snippets.md#cross-sdk-divergences--read-this-first).
 
 **Before writing the init, check whether any flag in the project uses a non-default variant assignment key or runtime-property targeting.** Both require extra fields in the init context — the rules are in [Enabling flags at init](references/sdk-snippets.md#enabling-flags-at-init).
 
@@ -113,7 +113,7 @@ Flags are **off by default in every SDK**. Init shapes per platform, and the two
 
 **If the type is Experiment, do not create a flag here.** The experiment owns creation and auto-links its backing flag — `manage-experiment` designs it, then read the generated flag key off the experiment and continue from *Write the evaluation code*. Creating a flag directly for an experiment produces the orphan described in *Route the flag type*. The rest of this step is for Feature Gate and Dynamic Config.
 
-**Show the proposed flag and get an explicit yes before creating it** — name, key, type, variant assignment key, variants. The key and the variant assignment key are both irreversible, which is why this step earns a confirmation gate when most don't.
+**Show the proposed flag and get an explicit yes before creating it** — name, key, type, variant assignment key, variants. Two of those are hard to undo, each on its own terms — see the bullets below. That is why this step earns a confirmation gate when most don't.
 
 With an engine: create it on confirmation and read back the generated key. Without one: direct the customer to create it in the Mixpanel UI and paste the key back.
 
@@ -128,7 +128,7 @@ Put the call at the branch point identified in pre-flight. Use the snippet for t
 
 - Pass a fallback that means "feature off" — see [The three facts that prevent most first-time failures](#the-three-facts-that-prevent-most-first-time-failures).
 - Match the call to the flag type (boolean check for a gate, variant-value getter for config/experiment).
-- Client SDKs: prefer the async getter. The sync variants return the fallback if flags haven't loaded yet — only use them behind a flags-ready check.
+- Client SDKs: prefer the async getter — the sync variants carry a caveat noted in [Evaluating a flag](references/sdk-snippets.md#evaluating-a-flag).
 - Server SDKs: read [exposure-correctness.md](references/exposure-correctness.md) **before** writing the call — exposure semantics and the suppression API both differ from the client SDKs.
 
 ### 5. Ship it safely

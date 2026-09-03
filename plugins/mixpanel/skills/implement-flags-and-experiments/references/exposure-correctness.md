@@ -53,9 +53,9 @@ Why the difference matters:
 
 **Check availability first — this is not possible on every SDK.**
 
-Node and Python have a per-call parameter. Go controls exposure through the tracker supplied at init. **Java and Ruby document neither.** The exact per-language shapes — including Python's keyword differing between local and remote evaluation — are in [sdk-snippets.md](sdk-snippets.md#controlling-exposure-on-server-sdks).
+Node, Python and Go can suppress it; **Java and Ruby have no documented way to.** The per-language shapes are in [sdk-snippets.md](sdk-snippets.md#controlling-exposure-on-server-sdks).
 
-On Go, wire the tracker at init rather than reaching for a per-call flag. On Java and Ruby, do not write suppression code by analogy with Node or Python — the parameter may not exist. Verify against the installed SDK; if it isn't there, use the accept-repeat-exposures path below and tell the customer which semantics they have.
+On Java and Ruby, do not write suppression code by analogy with the others. Verify against the installed SDK; if it isn't there, use the accept-repeat-exposures path below and tell the customer which semantics they have.
 
 Where suppression is available, the shape is: suppress at evaluation, then fire exposure yourself exactly once.
 
@@ -143,11 +143,11 @@ The substitute event must carry the same shape the automatic one does — flag k
 Two runtime targeting mechanisms, easy to confuse:
 
 - **Runtime properties** — key/value attributes your app passes in `custom_properties` inside the evaluation context. Available on **client and server** SDKs.
-- **Runtime events** — targeting on Mixpanel events the user has triggered. **Client-side only.**
+- **Runtime events** — targeting on Mixpanel events the user has triggered. **Client-side only** (verify current).
 
 A server-side implementation cannot use runtime-event targeting. The equivalent is to compute the condition in your own application and pass it as a runtime property — send `has_added_to_cart: true` in `custom_properties` and target on that property instead. The application owns that state.
 
-Only events fired **after** the flag is enabled count toward runtime-event activation; historical events do not retroactively qualify a user.
+Only events fired **after** the flag is enabled count toward runtime-event activation; historical events do not retroactively qualify a user (verify current).
 
 ---
 

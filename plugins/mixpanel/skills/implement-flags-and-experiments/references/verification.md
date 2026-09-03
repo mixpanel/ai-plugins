@@ -73,7 +73,7 @@ Group exposures by variant and compare against the configured allocation. A 50/5
 ## Always getting the fallback
 
 1. **Is the flag enabled?** A disabled flag serves control to everyone regardless of rollout percentage. The most common cause by a wide margin.
-2. **Is the flag archived?** Archiving stops SDK evaluation outright, so an archived flag serves the fallback forever. It also hides the flag from default listings, which is why this is easy to miss when the key looks correct.
+2. **Is the flag archived?** Archiving stops SDK evaluation outright (verify current), so an archived flag serves the fallback forever. It also hides the flag from default listings, which is why this is easy to miss when the key looks correct.
 3. **Does the flag key in code match the key in Mixpanel exactly?** Not the display name — the key. Typos fail silently.
 4. **Is the evaluation call actually reached?** Log at the call site. Dead code looks exactly like a broken flag, and this rules out the entire code path in seconds.
 5. **Is the token the right project's?** With separate projects per environment, dev code pointing at the prod project (or the reverse) returns nothing for flags that exist only in the other one.

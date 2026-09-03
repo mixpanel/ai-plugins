@@ -27,7 +27,7 @@ This table is the reason this file exists. Everything in it is something an agen
 | Concern | How it differs |
 |---|---|
 | **`isEnabled` fallback parameter** | Present on JavaScript, Swift, Android, Flutter, React Native. **Absent on Node, Python, Go, Java, Ruby** — those take only the flag key and context. |
-| **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant`, and the keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False` (camelCase — this is deliberate in the SDK, not a typo). Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression.** |
+| **Exposure suppression** | Differs by language, and on two SDKs does not exist — see [Controlling exposure on server SDKs](#controlling-exposure-on-server-sdks). |
 | **"All variants" method** | `getAllVariants` / `get_all_variants` / `GetAllVariants` on Node, Python, Go, Ruby, Flutter, React Native — but **Java is `getAllVariantsByFlag(context, boolean)`**, with a trailing boolean whose meaning is not documented upstream. Java's trailing boolean is unverified. Exposure behaviour for this call is owned by [exposure-correctness.md](exposure-correctness.md). |
 | **Getter naming** | Not predictable from the language. JavaScript uses `flags.is_enabled` / `get_variant_value` while **React Native uses `flags.isEnabled` / `getVariantValue`** — both JavaScript, opposite casings. Ruby carries a trailing `?` (`is_enabled?`). Java accesses through a call, `get<Mode>().isEnabled`, where others use a property. |
 | **Full-variant getter** | **Absent on Go, Java and Ruby** — those expose only the boolean check and the variant-value getter. |
@@ -144,7 +144,7 @@ await mixpanel.init(false, undefined, undefined, undefined, {
 
 Server SDK init is bound up with the evaluation-mode choice — see [Server SDKs](#server-sdks-remote-vs-local-evaluation).
 
-**Mobile note:** Swift, Android and Flutter accept a `prefetchFlags` option (default `true`). With prefetch disabled, nothing is fetched at init and no flag is available until `identify()` or an explicit load call. If flags are unexpectedly empty at startup, check that first.
+**Mobile note:** Swift, Android and Flutter accept a `prefetchFlags` option (default `true` — verify current). With prefetch disabled, nothing is fetched at init and no flag is available until `identify()` or an explicit load call. If flags are unexpectedly empty at startup, check that first.
 
 ---
 
@@ -271,7 +271,7 @@ Java configures `LocalFlagsConfig`/`RemoteFlagsConfig` through a builder, starts
 
 ## Controlling exposure on server SDKs
 
-[exposure-correctness.md](exposure-correctness.md) owns exposure semantics — why every server-side evaluation fires one, what "once" has to mean, and how to store it. Read it first if you need first-exposure-only behaviour. This section covers only the per-language suppression shapes, which differ, and on two SDKs don't exist.
+[exposure-correctness.md](exposure-correctness.md) owns exposure semantics — what fires one, what "once" has to mean, and how to store it. Read it first if you need first-exposure-only behaviour. This section covers only the per-language suppression shapes, which differ, and on two SDKs don't exist.
 
 ```javascript
 // Node.js — suppress with a 4th argument, then track manually
@@ -287,11 +287,10 @@ async function evaluate(mp, flagKey, userContext) {
 
 ```python
 # Python — get_variant_value has NO suppression parameter; drop to get_variant
-from mixpanel import SelectedVariant
+from mixpanel.flags.types import SelectedVariant
 
 def evaluate(mp, flag_key, user_context):
     fallback = SelectedVariant(variant_value="control")
-    # local_flags takes report_exposure; remote_flags takes reportExposure.
     variant = mp.local_flags.get_variant(flag_key, fallback, user_context, report_exposure=False)
     # ...once the user is actually exposed:
     mp.local_flags.track_exposure_event(flag_key, variant, user_context)
@@ -299,6 +298,8 @@ def evaluate(mp, flag_key, user_context):
 ```
 
 **Go** has no per-call suppression. Exposure is sent by the tracker supplied at init: `DefaultFlagsExposureTracker` sends synchronously, and a custom tracker function can be passed instead to send asynchronously or drop events. Confirm the current constructor and tracker signature against the Go SDK's docs before wiring one — the shape is not stable enough to reproduce here.
+
+**Python's keyword differs by mode:** `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False`. The camelCase is deliberate in the SDK, not a typo.
 
 **Java and Ruby** document no per-call suppression — [exposure-correctness.md](exposure-correctness.md) covers what to do instead.
 
@@ -308,7 +309,7 @@ def evaluate(mp, flag_key, user_context):
 
 Serves a stored assignment when the network is slow or unavailable, instead of falling back. Configured with a `variantLookupPolicy` in the SDK's feature-flag options:
 
-The default is `networkOnly` — no persistence, every lookup waits for the network. The two persisting policies (`networkFirst`, `persistenceUntilNetworkSuccess`) differ in whether they wait for the network first or serve the stored value immediately; see the platform's docs for the exact semantics. A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
+The default is `networkOnly` (verify current) — no persistence, every lookup waits for the network. The two persisting policies (`networkFirst`, `persistenceUntilNetworkSuccess`) differ in whether they wait for the network first or serve the stored value immediately; see the platform's docs for the exact semantics. A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
 
 Exposure events from a persisted variant carry `$variant_source`, plus `$persisted_at_in_ms` and `$ttl_in_ms`.
 
