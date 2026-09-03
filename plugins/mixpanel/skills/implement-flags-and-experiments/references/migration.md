@@ -25,7 +25,7 @@ Variant assignment is computed independently by each platform. Moving a live exp
 
 Let in-flight experiments finish where they are, import their history, and relaunch fresh in Mixpanel after cutover — the full ordering is in [Sequencing summary](#sequencing-summary).
 
-Feature gates and dynamic configs have no such constraint — reassignment there is a user-experience flicker, not a correctness failure. Migrate those first.
+Feature Gates and Dynamic Configs have no such constraint — reassignment there is a user-experience flicker, not a correctness failure. Migrate those first.
 
 ---
 
@@ -63,9 +63,12 @@ Two things that are easy to get wrong and expensive to redo:
 
 ## Part 2 — Configurations
 
-Recreate flags and experiments through the Mixpanel API. **Create the experiment first, then the flag that references it** — the flag carries the experiment reference, so the reverse order leaves an orphan.
+Recreate flags and experiments through the Mixpanel API. What you create depends on what the vendor object is:
 
-> **This two-call pattern is specific to migrating via the API.** Working in the product normally, you create the experiment and its backing flag is auto-created and linked for you — one step, not two, and the `manage-feature-flags` skill will tell you that creating a flag directly for an experiment produces an orphan. Both are true: the API path builds the two objects explicitly and links them, which is what makes bulk recreation possible at all. Don't carry the two-call pattern back into non-migration work, and don't let it convince you the product path needs a second step.
+- **Feature Gates and Dynamic Configs** — create the flag directly.
+- **Experiments** — create the **experiment**, not a flag. Its backing flag is auto-created and linked for you; read that flag's key back off the experiment and configure it, rather than creating a second flag. Direct flag creation rejects the experiment flag type anyway, and a separately created flag would not be linked to the experiment meant to drive it.
+
+This matters more in a scripted bulk migration than anywhere else: a loop that creates a flag per experiment produces an unlinked flag for every experiment it touches.
 
 The variant value type differs by flag type, and mismatching it is a silent misconfiguration:
 
@@ -83,7 +86,7 @@ The variant value type differs by flag type, and mismatching it is a silent misc
 
 ## Part 3 — Finish setup in the UI
 
-The API creates the base configuration. Targeting rules, rollout groups, runtime evaluation, and experiment metrics are completed in the Mixpanel UI. For each migrated experiment, map the vendor's success metrics onto Mixpanel metrics so the same criteria are being measured.
+The API creates the base configuration. Targeting rules, rollout groups, runtime-property targeting, and experiment metrics are completed in the Mixpanel UI. For each migrated experiment, map the vendor's success metrics onto Mixpanel metrics so the same criteria are being measured.
 
 ---
 
@@ -103,7 +106,7 @@ Replace each evaluation call with the Mixpanel equivalent from [sdk-snippets.md]
 |---|---|
 | Boolean gate check | boolean flag evaluation |
 | Multivariate / experiment variant | variant-value getter |
-| Dynamic config / JSON payload read | variant-value getter returning the object |
+| Dynamic Config / JSON payload read | variant-value getter returning the object |
 | User attributes passed for targeting | `custom_properties` inside the evaluation context |
 | Per-request evaluation context | the `distinct_id` plus any non-default assignment key |
 
@@ -114,13 +117,13 @@ Two semantic differences to check rather than assume:
 
 ### Dual-run during cutover
 
-Wrap Mixpanel flag calls so that if a value can't be retrieved, the code falls back to the value the old provider would have served. Both systems run side by side, and parity can be confirmed with no user-facing risk.
+Wrap Mixpanel flag calls so that if a value can't be retrieved, the code falls back to the value the old vendor would have served. Both systems run side by side, and parity can be confirmed with no user-facing risk.
 
 **Introduce a thin facade around flag evaluation while doing this** — one function per flag, or one small module. It makes the dual-run wrapper trivial, makes removing the old provider a one-file change, and leaves the customer better off than the scattered call sites they started with. This is the single highest-value structural change available during a migration; propose it early, because retrofitting it later means touching every call site twice.
 
 ### Cut over and clean up
 
-Once parity holds in production: route fully to Mixpanel, remove the fallback, delete the old provider's SDK and configuration. Keep the facade.
+Once parity holds in production: route fully to Mixpanel, remove the fallback, delete the old vendor's SDK and configuration. Keep the facade.
 
 ---
 
@@ -141,8 +144,8 @@ Item 4 catches what the aggregate checks miss. A migration can produce correct t
 
 1. Inventory the vendor's flags; separate live experiments from gates and configs.
 2. Import historical exposures for everything.
-3. Migrate gates and dynamic configs first — low risk, validates the pipeline.
+3. Migrate Feature Gates and Dynamic Configs first — low risk, validates the pipeline.
 4. Let live experiments finish on the old vendor.
 5. Introduce the evaluation facade and dual-run the migrated gates.
-6. Verify parity, cut over, remove the old provider.
+6. Verify parity, cut over, remove the old vendor.
 7. Launch replacement experiments fresh in Mixpanel.
