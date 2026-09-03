@@ -68,9 +68,9 @@ State the selected mode and offer to switch at any point.
 
 | Mode | Covers | Section |
 |---|---|---|
-| Quick Start | Pre-flight → SDK init with flags → create flag → evaluate → enable (customer) → verify → hand off | [Quick Start Flow](#quick-start-flow) |
+| Quick Start | Pre-flight → route flag type → SDK init with flags → create flag → evaluate → enable (customer) → verify → hand off | [Quick Start Flow](#quick-start-flow) |
 | Full Setup | Quick Start plus identity, environments, exposure correctness, experiment wiring, cleanup plan | [Full Setup](#full-setup) |
-| Add a Flag | Reuse existing init → route flag type → evaluate → verify | [Add a Flag](#add-a-flag) |
+| Add a Flag | Reuse existing init → route flag type → create flag → evaluate → verify | [Add a Flag](#add-a-flag) |
 | Migrate | Inventory vendor flags → map semantics → recreate → dual-run → cut over. Bulk writes are gated on a preview and an explicit yes. | [migration.md](references/migration.md) |
 | Audit | Diagnose fallback-always, zero exposures, wrong variant, skewed splits | [Audit](#audit) |
 

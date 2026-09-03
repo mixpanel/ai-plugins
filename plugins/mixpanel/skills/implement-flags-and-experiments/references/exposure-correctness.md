@@ -35,7 +35,7 @@ The inverse error is rarer but worse: evaluating so deep in the funnel that only
 
 ## Client SDKs deduplicate. Server SDKs do not.
 
-**Client SDKs** deduplicate the exposure event per flag for the lifetime of the SDK instance. Calling the getter in a render loop does not produce thousands of exposures. Note the scope — a page reload, an app restart, or a new session is a new instance and will fire again. That is expected; analysis handles repeat exposures per user.
+**Client SDKs** deduplicate the exposure event per flag for the lifetime of the SDK instance. Calling the getter in a render loop does not produce thousands of exposures. Note the scope — a page reload, an app restart, or a new session is a new instance and will fire again. That is expected — see [Implementing first-exposure-only on a server SDK](#implementing-first-exposure-only-on-a-server-sdk) for what repeat exposures do and don't cost.
 
 **Server SDKs do not deduplicate.** Every evaluation call fires an exposure event. A flag checked once per request emits one exposure per request — thousands per user per day.
 

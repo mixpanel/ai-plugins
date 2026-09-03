@@ -29,6 +29,8 @@ This table is the reason this file exists. Everything in it is something an agen
 | **`isEnabled` fallback parameter** | Present on JavaScript, Swift, Android, Flutter, React Native. **Absent on Node, Python, Go, Java, Ruby** — those take only the flag key and context. |
 | **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant`, and the keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False` (camelCase — this is deliberate in the SDK, not a typo). Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression.** |
 | **"All variants" method** | `getAllVariants` / `get_all_variants` / `GetAllVariants` on Node, Python, Go, Ruby, Flutter, React Native — but **Java is `getAllVariantsByFlag(context, boolean)`**, with a trailing boolean whose meaning is not documented upstream. Java's trailing boolean is unverified. Exposure behaviour for this call is owned by [exposure-correctness.md](exposure-correctness.md). |
+| **Getter naming** | Not predictable from the language. JavaScript uses `flags.is_enabled` / `get_variant_value` while **React Native uses `flags.isEnabled` / `getVariantValue`** — both JavaScript, opposite casings. Ruby carries a trailing `?` (`is_enabled?`). Java accesses through a call, `get<Mode>().isEnabled`, where others use a property. |
+| **Full-variant getter** | **Absent on Go, Java and Ruby** — those expose only the boolean check and the variant-value getter. |
 | **React Native init** | The token goes to the `Mixpanel` **constructor**, not to `init()`. On the instance `init()`, `featureFlagsOptions` is the **5th** positional argument — after `optOutTrackingDefault`, `superProperties`, `serverURL`, `useGzipCompression`. Passing it in any earlier position silently leaves flags disabled instead of erroring. |
 | **Async model** | JavaScript, Flutter, React Native: promises, plus `*Sync` variants. **Swift and Android: completion callbacks, not async/await.** Server local evaluation: synchronous. Server remote: async on Node, synchronous on Python, Ruby and Java. |
 | **Flag persistence** | Client SDKs only. **Flutter supports it on iOS and Android only** — on Web the policy is ignored and behaves as `networkOnly`. |
@@ -148,7 +150,7 @@ Server SDK init is bound up with the evaluation-mode choice — see [Server SDKs
 
 ## Evaluating a flag
 
-Match the call to the flag type: the **boolean check** for a Feature Gate, the **variant-value getter** for an Experiment or Dynamic Config. Both fire an exposure event; see [exposure-correctness.md](exposure-correctness.md) for what that means and when it doesn't.
+Match the call to the flag type: the **boolean check** for a Feature Gate, the **variant-value getter** for an Experiment or Dynamic Config. See [exposure-correctness.md](exposure-correctness.md) for which calls fire an exposure event and when they don't.
 
 ```javascript
 // JavaScript (web) — async is the safe default
@@ -159,22 +161,7 @@ const value = await mixpanel.flags.get_variant_value('my-flag', 'control');
 const variant = await mixpanel.flags.get_variant('my-flag', { key: 'control', value: 'control' });
 ```
 
-Per-platform method names, with the fallback-parameter divergence noted in [Cross-SDK divergences](#cross-sdk-divergences--read-this-first):
-
-| Platform | Boolean check | Variant value | Full variant |
-|---|---|---|---|
-| JavaScript | `flags.is_enabled` | `flags.get_variant_value` | `flags.get_variant` |
-| React Native | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
-| Swift | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
-| Android | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
-| Flutter | `flags.isEnabled` | `flags.getVariantValue` | `flags.getVariant` |
-| Node.js | `<mode>.isEnabled` | `<mode>.getVariantValue` | `<mode>.getVariant` |
-| Python | `<mode>.is_enabled` | `<mode>.get_variant_value` | `<mode>.get_variant` |
-| Go | `<Mode>.IsEnabled` | `<Mode>.GetVariantValue` | — |
-| Java | `get<Mode>().isEnabled` | `get<Mode>().getVariantValue` | — |
-| Ruby | `<mode>.is_enabled?` | `<mode>.get_variant_value` | — |
-
-`<mode>` is `local_flags` or `remote_flags` (`LocalFlags`/`RemoteFlags` on Go, `getLocalFlags()`/`getRemoteFlags()` on Java). JavaScript, React Native, Swift and Android also expose `*Sync` variants — those return the fallback if flags haven't loaded, so only use them behind a flags-ready check.
+Naming follows each platform's own conventions except where [Cross-SDK divergences](#cross-sdk-divergences--read-this-first) says otherwise. On server SDKs the getters hang off the evaluation mode: `<mode>` is `local_flags` or `remote_flags` (`LocalFlags`/`RemoteFlags` on Go, `getLocalFlags()`/`getRemoteFlags()` on Java). JavaScript, React Native, Swift and Android also expose `*Sync` variants — those return the fallback if flags haven't loaded, so only use them behind a flags-ready check.
 
 Reloading: `identify()` triggers a reload on client SDKs; an `updateContext` call re-fetches with new context; `reset()` clears assignments and refetches.
 
@@ -278,7 +265,7 @@ func main() {
 }
 ```
 
-Java configures `LocalFlagsConfig`/`RemoteFlagsConfig` through a builder (`projectToken`, `apiHost` without protocol, `enablePolling`, `pollingIntervalSeconds`, `requestTimeoutSeconds`), starts polling with `getLocalFlags().startPollingForDefinitions()`, and **requires `close()` on shutdown** to stop polling. Ruby takes a `local_flags_config` / `remote_flags_config` hash on `Mixpanel::Tracker.new` and starts polling with `local_flags.start_polling_for_definitions!`. See each platform's docs page for the full builder surface.
+Java configures `LocalFlagsConfig`/`RemoteFlagsConfig` through a builder, starts polling with `getLocalFlags().startPollingForDefinitions()`, and **requires `close()` on shutdown** to stop polling. Ruby takes a `local_flags_config` / `remote_flags_config` hash on `Mixpanel::Tracker.new` and starts polling with `local_flags.start_polling_for_definitions!`. See each platform's docs page for the full builder surface.
 
 ---
 
@@ -323,7 +310,7 @@ Serves a stored assignment when the network is slow or unavailable, instead of f
 
 The default is `networkOnly` — no persistence, every lookup waits for the network. The two persisting policies (`networkFirst`, `persistenceUntilNetworkSuccess`) differ in whether they wait for the network first or serve the stored value immediately; see the platform's docs for the exact semantics. A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
 
-Exposure events from a persisted variant carry `$variant_source`, plus `$persisted_at_in_ms` and `$ttl_in_ms`. **Fallback variants fire no exposure event at all.**
+Exposure events from a persisted variant carry `$variant_source`, plus `$persisted_at_in_ms` and `$ttl_in_ms`.
 
 ---
 

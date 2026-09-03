@@ -35,7 +35,7 @@ Flags support an explicit allowlist of test users with a per-user choice of vari
 Two constraints:
 
 - The user must have identified at least once with the identity being allowlisted, so there is a profile to match.
-- On projects using the original ID-merge behaviour, the allowlist stores a **snapshot** of the user's identity when they were added and matches it exactly at evaluation. If the app's identification logic changes afterward, or the user moves between anonymous and identified states, the snapshot goes stale and the flag silently stops returning for them. **Fix: remove the QA tester and re-add them**, which re-snapshots. Projects on the newer simplified ID merge use a deterministic canonical ID and don't have this problem.
+- On projects using the original ID-merge behaviour, the allowlist stores a **snapshot** of the user's identity when they were added and matches it exactly at evaluation (verify current). If the app's identification logic changes afterward, or the user moves between anonymous and identified states, the snapshot goes stale and the flag silently stops returning for them. **Fix: remove the QA tester and re-add them**, which re-snapshots. Projects on the newer simplified ID merge use a deterministic canonical ID and don't have this problem.
 
 ### The other two — customer-owned configuration
 
@@ -56,7 +56,7 @@ Log the value at the call site. If it equals the fallback, the flag is not reach
 
 ### 2. Confirm the variant source is `network`
 
-Client SDKs expose where the value came from — `variant_source` on JavaScript and React Native, `.source` on Swift, Android and Flutter (see [sdk-snippets.md](sdk-snippets.md) for the getter that returns it). `fallback` means no assignment arrived. `persistence` means a cached assignment was served, which is fine in production but can mask a broken network path during first verification — clear it by calling `identify()` with a different ID or `reset()`, then retest.
+Client SDKs expose where the value came from; the field name differs by platform — see [Cross-SDK divergences](sdk-snippets.md#cross-sdk-divergences--read-this-first). `fallback` means no assignment arrived. `persistence` means a cached assignment was served, which is fine in production but can mask a broken network path during first verification — clear it by calling `identify()` with a different ID or `reset()`, then retest.
 
 ### 3. Confirm an exposure event arrived
 
