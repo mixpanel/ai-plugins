@@ -60,13 +60,20 @@ On Go, wire the tracker at init rather than reaching for a per-call flag. On Jav
 Where suppression is available, the shape is: suppress at evaluation, then fire exposure yourself exactly once.
 
 ```python
-# Python. Node's equivalent is getVariantValue(key, fallback, ctx, false)
+# Python. Node's equivalent is getVariant(key, fallback, ctx, false)
 # followed by trackExposureEvent(key, variant, ctx).
-from mixpanel import SelectedVariant
+# SelectedVariant is not re-exported at the package root — import it from flags.types.
+from mixpanel.flags.types import SelectedVariant, VariantSource
 
 def variant_for(mp, flag_key, user_context, already_exposed):
     fallback = SelectedVariant(variant_value="control")
     variant = mp.local_flags.get_variant(flag_key, fallback, user_context, report_exposure=False)
+
+    # A fallback means no assignment arrived. track_exposure_event does not check
+    # this itself — it will happily emit an exposure with a null variant name — so
+    # the caller has to guard it.
+    if variant.variant_source == VariantSource.FALLBACK:
+        return variant.variant_value
 
     # Fire exposure only where the user actually sees the variant, and only once.
     if not already_exposed.seen(user_context["distinct_id"], flag_key):
@@ -76,7 +83,7 @@ def variant_for(mp, flag_key, user_context, already_exposed):
     return variant.variant_value
 ```
 
-**The "already exposed" store has a hard requirement:** it must be keyed on **assignment key + flag key** and persist for **the whole experiment**, not the request or the session. A per-request store gives you no deduplication at all. A session store gives you one exposure per session per user, which is not first-exposure-only — and a reader who picks it will believe they implemented something they didn't. In practice that means a database column or a durable cache with no TTL shorter than the experiment, not an in-memory flag.
+**The "already exposed" store has a hard requirement:** it must be keyed on **`distinct_id` + flag key** and persist for **the whole experiment**, not the request or the session. Key it on `distinct_id` even when the flag buckets on something coarser — exposure is recorded per user, so deduping on a `company_id` assignment key would log one exposure for the entire company and silently drop every other user in it. A per-request store gives you no deduplication at all. A session store gives you one exposure per session per user, which is not first-exposure-only — and a reader who picks it will believe they implemented something they didn't. In practice that means a database column or a durable cache with no TTL shorter than the experiment, not an in-memory flag.
 
 **If that is more machinery than the customer wants**, the honest fallback is to leave automatic exposure on and accept repeat exposures. Say so explicitly rather than letting them assume semantics they don't have. Repeat exposures do not invalidate an experiment on their own — Mixpanel attributes a user's subsequent events to their exposure, so extra exposures for an already-exposed user don't add users to the denominator — but the customer should know which semantics they're operating under, and exposure counts will not equal user counts.
 
