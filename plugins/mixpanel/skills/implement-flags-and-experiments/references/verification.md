@@ -1,31 +1,46 @@
 # Verification
 
-How to test a flag locally before any rollout, how to prove the implementation works, and what to check when it doesn't.
+How to test a flag before any rollout, how to prove the implementation works, and what to check when it doesn't.
+
+*Source: the Mixpanel feature-flags docs at docs.mixpanel.com. Product behaviour and timings change — verify against current docs before relying on any specific value below.*
 
 "The code compiles and returns a value" is not verification — the fallback is also a value, and a fully broken implementation returns it cleanly.
 
+## Contents
+
+- [Getting yourself served a variant](#getting-yourself-served-a-variant)
+- [The verification loop](#the-verification-loop)
+- [Always getting the fallback](#always-getting-the-fallback)
+- [Wrong variant](#wrong-variant)
+- [Correct variants, but zero exposures](#correct-variants-but-zero-exposures)
+- [Skewed variant split](#skewed-variant-split)
+- [What "verified" means](#what-verified-means)
+
+The exposure event is named `$experiment_started` — that is what to search for in Live View.
+
 ---
 
-## Testing locally, before any rollout
+## Getting yourself served a variant
 
-The customer's first question is usually "how do I see the variant on my machine without shipping it to anyone?" Three options, best first.
+**The flag must be enabled first.** A disabled flag serves control to everyone no matter what else is configured, so nothing below works until it is on. Enabling is the customer's call — ask them to do it rather than doing it yourself.
 
-### QA tester allowlist
+Three ways to get a variant, ordered least-invasive first.
 
-Flags support an explicit allowlist of test users, selected by their `$email` user profile property, with a per-user choice of which variant they receive. This is the intended mechanism: no rollout percentage, no cohort, no code changes.
+### QA tester allowlist — the one this skill uses
 
-Two constraints worth stating up front:
+Flags support an explicit allowlist of test users with a per-user choice of variant. No rollout percentage, no cohort, no code changes. **This is the option to reach for**, because it is the only one that doesn't require changing rollout configuration.
 
-- The user must have identified at least once with the email/identity being allowlisted, so there is a profile to match against.
-- On projects using the original ID-merge behaviour, the allowlist stores a **snapshot** of the user's identity at the moment they were added, and matches it exactly at evaluation time. If the app's identification logic changes afterward, or the user moves between anonymous and identified states, the snapshot goes stale and the flag silently stops returning for them. **Fix: remove the QA tester and re-add them**, which re-snapshots. Projects on the newer simplified ID merge use a deterministic canonical ID and don't have this problem.
+Two constraints:
 
-### A cohort of one
+- The user must have identified at least once with the identity being allowlisted, so there is a profile to match.
+- On projects using the original ID-merge behaviour, the allowlist stores a **snapshot** of the user's identity when they were added and matches it exactly at evaluation. If the app's identification logic changes afterward, or the user moves between anonymous and identified states, the snapshot goes stale and the flag silently stops returning for them. **Fix: remove the QA tester and re-add them**, which re-snapshots. Projects on the newer simplified ID merge use a deterministic canonical ID and don't have this problem.
 
-Create a cohort containing just the developer's test account and target the flag at it with 100% rollout. Works everywhere, but cohort membership refreshes on a periodic cadence (roughly every two hours) — a user added to a cohort moments ago will not match yet. This is the single most common "I set it up correctly and it still doesn't work" report. Wait, then retest.
+### The other two — customer-owned configuration
 
-### Runtime property
+Both of these change rollout configuration, which the `manage-feature-flags` skill owns. Don't configure them yourself; describe what's needed and ask the customer to set it up.
 
-Pass something like `environment: "dev"` in `custom_properties` and target on it. Immediate — no refresh delay — and useful when the same project serves multiple environments. Requires the property to be in the evaluation context on every call.
+- **A cohort of one** — a cohort containing just the test account, targeted at 100%. Works everywhere, but cohort membership refreshes on a periodic cadence (roughly every two hours at time of writing — treat that as an order of magnitude, not an SLA), so a user added moments ago will not match yet. This delay is the single most common "I set it up correctly and it still doesn't work" report. Wait, then retest.
+- **A runtime property** — pass `environment: "dev"` in `custom_properties` and target on it. Immediate, with no refresh delay. Note the parent skill defaults to separate projects per environment; this option suits customers who deliberately run one project.
 
 ---
 
@@ -33,66 +48,77 @@ Pass something like `environment: "dev"` in `custom_properties` and target on it
 
 Run this before enabling for anyone real, and before launching any experiment.
 
-**1. Confirm the evaluation returns a real variant.**
+#### 1. Confirm the evaluation returns a real variant
 
-Log the value at the call site. If it equals the fallback, the flag is not reaching this user — go to the diagnostic checklist below. Do not proceed.
+Log the value at the call site. If it equals the fallback, the flag is not reaching this user — work [Always getting the fallback](#always-getting-the-fallback). Do not proceed.
 
-**2. Confirm the variant source is `network`.**
+#### 2. Confirm the variant source is `network`
 
-Where the SDK exposes it (client SDKs, via the full-variant getter), check the source field. `fallback` means no assignment was received. `persistence` means a cached assignment was served — fine in production, but during first verification it can mask a broken network path, so clear persisted state and retest.
+Client SDKs expose where the value came from — `variant_source` on JavaScript and React Native, `.source` on Swift, Android and Flutter (see [sdk-snippets.md](sdk-snippets.md) for the getter that returns it). `fallback` means no assignment arrived. `persistence` means a cached assignment was served, which is fine in production but can mask a broken network path during first verification — clear it by calling `identify()` with a different ID or `reset()`, then retest.
 
-**3. Confirm an exposure event actually arrived.**
+#### 3. Confirm an exposure event arrived
 
-Exercise the code path, then look for the exposure event in Mixpanel — Live View is the fastest surface. Confirm three things on the event: the flag key matches, the variant matches what the code received, and the identity is the one you expect.
+Exercise the code path, then look for `$experiment_started` in Live View. Check three things on the event: the flag key matches, the variant matches what the code received, and the identity is the one you expect.
 
-**Allow for ingestion lag before concluding anything is wrong.** Events usually surface within seconds, but SDK batching, server-side buffering, or a CDP in the path can stretch that. If Live View shows events arriving at all, don't wait on the report.
+**Allow for ingestion lag before concluding anything is wrong.** Events usually surface within seconds, but SDK batching, server-side buffering, or a customer data platform in the path can stretch it. If Live View shows events arriving at all, don't wait for them to appear in a saved report. If Live View shows nothing, allow up to 24 hours before treating a zero as real.
 
-**4. Confirm the split, once traffic is real.**
+#### 4. Confirm the split, once traffic is real
 
-After the flag is serving real users, group exposures by variant and compare against the configured allocation. A 50/50 flag showing 60/40 is either a small denominator or a bucketing problem — see below.
+Group exposures by variant and compare against the configured allocation. A 50/50 flag showing 60/40 is either a small denominator or a bucketing problem — see [Skewed variant split](#skewed-variant-split).
 
 ---
 
-## Diagnostic checklist
+## Always getting the fallback
 
-Work in order. Cheapest and most likely first.
-
-### Always getting the fallback
+Ordered cheapest-first — each step costs less than the one after it.
 
 1. **Is the flag enabled?** A disabled flag serves control to everyone regardless of rollout percentage. The most common cause by a wide margin.
 2. **Does the flag key in code match the key in Mixpanel exactly?** Not the display name — the key. Typos fail silently.
-3. **Is the SDK version at or above the minimum?** Below it, flags never return and no error is raised. Versions are in [sdk-snippets.md](sdk-snippets.md).
-4. **Does init actually enable flags?** Flags are off by default. An SDK that tracks events happily will still return no flags.
-5. **Is every targeting input present in the context?** If the flag buckets on a key other than `distinct_id`/`device_id`, that key must be in the init/evaluation context. If it uses runtime-property targeting, those properties must be in `custom_properties` inside the context. Missing either is a silent no-match.
-6. **Is the user in the rollout?** Check rollout percentage, cohort membership, and targeting filters. Remember the cohort refresh delay.
-7. **Is the region host right?** EU and India projects must point at their regional host. A US host with an EU token returns nothing.
+3. **Is the evaluation call actually reached?** Log at the call site. Dead code looks exactly like a broken flag, and this rules out the entire code path in seconds.
+4. **Is the token the right project's?** With separate projects per environment, dev code pointing at the prod project (or the reverse) returns nothing for flags that exist only in the other one.
+5. **Is the region host right?** EU and India projects must point at their regional host. A US host with an EU token returns nothing.
+6. **Is the SDK version at or above the minimum?** Below it, flags never return and no error is raised. Versions are in [sdk-snippets.md](sdk-snippets.md).
+7. **Does init actually enable flags?** Flags are off by default. An SDK that tracks events happily will still return no flags.
 8. **On mobile: is prefetch disabled?** If flags aren't fetched at init, nothing is available until `identify()` or an explicit load call.
-9. **Is the evaluation call actually reached?** Log at the call site. Dead code looks exactly like a broken flag.
+9. **Is every targeting input present in the context?** A flag bucketing on a key other than `distinct_id`/`device_id` needs that key in the context; runtime-property targeting needs those properties in `custom_properties`. Missing either is a silent no-match.
+10. **Is the user in the rollout?** Rollout percentage, cohort membership, and targeting filters all gate assignment. Remember the cohort refresh delay.
 
-**Web debugging shortcut:** inspect the `/flags/` network request in browser devtools. The response shows which flags were returned for this user, and the payload's test-user field lists the identities on the QA allowlist — compare those against the `distinct_id` the SDK is actually sending. A mismatch there explains most QA-tester failures.
+**Web debugging shortcut:** inspect the flags network request in browser devtools. The response shows which flags were returned for this user, and lists the identities on the QA allowlist — compare those against the `distinct_id` the SDK is actually sending. A mismatch there explains most QA-tester failures. (Response shape is internal and may change; use it as a diagnostic, not a contract.)
 
-### Correct variants, but zero exposures
+---
+
+## Wrong variant
+
+The flag returns a variant, but not the one expected. Different causes from the fallback case.
+
+1. **Is a stale persisted assignment being served?** Check the variant source. `persistence` means the value predates any recent config change. Clear with `identify()` on a different ID or `reset()`, then retest.
+2. **Is the evaluation racing `identify()`?** Client SDKs reload flags on identify. Evaluating before it resolves buckets the user on their pre-identify identity, then re-buckets after — so the first render can differ from every later one.
+3. **Was the variant assignment key changed?** It cannot be changed once the flag is enabled, but if the flag was recreated, previously-bucketed users land elsewhere.
+4. **Are variant splits or rollout percentage recently changed?** Raising rollout alone does not re-bucket users, but changing splits, or lowering then raising rollout, can. Sticky variants override this.
+5. **Is more than one flag gating the same branch?** Two flags on one code path produce results neither one explains.
+
+---
+
+## Correct variants, but zero exposures
 
 1. **Is the branching driven by an all-variants call?** Those never fire exposure. See [exposure-correctness.md](exposure-correctness.md).
 2. **Is tracking opted out?** Exposure events are dropped while opted out and are not replayed on consent.
-3. **Has the exposure event been reconfigured** to a custom event? Then look for that event, not the default one.
-4. **Is the fallback being served?** Fallbacks fire no exposure — this is the always-fallback case above wearing a different hat.
+3. **Has the exposure event been reconfigured** to a custom event? Then look for that event, not `$experiment_started`.
+4. **Is the fallback being served after all?** Fallbacks fire no exposure — if so, this is [Always getting the fallback](#always-getting-the-fallback) wearing a different hat.
 
-### Skewed variant split
+---
+
+## Skewed variant split
 
 1. **Small denominator.** Check the absolute counts before concluding anything.
 2. **Unstable bucketing key.** Anonymous users with rotating identifiers re-bucket constantly. Confirm the assignment key is stable for the population being measured.
-3. **Evaluation racing identify.** If the flag is evaluated before `identify()` resolves, the user is bucketed on their pre-identify identity and re-bucketed after. Client SDKs reload flags on identify — evaluation must happen after.
-4. **Mixed environments in one project.** Dev and prod traffic in the same project with the same flag will blend.
+3. **Evaluation racing identify.** As in [Wrong variant](#wrong-variant) — at population scale this shows up as a skewed split.
+4. **Mixed environments in one project.** Dev and prod traffic on the same flag will blend, unless targeting separates them on an environment runtime property.
 
 ---
 
 ## What "verified" means
 
-Say the implementation is verified only when all of these are true:
+Say the implementation is verified only when a real evaluation returned a non-fallback variant, an `$experiment_started` event arrived with the correct flag key and identity, and the variant the code branched on matches the variant on that event.
 
-- A real evaluation returned a non-fallback variant.
-- An exposure event arrived in Mixpanel with the correct flag key, variant, and identity.
-- The variant the code branched on matches the variant in the exposure event.
-
-Until then the correct status is "implemented, not yet verified." The distinction matters most right before an experiment launch, which is irreversible.
+Until all three hold, the correct status is **"implemented, not yet verified."** The distinction matters most right before an experiment launch, which is irreversible.

@@ -4,31 +4,34 @@ For customers moving flags and experiments into Mixpanel from Statsig, LaunchDar
 
 This reference covers the code-side work and the sequencing. The full vendor-agnostic playbook, including the exposure-event mapping table per vendor, is at **Mixpanel docs → Guides → Strategic playbooks → "Migrating Your Feature Flags and Experiments to Mixpanel."** Read it alongside this file.
 
+*Source: the Mixpanel feature-flags and SDK docs at docs.mixpanel.com. Product behaviour, defaults, version floors and call shapes all change — verify against current docs before relying on any specific value below.*
+
+## Contents
+
+- [Do not migrate a running experiment](#say-this-before-anything-else-do-not-migrate-a-running-experiment)
+- [Division of labour](#division-of-labour)
+- [Part 1 — Historical exposures](#part-1--historical-exposures)
+- [Part 2 — Configurations](#part-2--configurations)
+- [Part 3 — Finish setup in the UI](#part-3--finish-setup-in-the-ui)
+- [Part 4 — Change the code](#part-4--change-the-code)
+- [Part 5 — Parity check](#part-5--parity-check)
+- [Sequencing summary](#sequencing-summary)
+
 ---
 
 ## Say this before anything else: do not migrate a running experiment
 
 Variant assignment is computed independently by each platform. Moving a live experiment to Mixpanel **reassigns users to different variants mid-flight**. The experiment's results are destroyed — not degraded, destroyed — because the exposed population changes underneath the measurement.
 
-The correct sequence:
-
-1. Let in-flight experiments **finish** on the existing vendor.
-2. Import their historical exposure events into Mixpanel so past results are preserved and queryable.
-3. Launch the equivalent experiment **fresh** in Mixpanel after cutover.
+Let in-flight experiments finish where they are, import their history, and relaunch fresh in Mixpanel after cutover — the full ordering is in [Sequencing summary](#sequencing-summary).
 
 Feature gates and dynamic configs have no such constraint — reassignment there is a user-experience flicker, not a correctness failure. Migrate those first.
 
 ---
 
-## The five parts
+## Division of labour
 
-1. Import historical exposure events, so past results carry over.
-2. Recreate flag, experiment, and dynamic-config configurations.
-3. Finish the setup that only exists in the UI — targeting, rollout groups, runtime evaluation, experiment metrics.
-4. Change the application code to evaluate through Mixpanel.
-5. Run a parity check.
-
-Parts 1–3 are largely API and UI work; route those through the engine or the customer. Parts 4 and 5 are this skill's job.
+Parts 1–3 below are API and console work — route them through an available engine (see [`ENGINE.md`](../../../ENGINE.md)) or the customer. **Parts 4 and 5 are this skill's job**, and are where the detail here is deepest. The section headings are the taxonomy; [Sequencing summary](#sequencing-summary) is the order to actually execute in.
 
 ---
 
@@ -36,7 +39,20 @@ Parts 1–3 are largely API and UI work; route those through the engine or the c
 
 Export the vendor's exposure events and re-ingest them as Mixpanel exposure events through the Import API. Each vendor names its exposure event differently, and the mapping depends on which Mixpanel flag type the original corresponds to — the playbook has the full table.
 
-At minimum, each exported row needs: the enrollment identity, the exposure timestamp, the flag or experiment name, and the assigned variant.
+Each row becomes a Mixpanel `$experiment_started` event. At minimum it needs the enrollment identity, the original exposure timestamp, the flag or experiment name, and the assigned variant:
+
+```json
+{
+  "event": "$experiment_started",
+  "properties": {
+    "distinct_id": "the enrollment identity from the vendor export",
+    "time": 1709275888,
+    "$insert_id": "vendor-exposure-id-or-another-stable-unique-key",
+    "Experiment name": "checkout_flow_test",
+    "Variant name": "treatment"
+  }
+}
+```
 
 Two things that are easy to get wrong and expensive to redo:
 
@@ -49,6 +65,8 @@ Two things that are easy to get wrong and expensive to redo:
 
 Recreate flags and experiments through the Mixpanel API. **Create the experiment first, then the flag that references it** — the flag carries the experiment reference, so the reverse order leaves an orphan.
 
+> **This two-call pattern is specific to migrating via the API.** Working in the product normally, you create the experiment and its backing flag is auto-created and linked for you — one step, not two, and the `manage-feature-flags` skill will tell you that creating a flag directly for an experiment produces an orphan. Both are true: the API path builds the two objects explicitly and links them, which is what makes bulk recreation possible at all. Don't carry the two-call pattern back into non-migration work, and don't let it convince you the product path needs a second step.
+
 The variant value type differs by flag type, and mismatching it is a silent misconfiguration:
 
 | Flag type | `value` type |
@@ -57,7 +75,9 @@ The variant value type differs by flag type, and mismatching it is a silent misc
 | Experiment | string |
 | Dynamic Config | object |
 
-**Migrate a few low-risk flags first** and validate the whole pipeline end to end before doing the bulk. A scripted migration that gets the value type wrong will get it wrong hundreds of times.
+**Map the bucketing key explicitly.** Every vendor randomises on some unit — a user key, a device id, an account id. That maps onto Mixpanel's variant assignment key, and it is **immutable once the flag is enabled**. Getting it wrong is the single most common cause of a migration that passes every aggregate check and still assigns individual users differently (see [Part 5](#part-5--parity-check)). Decide it per flag, from the vendor's config, before creating anything.
+
+**Migrate a few low-risk flags first** and validate the whole pipeline end to end before doing the bulk. A scripted migration that gets the value type wrong, or the bucketing key wrong, will get it wrong hundreds of times.
 
 ---
 
