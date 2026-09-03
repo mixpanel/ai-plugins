@@ -18,6 +18,8 @@ How to test a flag before any rollout, how to prove the implementation works, an
 
 The exposure event is named `$experiment_started` — that is what to search for in Live View.
 
+**Every checklist below is ordered by what is cheapest to rule out against how often it is the cause.** Work each one top to bottom rather than jumping to the interesting hypothesis.
+
 ---
 
 ## Getting yourself served a variant
@@ -70,8 +72,6 @@ Group exposures by variant and compare against the configured allocation. A 50/5
 
 ## Always getting the fallback
 
-Ordered by what is cheapest to rule out against how often it is the cause — not strictly by cost. Work it top to bottom rather than jumping to the interesting hypothesis.
-
 1. **Is the flag enabled?** A disabled flag serves control to everyone regardless of rollout percentage. The most common cause by a wide margin.
 2. **Is the flag archived?** Archiving stops SDK evaluation outright, so an archived flag serves the fallback forever. It also hides the flag from default listings, which is why this is easy to miss when the key looks correct.
 3. **Does the flag key in code match the key in Mixpanel exactly?** Not the display name — the key. Typos fail silently.
@@ -79,7 +79,7 @@ Ordered by what is cheapest to rule out against how often it is the cause — no
 5. **Is the token the right project's?** With separate projects per environment, dev code pointing at the prod project (or the reverse) returns nothing for flags that exist only in the other one.
 6. **Is the region host right?** EU and India projects must point at their regional host. A US host with an EU token returns nothing.
 7. **Is the SDK version at or above the minimum?** Below it, flags never return and no error is raised. Versions are in [sdk-snippets.md](sdk-snippets.md).
-8. **Does init actually enable flags?** Flags are off by default. An SDK that tracks events happily will still return no flags.
+8. **Does init actually enable flags?** Flags are off by default — see [Enabling flags at init](sdk-snippets.md#enabling-flags-at-init).
 9. **On mobile: is prefetch disabled?** If flags aren't fetched at init, nothing is available until `identify()` or an explicit load call.
 10. **Is every targeting input present in the context?** See the two init-context rules in [sdk-snippets.md](sdk-snippets.md#enabling-flags-at-init) — missing either is a silent no-match.
 11. **Is the user in the rollout?** Rollout percentage, cohort membership, and targeting filters all gate assignment. Remember the cohort refresh delay.

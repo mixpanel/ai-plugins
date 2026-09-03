@@ -27,8 +27,8 @@ This table is the reason this file exists. Everything in it is something an agen
 | Concern | How it differs |
 |---|---|
 | **`isEnabled` fallback parameter** | Present on JavaScript, Swift, Android, Flutter, React Native. **Absent on Node, Python, Go, Java, Ruby** — those take only the flag key and context. |
-| **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant`, and the keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False` (camelCase — this is deliberate in the SDK, not a typo). Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression** — do not assume the Node or Python shape; verify against the installed SDK before promising first-exposure semantics. |
-| **"All variants" method** | `getAllVariants` / `get_all_variants` / `GetAllVariants` on Node, Python, Go, Ruby, Flutter, React Native — but **Java is `getAllVariantsByFlag(context, boolean)`**, with a trailing boolean whose meaning is not documented upstream. On every SDK where it is documented, this call does **not** fire an exposure event; treat Java's boolean as unverified rather than assuming it matches the others. |
+| **Exposure suppression** | Node: a 4th argument to the getter. **Python: not available on `get_variant_value` at all** — you must call `get_variant`, and the keyword differs by mode: `local_flags` takes `report_exposure=False`, `remote_flags` takes `reportExposure=False` (camelCase — this is deliberate in the SDK, not a typo). Go: no per-call parameter; controlled by the tracker supplied at init. **Java and Ruby: no documented per-call suppression.** |
+| **"All variants" method** | `getAllVariants` / `get_all_variants` / `GetAllVariants` on Node, Python, Go, Ruby, Flutter, React Native — but **Java is `getAllVariantsByFlag(context, boolean)`**, with a trailing boolean whose meaning is not documented upstream. Java's trailing boolean is unverified. Exposure behaviour for this call is owned by [exposure-correctness.md](exposure-correctness.md). |
 | **React Native init** | The token goes to the `Mixpanel` **constructor**, not to `init()`. On the instance `init()`, `featureFlagsOptions` is the **5th** positional argument — after `optOutTrackingDefault`, `superProperties`, `serverURL`, `useGzipCompression`. Passing it in any earlier position silently leaves flags disabled instead of erroring. |
 | **Async model** | JavaScript, Flutter, React Native: promises, plus `*Sync` variants. **Swift and Android: completion callbacks, not async/await.** Server local evaluation: synchronous. Server remote: async on Node, synchronous on Python, Ruby and Java. |
 | **Flag persistence** | Client SDKs only. **Flutter supports it on iOS and Android only** — on Web the policy is ignored and behaves as `networkOnly`. |
@@ -315,21 +315,13 @@ def evaluate(mp, flag_key, user_context):
 
 **Java and Ruby** document no per-call suppression — [exposure-correctness.md](exposure-correctness.md) covers what to do instead.
 
-**On every SDK, the all-variants call does not fire exposure** — if branching is driven by it, exposure must be tracked manually per flag.
-
 ---
 
 ## Flag persistence (client SDKs)
 
 Serves a stored assignment when the network is slow or unavailable, instead of falling back. Configured with a `variantLookupPolicy` in the SDK's feature-flag options:
 
-| Policy | Behaviour |
-|---|---|
-| `networkOnly` *(default)* | No persistence. Every lookup waits for the network. |
-| `networkFirst` | Waits for the network; serves the persisted value if the call fails. |
-| `persistenceUntilNetworkSuccess` | Serves the persisted value immediately; refreshes in the background. |
-
-A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
+The default is `networkOnly` — no persistence, every lookup waits for the network. The two persisting policies (`networkFirst`, `persistenceUntilNetworkSuccess`) differ in whether they wait for the network first or serve the stored value immediately; see the platform's docs for the exact semantics. A TTL is configurable alongside the policy (24 hours by default — verify current). Persisted data is scoped to the current `distinct_id`: `identify()` with a new ID, or `reset()`, clears it and triggers a fresh fetch.
 
 Exposure events from a persisted variant carry `$variant_source`, plus `$persisted_at_in_ms` and `$ttl_in_ms`. **Fallback variants fire no exposure event at all.**
 
@@ -343,4 +335,4 @@ EU projects must point at `api-eu.mixpanel.com` and India projects at `api-in.mi
 
 ## OpenFeature
 
-Mixpanel ships OpenFeature providers for JavaScript, Node.js, Python, Go, Java, Ruby, Swift and Android. If the customer already uses OpenFeature, implement against the provider: their existing `getBooleanValue` / `getStringValue` call sites stay unchanged and only the provider registration changes. See the platform's `*-openfeature` docs page. For customers migrating from another vendor, [migration.md](migration.md) covers when this is the cheapest path.
+Mixpanel ships OpenFeature providers for JavaScript, Node.js, Python, Go, Java, Ruby, Swift and Android — that list is the decision-relevant part, since a customer already on OpenFeature only changes provider registration. For customers migrating from another vendor, [migration.md](migration.md) covers when this is the cheapest path.

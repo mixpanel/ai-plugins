@@ -39,7 +39,7 @@ Parts 1–3 below are API and console work — route them through an available e
 
 ## Part 1 — Historical exposures
 
-Export the vendor's exposure events and re-ingest them as Mixpanel exposure events through the Import API. Each vendor names its exposure event differently, and the mapping depends on which Mixpanel flag type the original corresponds to — the playbook has the full table.
+Export the vendor's exposure events and re-ingest them as Mixpanel exposure events with an event import. Each vendor names its exposure event differently, and the mapping depends on which Mixpanel flag type the original corresponds to — the playbook has the full table.
 
 **Before ingesting, show and confirm:** the row count, the earliest and latest original timestamp, how `$insert_id` is derived, and one fully rendered sample row. Re-ingesting is not reversible, and a re-run without stable `$insert_id`s duplicates every exposure — so confirm the derivation before the first run, not after a failed one.
 
@@ -67,10 +67,10 @@ Two things that are easy to get wrong and expensive to redo:
 
 ## Part 2 — Configurations
 
-Recreate flags and experiments through the Mixpanel API. What you create depends on what the vendor object is:
+Recreate flags and experiments programmatically. What you create depends on what the vendor object is:
 
 - **Feature Gates and Dynamic Configs** — create the flag directly.
-- **Experiments** — create the **experiment**, not a flag. Its backing flag is auto-created and linked for you; read that flag's key back off the experiment and configure it, rather than creating a second flag. Direct flag creation rejects the experiment flag type anyway, and a separately created flag would not be linked to the experiment meant to drive it.
+- **Experiments** — create the **experiment**, not a flag. Its backing flag is auto-created and linked for you; read that flag's key back off the experiment and configure it, rather than creating a second flag. A separately created flag would not be linked to the experiment meant to drive it — see *Route the flag type* in the parent skill for what direct creation does here.
 
 **Before creating anything, show the full list and get one explicit yes:** every object with its name, key, type, variant value type, and variant assignment key. The assignment key is immutable once the flag is enabled, so it cannot be corrected after the batch runs.
 

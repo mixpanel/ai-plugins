@@ -68,7 +68,7 @@ State the selected mode and offer to switch at any point.
 
 | Mode | Covers | Section |
 |---|---|---|
-| Quick Start | Pre-flight → SDK init with flags → create flag → evaluate → verify → enable | [Quick Start Flow](#quick-start-flow) |
+| Quick Start | Pre-flight → SDK init with flags → create flag → evaluate → enable (customer) → verify → hand off | [Quick Start Flow](#quick-start-flow) |
 | Full Setup | Quick Start plus identity, environments, exposure correctness, experiment wiring, cleanup plan | [Full Setup](#full-setup) |
 | Add a Flag | Reuse existing init → route flag type → evaluate → verify | [Add a Flag](#add-a-flag) |
 | Migrate | Inventory vendor flags → map semantics → recreate → dual-run → cut over. Bulk writes are gated on a preview and an explicit yes. | [migration.md](references/migration.md) |
@@ -97,7 +97,7 @@ Three shapes, one SDK call surface. The difference is server-side configuration,
 | Serve different values/payloads per user, no measurement | **Dynamic Config** | the variant-value getter |
 | Compare variants and **measure** which wins | **Experiment** | the variant-value getter |
 
-If the customer says "A/B test," "does this improve conversion," or names a success metric → that is an **Experiment**. Experiment-backed flags must be created through the experiment path, which auto-creates and links the backing flag; creating a flag directly and then an experiment produces an unlinked orphan. Route the *design* of that experiment (hypothesis, metrics, sizing) to the `manage-experiment` skill — this skill implements whatever it produces.
+If the customer says "A/B test," "does this improve conversion," or names a success metric → that is an **Experiment**. Experiment-backed flags must be created through the experiment path, which auto-creates and links the backing flag. Creating the flag directly instead produces an unlinked orphan, and direct creation may reject the experiment flag type outright (verify current) — either way the experiment ends up without the flag driving it. Route the *design* of that experiment (hypothesis, metrics, sizing) to the `manage-experiment` skill — this skill implements whatever it produces.
 
 ### 2. Ensure the SDK is installed and initialized with flags enabled
 
