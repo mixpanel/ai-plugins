@@ -1,9 +1,14 @@
 {
   "name": "mixpanel",
-  "version": "1.0.0",
+  "displayName": "Mixpanel",
+  "version": "1.0.1",
   "description": "Mixpanel skills for AI coding agents — analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK.",
   "author": {
-    "name": "Mixpanel"
+    "name": "Mixpanel",
+    "url": "https://mixpanel.com"
   },
-  "license": "Apache-2.0"
+  "homepage": "https://docs.mixpanel.com/docs/mcp",
+  "repository": "https://github.com/mixpanel/ai-plugins",
+  "license": "Apache-2.0",
+  "keywords": ["mixpanel", "analytics", "product-analytics", "mcp", "experimentation", "feature-flags", "dashboards"]
 }

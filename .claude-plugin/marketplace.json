@@ -7,8 +7,14 @@
   "plugins": [
     {
       "name": "mixpanel",
+      "displayName": "Mixpanel",
       "source": "./plugins/mixpanel",
-      "description": "Mixpanel skills for analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK."
+      "description": "Mixpanel skills for analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK.",
+      "category": "analytics",
+      "homepage": "https://docs.mixpanel.com/docs/mcp",
+      "repository": "https://github.com/mixpanel/ai-plugins",
+      "license": "Apache-2.0",
+      "keywords": ["mixpanel", "analytics", "product-analytics", "mcp", "experimentation", "feature-flags", "dashboards"]
     }
   ],
   "renames": {
