@@ -1329,8 +1329,8 @@ For any language not covered there, check https://docs.mixpanel.com/docs/trackin
 **Runtime patterns -- do not skip.** Before adapting any snippet, read the **Runtime Patterns** section at the top of [sdk-snippets.md](sdk-snippets.md). It covers three things no per-language snippet handles on its own:
 
 - **`api_host` for data residency** -- an EU or India project on the default host drops every event with no error
-- **Client-only initialization in SSR frameworks** -- `mixpanel-browser` at module scope in a server component throws; needs a client boundary, a `typeof window` guard, and once-only init
-- **Flushing server SDKs in short-lived processes** -- buffered consumers silently lose whatever is still buffered when a serverless handler, cron job, or script exits
+- **Client-only initialization in SSR frameworks** -- tracking and identity wrappers must ensure initialization before SDK calls; a parent effect does not run before child mount effects. Respect consent and reuse the initialized instance.
+- **Server SDK completion in short-lived processes** -- flush buffered consumers and wait for asynchronous sends (Node.js uses callbacks, not a flush method) before returning.
 
 All three work in a dev server and fail silently in production, which is why they need to be handled at write time rather than found later.
 

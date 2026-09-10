@@ -38,43 +38,47 @@ The same config key exists across SDKs (`api_host`, or the server-URL equivalent
 
 ### 2. Server-rendered frameworks -- initialize on the client only
 
-`mixpanel-browser` imported at module scope in a server component throws. "Initialize the SDK on app boot" has no single meaning in Next.js App Router, Remix, SvelteKit, or Nuxt, so do not follow it literally.
+Keep browser SDK initialization and calls on the client. A parent provider's `useEffect` is not an initialization barrier: child mount effects can call `track()` or `identify()` before the parent's effect runs.
 
-Three requirements: a client-only boundary, a `typeof window` guard, and once-only execution that survives hot reload and client-side route changes.
+Use a shared synchronous initializer from every tracking and identity wrapper. Check for a browser and the application's current consent decision before initialization or tracking. Adapt the `canTrackAnalytics` import below to the application's consent accessor; it should return true when tracking is permitted under the customer's policy, including when consent is not required.
 
 ```javascript
 'use client';
 
-import { useEffect, useRef } from 'react';
 import mixpanel from 'mixpanel-browser';
+import { canTrackAnalytics } from './consent';
 
-// Module-level flag survives component remounts and Fast Refresh;
-// a bare useEffect would re-init on every route change in dev.
 let initialized = false;
 
-export function MixpanelProvider({ children }) {
-  const started = useRef(false);
+function ensureMixpanelInitialized() {
+  if (typeof window === 'undefined' || !canTrackAnalytics()) return;
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    if (initialized || started.current) return;
-    initialized = true;
-    started.current = true;
-
+  if (!initialized) {
     mixpanel.init(process.env.NEXT_PUBLIC_MIXPANEL_TOKEN, {
       api_host: process.env.NEXT_PUBLIC_MIXPANEL_API_HOST, // undefined = US default
     });
-  }, []);
+    initialized = true;
+  }
 
-  return children;
+  return mixpanel;
+}
+
+export function trackEvent(name, properties) {
+  ensureMixpanelInitialized()?.track(name, properties);
+}
+
+export function identifyUser(userId) {
+  ensureMixpanelInitialized()?.identify(userId);
 }
 ```
 
-Mount this once, high in the tree (in `app/layout.tsx` for App Router). Any component that calls `mixpanel.track()` must itself be a client component. If a tracked action lives in a server action or route handler, use the **server** SDK there instead -- don't try to reach the browser instance.
+Call these wrappers from client event handlers or effects, including initial-page tracking and restoring a logged-in user's identity. Apply the same initialization check to profile, registration, and reset wrappers. Keep identity-before-event ordering where the tracking plan requires it. Do not call the browser SDK directly from other components or initialize it during render.
 
-This is the most likely place a build actually breaks rather than the tracking quietly misbehaving, so confirm the app still builds before moving on.
+The module flag survives component remounts and route changes, but module replacement during HMR resets it. If the framework hot-reloads this module, preserve initialization state with its HMR mechanism. Wire consent withdrawal to the application's SDK opt-out/recording-stop flow; dropping future wrapper calls alone does not stop autocapture or replay. Calls skipped before consent are not queued for replay.
 
-### 3. Server SDKs in short-lived processes -- flush before exit
+If a tracked action lives in a server action or route handler, use the server SDK there. Verify both the SSR build and a child's initial tracking/identity call, not just a later button click.
+
+### 3. Server SDKs in short-lived processes -- wait for delivery before returning
 
 Buffered consumers batch events and send when the batch fills. A process that exits before the batch fills drops those events **with no error**.
 
@@ -99,17 +103,32 @@ finally:
 
 In a Lambda handler, flush before returning -- not in a background task, which the runtime may freeze mid-flight.
 
-For other server SDKs, check that SDK's batching semantics before you ship: if it buffers at all, find its flush/shutdown call and `await` it before the process or handler returns. Add the flush when you write the code. This failure is invisible in a long-running dev server, so nobody finds it until data is already missing.
+For **Node.js**, `track()` sends an asynchronous request and completes through a callback; there is no `flush()` method. Wrap the callback in a Promise and await it in the handler. Awaiting `mp.track()` directly does not wait for delivery.
 
-### Bonus: deterministic `$insert_id`
-
-Server-side events need `$insert_id` for deduplication (see the HTTP API section below). A randomly generated value defeats the purpose -- a retried webhook produces a new key and a duplicate event. Derive it from the logical occurrence instead:
-
-```python
-insert_id = f"subscription_upgraded-{subscription_id}-{billing_period}"
+```javascript
+await new Promise((resolve, reject) => {
+  mp.track('subscription_upgraded', properties, (error) => {
+    if (error) reject(error);
+    else resolve();
+  });
+});
 ```
 
-Retried webhooks, at-least-once queues, and re-run jobs are exactly the traffic this protects.
+Apply the same completion handling to profile updates and other asynchronous sends. For other server SDKs, check their delivery semantics: flush buffered consumers, await asynchronous completion, and do not add a flush to synchronous sends. Handle delivery failures according to the application's retry policy. See the [Node.js SDK documentation](https://docs.mixpanel.com/docs/tracking-methods/sdks/nodejs#sending-events).
+
+### Bonus: stable retry identity and timestamp
+
+Mixpanel's query-time deduplication requires the same event name, `distinct_id`, `time`, and `$insert_id` on every retry. Preserve the original occurrence timestamp in Unix seconds; SDK-generated current timestamps change when a webhook or job is retried.
+
+```python
+mp.track(user_id, 'subscription_upgraded', {
+    '$insert_id': f'subscription_upgraded-{webhook_event_id}',
+    'time': original_event_timestamp_seconds,
+    'plan': new_plan,
+})
+```
+
+Use the source webhook/event ID for the logical occurrence, or generate an ID once and persist it with the queued payload. Do not generate a fresh UUID on each attempt. A subscription ID plus billing period is insufficient: multiple upgrades within one period are separate occurrences and need different IDs. Keep all four deduplication fields unchanged on retries. See [Event Deduplication](https://docs.mixpanel.com/reference/event-deduplication).
 
 ---
 
