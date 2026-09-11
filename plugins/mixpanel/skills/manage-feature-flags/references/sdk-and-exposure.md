@@ -11,7 +11,7 @@ The SDK exposes two read entry points, returning different shapes:
 
 Branch on whatever shape the user actually needs in their code path. There is no entry point that returns only the key.
 
-For exact per-language call signatures, point the user at the [Mixpanel feature-flags docs](https://docs.mixpanel.com/docs/featureflags) for their platform — call shapes evolve, and the docs are the source of truth.
+For exact per-language call signatures — and for actually writing the evaluation code — route to the `implement-flags-and-experiments` skill, which carries a per-SDK snippet reference and the exposure-correctness rules that differ by language. Failing that, point the user at the [Mixpanel feature-flags docs](https://docs.mixpanel.com/docs/featureflags) for their platform; call shapes evolve, and the docs are the source of truth.
 
 A few sharp edges users hit:
 

@@ -32,6 +32,7 @@ Run this against the experiment about to launch. Surface only what fires; order 
 
 | Severity | Check |
 | --- | --- |
+| Blocker | **No exposure events have ever been recorded for the experiment's backing flag** — nothing in the customer's code has evaluated it. See [The implementation check](#the-implementation-check). |
 | Blocker | Pre-launch pitfall catalogue (insufficient duration, cohort too small) reports a blocker — see [../references/pitfalls.md](../references/pitfalls.md). |
 | Blocker | The experiment has no primary metric. |
 | Blocker | The configured allocation doesn't sum to 100% across variants. |
@@ -42,6 +43,21 @@ Run this against the experiment about to launch. Surface only what fires; order 
 | FYI | The experiment isn't linked back to a prior experiment on the same feature, even though prior experiments exist. Recommend adding the link before launch. |
 
 The pitfall catalogue itself lives in [../references/pitfalls.md](../references/pitfalls.md) — don't duplicate the rules here; run them and report results.
+
+### The implementation check
+
+Every other check on this list validates *configuration*. This one validates that the experiment is connected to anything at all.
+
+An experiment measures exposures. If no code path evaluates the backing flag, launching produces an `ACTIVE` experiment that locks its variants, statistical model, and cohort — and then accrues nothing. Every configuration check above passes while that is true, so nothing else on this list can catch it.
+
+**Count exposure events for the experiment's backing flag key before launching.** Implementation verification should already have produced a handful from QA traffic. Allow for ingestion lag before treating a zero as real.
+
+Zero exposures has two causes and they resolve differently — **ask which it is, don't infer:**
+
+- **Not implemented, or implemented but never verified.** The common case. **Blocker — do not launch.** Route to the `implement-flags-and-experiments` skill with the backing flag's key; it writes the evaluation call and verifies exposures arrive. Return here afterward.
+- **Implemented and verified, but not yet deployed.** Some teams ship the evaluation code and launch the experiment in the same window. Legitimate. **Downgrade to a warning** on the user's explicit confirmation that the code is merged and going live — not on an assumption that it probably is. Then proceed, and tell them to run `monitor` within 24h: zero exposures at that check means the deploy didn't carry the code, and the experiment has to be terminated and restarted rather than left running on a locked configuration.
+
+A non-zero exposure count is not proof the implementation is *correct* — only that something evaluates the flag. Correctness (right branch point, sane variant split, no duplicate firing) is the implementation skill's job, upstream of here.
 
 ---
 
@@ -68,7 +84,10 @@ Apply the catalogue from Components against the current experiment configuration
   • [fyi description]
 ```
 
-If any blockers fire, **stop**. Tell the user what to fix and route them back to `design` to update the configuration. Don't offer to launch past a blocker.
+If any blockers fire, **stop**. Tell the user what to fix and don't offer to launch past a blocker. Where to route depends on which blocker fired:
+
+- **Configuration blockers** (pitfall catalogue, no primary metric, allocation ≠ 100%) → back to `design`.
+- **The implementation blocker** (no exposures on the backing flag) → to the `implement-flags-and-experiments` skill, unless the user confirms the code is merged and pending deploy, which downgrades it to a warning. `design` cannot fix this one; re-running it will just re-pass every configuration check.
 
 If warnings fire, name each trade-off explicitly. Don't just list them — explain what risk the user is accepting by launching anyway.
 

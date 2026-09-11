@@ -67,3 +67,6 @@ jobs:
 
       - name: Verify skills declare an engine marker
         run: bash scripts/check-engine-markers.sh
+
+      - name: Verify code fences in skills parse
+        run: bash scripts/check-code-fences.sh

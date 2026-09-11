@@ -12,7 +12,10 @@ description: >
   mismatch, CUPED, or statistical significance, or asks things like "set up an
   experiment", "is my experiment SRM-ing", "should we ship", "what's my MDE", or
   "audit my experiment". Do NOT use for plain feature-flag rollouts with no
-  measurement criterion — that belongs to the `manage-feature-flags` skill.
+  measurement criterion — that belongs to the `manage-feature-flags` skill. Do
+  NOT use for implementing the flag-evaluation code an experiment runs on, or
+  for diagnosing zero exposures caused by a missing or incorrect implementation
+  — those belong to the `implement-flags-and-experiments` skill.
 license: Apache-2.0
 metadata:
   engine: required
@@ -25,6 +28,8 @@ metadata:
 This skill manages a Mixpanel experiment across its full lifecycle — **design**, **launch**, **monitor**, **interpret**. Four commands sit under the umbrella, picked by experiment phase (the state→command mapping lives in the **Canonical commands** section below).
 
 The skill runs as a single interactive session per experiment. Commands compose naturally across phases — designing produces a configuration that launching commits, monitoring watches for safety issues mid-flight, interpreting consumes the matured result — but they're rarely invoked in the same session (the lifecycle spans days to weeks).
+
+**Out of scope: the code.** This skill designs, launches, monitors, and interprets the experiment; it does not write or debug the flag-evaluation code the experiment runs on. An experiment measures nothing until something in the customer's codebase evaluates its backing flag and fires exposures. That implementation — and any "why are there no exposures?" question that turns out to be a missing or incorrect call — belongs to the `implement-flags-and-experiments` skill.
 
 ---
 
