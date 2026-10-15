@@ -21,6 +21,14 @@ Install the plugin from the Cursor marketplace, or have a team admin import this
 
 Skills appear in **Cursor Settings → Rules** under **Agent Decides** and can be invoked with `/skill-name` in chat. Run the `install` skill first to set up an engine.
 
+### Neotask
+
+Install the plugin from [Neotask Construct](https://construct.neotask.ai/p/mixpanel):
+
+```bash
+neotask construct install mixpanel
+```
+
 ## Skills
 
 | Skill | Description |
