@@ -12,9 +12,23 @@ For any reference to `reference.md`, use this resource: [reference.md](reference
 
 For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](references/sdk-snippets.md).
 
+For optional coding-agent setup, use this resource: [tooling-setup.md](references/tooling-setup.md).
+
 # Mixpanel Implementation
 
 > **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, use an available engine per [`ENGINE.md`](../../ENGINE.md); otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
+
+## Optional Coding-Agent Setup -- Offer First
+
+Before the codebase scan, mode selection, or implementation questions, follow [tooling-setup.md](references/tooling-setup.md). Detect whether the Mixpanel plugin and Mixpanel MCP server are already available, then offer to set up only what is missing.
+
+This offer is optional and must never become a gate:
+
+- Say clearly that tracking implementation can continue without either tool.
+- If the user skips, continue immediately and do not offer again in the same session.
+- If setup is accepted, complete or attempt it before continuing, then return to this skill at **Pre-Flight -- Codebase Scan**.
+- If setup cannot be completed, explain why and offer to continue without it.
+- Do not confuse the Mixpanel plugin or MCP server with the Mixpanel application SDK. The application SDK or CDP integration is still selected and configured later in the implementation flow.
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
 
