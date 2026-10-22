@@ -12,15 +12,31 @@ For any reference to `reference.md`, use this resource: [reference.md](reference
 
 For any reference to `sdk-snippets.md`, use this resource: [sdk-snippets.md](references/sdk-snippets.md).
 
+For optional coding-agent setup, use this resource: [tooling-setup.md](references/tooling-setup.md).
+
 # Mixpanel Implementation
 
 > **Engine optional** — the core flow (SDK code generation, Live View verification) needs no engine. When schema lookups or post-deploy query checks come up, use an available engine per [`ENGINE.md`](../../ENGINE.md); otherwise use the documented fallbacks (direct the customer to Mixpanel Reports and Lexicon). Never stop for a missing engine.
+
+## Optional Coding-Agent Setup -- Offer First
+
+Before the codebase scan, mode selection, or implementation questions, follow [tooling-setup.md](references/tooling-setup.md). Detect whether the Mixpanel plugin and Mixpanel MCP server are already available, then offer to set up only what is missing.
+
+The offer itself is optional. If the user accepts it, setup becomes a hard gate:
+
+- Say clearly that tracking implementation can continue without either tool.
+- If the user skips, continue immediately and do not offer again in the same session.
+- If the user chooses to set up both tools, do not scan the application codebase, generate or edit application files, install an application SDK, or begin implementation discovery until the plugin is installed and active **and** MCP is authenticated and can list the user's accessible projects.
+- A configuration entry alone does not satisfy the MCP gate. Verify usable tools and a successful project lookup.
+- If setup cannot be completed or requires a restart, stop at the gate. Explain the exact next action and wait. Continue without setup only if the user explicitly changes their choice and asks to skip it.
+- When MCP is connected, use its project metadata to resolve the intended project and its project token before asking the user to copy a token manually.
+- Do not confuse the Mixpanel plugin or MCP server with the Mixpanel application SDK. The application SDK or CDP integration is still selected and configured later in the implementation flow.
 
 CRITICAL -- DO NOT WRITE ANY CODE YET
 
 **This skill is a guided conversation, not a build template.** You MUST collect answers from the user before generating any implementation code. Writing Mixpanel code without the inputs below will produce a broken implementation -- wrong SDK, wrong events, missing consent gates, or duplicate data pipelines.
 
-**One exception:** if the request already arrived with a finished tracking plan (events, properties, and a project token -- typically in a context block from Mixpanel's in-product onboarding), the answers below were already collected elsewhere. Take them from the spec instead of asking, and go to **Implement From Spec Mode**. Consent (item 4) is the one input that is still always asked, because the in-product flow deliberately does not collect it.
+**One exception:** if the request already arrived with a finished tracking plan (events and properties, plus a project token or a connected MCP project from which it can be resolved -- typically in a context block from Mixpanel's in-product onboarding), the answers below were already collected elsewhere. Take them from the spec instead of asking, and go to **Implement From Spec Mode**. Consent (item 4) is the one input that is still always asked, because the in-product flow deliberately does not collect it.
 
 **Before writing ANY code, you must know ALL of the following:**
 
@@ -45,7 +61,7 @@ Full guidance, vertical-specific event examples, and governance detail are in [r
 
 ### Skip Mode Selection entirely if a spec already arrived
 
-**Check this before asking anything.** If the incoming request already carries a tracking plan -- a list of events with properties, plus a project token, typically inside a context block -- then discovery has already happened somewhere else (usually Mixpanel's in-product onboarding). Do not run Mode Selection. Do not run Phases 0--4. Go to **Implement From Spec Mode** below.
+**Check this before asking anything.** If the incoming request already carries a tracking plan -- a list of events with properties, plus a project token or enough connected-MCP project context to resolve it -- then discovery has already happened somewhere else (usually Mixpanel's in-product onboarding). Do not run Mode Selection. Do not run Phases 0--4. Go to **Implement From Spec Mode** below.
 
 Signals that a spec arrived:
 
@@ -147,7 +163,7 @@ Take whatever the context block provides -- typically Value Moment, CDP status, 
 2. **This skill's own default** -- Simplified ID Merge follows the org-default rule in Critical Rules; Group Analytics is out of scope unless the plan's events reference a group key
 3. **Ask** -- data residency (a wrong host fails silently), Autocapture and Session Replay on web platforms (the customer's call, and the answer changes the init config -- when asking, explain the value using the "Autocapture and Session Replay check" script in [quick-start.md](references/quick-start.md), don't just name the features), and consent (always asked regardless, below)
 
-Never treat a missing field as something to guess, and never stall the whole mode because the block is thin. A spec with just an event list and a token is enough to start.
+Never treat a missing field as something to guess, and never stall the whole mode because the block is thin. A spec with an event list plus either a token or a user-confirmed MCP project is enough to start.
 
 ### Three questions you MUST still ask
 

@@ -158,8 +158,9 @@ Present both to the user for confirmation. This is a lightweight review, not a f
 
 For Quick Start:
 
-- Confirm the user has one Mixpanel project with a token
-- If they can't find it: direct them to mixpanel.com -> Project Settings -> Project Token
+- If MCP is connected, list accessible projects through it and have the user confirm the intended project. Capture the project token from its metadata when available.
+- Otherwise, confirm the user has one Mixpanel project with a token.
+- If the connected project lookup does not expose the token, direct the user to mixpanel.com -> Project Settings -> Project Token.
 - Store the token in the Context Block
 - Move on
 
