@@ -161,9 +161,12 @@ This determines how many projects to create in the next step.
 - If step B determined multiple production projects are needed, create each with the same naming pattern
 - Use environment-based config to switch tokens automatically -> see `reference.md Section Phase 2` for JS example
 
-**D. Collect project tokens -- ask the customer to provide them now**
+**D. Collect project tokens -- use connected project metadata first**
 
-Once dev and production projects exist, ask:
+Once dev and production projects exist:
+
+1. If MCP is connected, list accessible projects and have the customer confirm which projects are development and production. Capture each token from the confirmed project metadata when available.
+2. If MCP is unavailable or its project lookup does not expose tokens, ask:
 
 > "Can you copy the project token for each project? You'll find them at mixpanel.com -> your project -> Project Settings -> Project Token. Paste both here and I'll inject them directly into the initialization code -- no manual search-and-replace needed."
 
