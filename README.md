@@ -36,7 +36,10 @@ Skills appear in **Cursor Settings → Rules** under **Agent Decides** and can b
 | [`manage-lexicon`](plugins/mixpanel/skills/manage-lexicon/) | Audits, scores, enriches, and cleans up Lexicon metadata — descriptions, tags, resets, data-quality triage. |
 | [`monitor-metrics`](plugins/mixpanel/skills/monitor-metrics/) | Monitors and diagnoses a metric — anomaly detection, drift detection, and root-cause attribution with charts and a diagnosis board. |
 | [`prepare-ai-readiness`](plugins/mixpanel/skills/prepare-ai-readiness/) | Sets up business context and delegates Lexicon enrichment so Mixpanel's AI assistants understand your data. |
-| [`tracking-implementation`](plugins/mixpanel/skills/tracking-implementation/) | Guides analytics implementation — Quick Start, Full Implementation, Add Tracking, and Audit modes. |
+| [`onboard-mixpanel`](plugins/mixpanel/skills/onboard-mixpanel/) | Understands the product, checks Mixpanel/code readiness, helps connect MCP, and routes to the right implementation workflow. |
+| [`implement-mixpanel`](plugins/mixpanel/skills/implement-mixpanel/) | Builds a greenfield implementation from a value moment and key report through verified events, Lexicon, and report creation. |
+| [`maintain-mixpanel-tracking`](plugins/mixpanel/skills/maintain-mixpanel-tracking/) | Audits, extends, or repairs an established tracking implementation without breaking its schema or pipeline. |
+| [`tracking-implementation`](plugins/mixpanel/skills/tracking-implementation/) | Legacy all-in-one implementation workflow retained as the control for the V2 onboarding experiment. |
 
 ### Internal skills
 
