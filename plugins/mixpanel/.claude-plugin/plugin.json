@@ -1,7 +1,7 @@
 {
   "name": "mixpanel",
   "displayName": "Mixpanel",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Mixpanel skills for AI coding agents — analytics, dashboards, experiments, lexicon, and tracking implementation. Works with the Mixpanel MCP server or the mixpanel-headless SDK.",
   "author": {
     "name": "Mixpanel",

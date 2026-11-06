@@ -37,7 +37,10 @@ Claude invokes these automatically based on your request, or you can call one di
 | [`manage-lexicon`](skills/manage-lexicon/) | Audits, scores, enriches, and cleans up Lexicon metadata (events and properties) for a project. |
 | [`monitor-metrics`](skills/monitor-metrics/) | Detects anomalies and drift in a metric and runs root-cause analysis on the movement. |
 | [`prepare-ai-readiness`](skills/prepare-ai-readiness/) | Sets up business context and Lexicon metadata so Mixpanel's AI assistants understand your data. |
-| [`tracking-implementation`](skills/tracking-implementation/) | Guides an analytics implementation: quick start, full production setup, adding tracking, or auditing an existing setup. |
+| [`onboard-mixpanel`](skills/onboard-mixpanel/) | Understands the product, checks Mixpanel/code readiness, helps connect MCP, and routes to the right implementation workflow. |
+| [`implement-mixpanel`](skills/implement-mixpanel/) | Builds a greenfield implementation from a value moment and key report through verified events, Lexicon, and report creation. |
+| [`maintain-mixpanel-tracking`](skills/maintain-mixpanel-tracking/) | Audits, extends, or repairs an established tracking implementation without breaking its schema or pipeline. |
+| [`tracking-implementation`](skills/tracking-implementation/) | Legacy all-in-one implementation workflow retained as the control for the V2 onboarding experiment. |
 
 ## What the plugin can do on your behalf
 

@@ -1,5 +1,16 @@
 # Changelog
 
+## mixpanel 1.1.0 — 2026-11-06
+
+- Added an experimental V2 tracking journey split across `onboard-mixpanel`,
+  `implement-mixpanel`, and `maintain-mixpanel-tracking`.
+- Added a report-first greenfield flow that derives the minimum event schema
+  from a confirmed value moment and verifies data before Lexicon/report writes.
+- Retained `tracking-implementation` as the all-in-one control for the product
+  onboarding experiment.
+- Centralized the high-risk consent, identity, pipeline, runtime, schema, and
+  verification invariants shared by the V2 implementation skills.
+
 ## mixpanel 1.0.0 — 2026-08-05
 
 New general-purpose plugin: **`mixpanel`**.
